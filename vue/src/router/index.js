@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import navigation from '../components/userPanels/Navigation.vue'
 
 import Register from '../components/authentication/Register.vue'
 import Login from '../components/authentication/Login.vue'
@@ -8,22 +7,15 @@ import Logout from '../components/authentication/Logout.vue'
 import PasswordChange from '../components/authentication/PasswordChange.vue'
 import ResetPassword from '../components/authentication/ResetPassword.vue'
 import PasswordResetEmail from '../components/authentication/ResetPasswordEmail.vue'
+import Home from '../components/home/Home.vue'
 
 Vue.use(VueRouter)
 
 const routes = [
   {
-    path: '/panel/:type?',
-    name: 'Navigation',
-    component: navigation
-  },
-  {
     path: '/',
-    name: 'Configure',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../components/configure/Stepper.vue')
+    name: 'Home',
+    component: Home
   },
 
   {

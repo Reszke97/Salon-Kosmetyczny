@@ -37,7 +37,7 @@ AUTH_API.interceptors.response.use(
 
 		if (
 			error.response.status === 401 &&
-			originalRequest.url === '/api/token/refresh/'
+			originalRequest.url === '/api/v1/token/refresh/'
 		) {
 			if(error.response.data.detail === 'Twoje Hasło zostało przed chwilą zmienione, proszę zalogować się ponownie.'){
 				console.log(error.response.data.detail)
@@ -62,7 +62,7 @@ AUTH_API.interceptors.response.use(
 
 		if (
 			(error.response.data.code === 'token_not_valid' || error.response.data.detail === 'Authentication credentials were not provided.') &&
-			originalRequest.url !== '/api/token/verify/' &&
+			originalRequest.url !== '/api/v1/token/verify/' &&
 			error.response.status === 401 &&
 			error.response.statusText === 'Unauthorized'
 		) {
@@ -80,7 +80,7 @@ AUTH_API.interceptors.response.use(
 	
 					if (tokenParts.exp > now) {
 						return AUTH_API
-							.post('/api/token/refresh/', { refresh: localStorage.getItem('refreshToken') })
+							.post('/api/v1/token/refresh/', { refresh: localStorage.getItem('refreshToken') })
 							.then((response) => {
 								// localStorage.setItem( 'token', response.data.access );
 								// localStorage.setItem( 'refreshToken', response.data.refresh );

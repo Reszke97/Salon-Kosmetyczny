@@ -8,10 +8,9 @@ import '@mdi/font/css/materialdesignicons.css'
 Vue.config.productionTip = false
 
 new Vue({
-  data:{
-    router,
-    store,
-    vuetify,
-  },
+  router,
+  store,
+  vuetify,
   render: h => h(App),
 }).$mount('#app')
+
