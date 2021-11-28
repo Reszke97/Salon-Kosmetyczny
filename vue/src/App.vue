@@ -1,18 +1,23 @@
 <template>
   <v-app>
     <div id="app">
+      <nav-bar></nav-bar>
       <router-view></router-view>
+      <Footer></Footer>
     </div>
   </v-app>
 </template>
 
 <script>
 import { AUTH_API } from './authorization/AuthAPI'
+import NavBar from './components/navigation/NavBar.vue'
+import Footer from './components/navigation/Footer.vue'
 
 export default {
   name: 'App',
   components: {
-
+    NavBar,
+    Footer
   },
 
   created(){

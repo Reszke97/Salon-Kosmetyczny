@@ -96,6 +96,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://192.168.43.171:8080"
 ]
 
+CORS_ORIGIN_ALLOW_ALL = False
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
