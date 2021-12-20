@@ -1,7 +1,20 @@
-{% autoescape off %}
-    Hi {{user}}
-    Please use the link below to verify your account.
-
-
-    http:://{{domain}}{% url 'activate_user' uidb64=uid token=token %}
-{% endautoescape %}
+<!DOCTYPE html>
+<html>
+    <head>
+    </head>
+    <body>
+        <div>
+            <h1 style="background-color: blue;">
+                Hi {{user}}
+            </h1>
+            <p>
+                Please use the link below to verify your account.
+                <a
+                    href="http://{{domain}}{% url 'activate_user' uidb64=uid token=token %}"
+                >
+                    klik
+                </a>
+            </p>
+        </div>
+    </body>
+</html>

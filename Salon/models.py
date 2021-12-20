@@ -67,6 +67,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=255, blank=False)
     phone_number = models.CharField(max_length=255, blank=True, null=True)
     role = models.CharField(blank=True, max_length=255, default='client')
+    last_password_update = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

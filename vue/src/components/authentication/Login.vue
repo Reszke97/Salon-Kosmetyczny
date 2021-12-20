@@ -39,18 +39,6 @@
                 >
                     <p>Nie pamiętasz hasła?</p>
                 </div>
-                <!-- <div
-                    class="buttonContainer"
-                >
-                    <button
-                        class="btn"
-                        @click="refresh"
-                    >
-                        refresh
-                    </button>
-                </div> -->
-
-
             </div>
             <div
                 class="flexible"
@@ -59,21 +47,12 @@
                     class="buttonContainer"
                 >
                     <v-btn
+                        class="success"
                         @click="submit"
                     >
                         Zaloguj
                     </v-btn>
                 </div>
-                <!-- <div
-                    class="buttonContainer"
-                >
-                    <v-btn
-                        class="info"
-                        @click="refresh"
-                    >
-                        refresh
-                    </v-btn>
-                </div> -->
             </div>
         </v-form>
     </div>
@@ -93,7 +72,6 @@
             password1:'',
             password1Rules: [
                 v => !!v || 'Hasło jest wymagane',
-                // v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
             ],
         }),
         
@@ -114,15 +92,19 @@
                     type: 'login'
                 })
                 .then(response => {
-                //     localStorage.setItem( 'token', response.data.access );
-                //     localStorage.setItem( 'refreshToken', response.data.refresh );
-                //     AUTH_API.defaults.headers['Authorization'] = 'JWT ' + response.data.access;
                     this.$store.commit('setToken', {
                         access: response.data.access,
                         refresh: response.data.refresh
                     })
                     this.$store.commit('setIsAuthenticated', true)
-                    this.$router.push({name: 'Configure' })
+                    
+                })
+                .then(()=>{
+                    AUTH_API.get('/api/v1/user/getuserrole/')
+                    .then(response=>{
+                        this.$store.commit('setRole', response.data.role)
+                        this.$router.push({name: 'Home' })
+                    })
                 })
                 .catch(error =>{
                     if(error.response.data.detail === 'No active account found with the given credentials'){
@@ -130,26 +112,6 @@
                     }
                 })
             },
-            // refresh(){
-            //     // AUTH_API.post('/api/token/refresh/', {
-            //     //     refresh: localStorage.getItem('refreshToken')
-            //     // })
-            //     AUTH_API.get('/dealers/')
-            //     // axios.get('http://127.0.0.1:8000/dealers/')
-            //     .then(response => {
-            //         console.log(response)
-            //         // this.$store.commit('setToken', {
-            //         //     access: response.data.access,
-            //         //     refresh: response.data.refresh
-            //         // })
-            //         // this.$store.commit('setIsAuthenticated', true)
-            //         // console.log(this.$store.state.refreshToken)
-            //         // this.$router.push({name: 'Configure' })
-            //     })
-            //     .catch(error => {
-            //         console.log(error)
-            //     })
-            // }
         },
     }
 </script>
@@ -168,15 +130,6 @@
         margin-left: auto;
         margin-right: auto;
     }
-/*     .btn{
-        background-color: #5cb85c;
-        min-width: 70px;
-        width: 25%;
-        border-radius: 4px;
-        font-family: "Poppins";
-        color: #ffffff;
-        font-weight: 600;
-    } */
     .w100{
         width: 100%;
     }

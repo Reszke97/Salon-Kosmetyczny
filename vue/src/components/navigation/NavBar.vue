@@ -1,12 +1,13 @@
 <template>
   <div>
     <v-app-bar class="indigo white--text">
-      <v-toolbar-title>Home</v-toolbar-title>
+      <v-toolbar-title>Salon Kosmetyczny</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-toolbar-items class="d-none d-sm-flex">
+      <v-toolbar-items 
+        class="d-none d-sm-flex"
+      >
         <v-btn
           class="elevation-0 indigo white--text"
-          flat
           v-for="item in menuItems"
           :key="item.title"
           :to="item.path">
@@ -28,7 +29,8 @@
         nav
         dense
       >
-        <v-list-item-group>
+        <v-list-item-group
+        >
           <v-list-item 
             v-for="item in menuItems"
             :key="item.title"
@@ -46,20 +48,50 @@
 </template>
 
 <script>
+    import { mapState } from "vuex"
     export default {
       data(){
         return {
           drawer: false,
           tab: null,
-          items: [
-            'web', 'shopping', 'videos', 'images', 'news',
-          ],
-          menuItems: [
-            { title: 'Home', path: '/', icon: 'mdi-home' },
-            { title: 'login', path: '/login', icon: 'mdi-login' },
-            { title: 'register', path: '/register', icon: 'mdi-account-plus ' }
-          ],
+          loaded: false,
         }
       },
+      computed: {
+        ...mapState({
+          isAuthenticated: (state) => state.isAuthenticated,
+          role: (state) => state.role
+        }),
+        menuItems(){
+          let menuItems = []
+          if(this.role !== null){
+            menuItems = [
+              { title: 'Home', path: '/', icon: 'mdi-home' },
+              this.auth,
+              this.rights,
+              // { title: 'register', path: '/register', icon: 'mdi-account-plus ' }
+            ]
+          }
+          else{
+            menuItems = [
+              { title: 'Home', path: '/', icon: 'mdi-home' },
+              this.auth,
+              { title: 'register', path: '/register', icon: 'mdi-account-plus ' }
+            ]
+          }
+          return menuItems
+        },
+        auth(){
+          return this.isAuthenticated?{ title: 'wyloguj', path: '/logout', icon: 'mdi-logout'}:{ title: 'login', path: '/login', icon: 'mdi-login'}
+        },
+
+        rights(){
+          return this.role === 'client'?{ title: 'panel klienta', path: '/logout', icon: 'mdi-account'}
+          : this.role === 'pracownik'?{ title: 'panel pracownika', path: '/logout', icon: 'mdi-account'}
+          : this.role === 'admin'?{ title: 'panel admina', path: '/logout', icon: 'mdi-account'}
+          : null
+        }
+      },
+
     }
 </script>

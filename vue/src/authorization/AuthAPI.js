@@ -1,6 +1,8 @@
 import axios from 'axios';
 import store from '../store/index';
 
+
+
 const baseURL = 'http://127.0.0.1:8000'
 const AUTH_API = axios.create({
     baseURL: baseURL,// Adres do serwera Django
@@ -27,11 +29,22 @@ AUTH_API.interceptors.response.use(
 					'Looks like CORS might be the problem. ' +
 					'Sorry about this - we will get it fixed shortly.'
 			);
+			store.commit('setIsAuthenticated', false)
 			return Promise.reject(error);
 		}
 
-		if(error.response.status === 401 && error.response.data.detail === 'Token contained no recognizable user identification'){
+		if(
+			(
+				error.response.status === 401 && (
+					error.response.data.detail === 'Token contained no recognizable user identification' 
+					||  originalRequest.url === '/api/v1/token/verify/'
+				)
+			)
+			|| error.response.status === 400
+		){
+			console.log('a')
 			alert('Niepoprawny token')
+			store.commit('setIsAuthenticated', false)
 			return Promise.reject(error);
 		}
 
@@ -40,14 +53,14 @@ AUTH_API.interceptors.response.use(
 			originalRequest.url === '/api/v1/token/refresh/'
 		) {
 			if(error.response.data.detail === 'Twoje Hasło zostało przed chwilą zmienione, proszę zalogować się ponownie.'){
-				console.log(error.response.data.detail)
 				alert('Twoje hasło niedawno zostało zmienione, zaloguj się ponownie.')
+				store.commit('setIsAuthenticated', false)
 				return Promise.reject(error);
 			}
 			else{
 				// window.location.href = 'http://localhost:8080/login';
-				console.log(error.response.data.detail+'tutaj alert po promise.reject')
 				alert('Token się wysypał, zaloguj się ponownie')
+				store.commit('setIsAuthenticated', false)
 				return Promise.reject(error);
 			}
 		}
@@ -57,6 +70,7 @@ AUTH_API.interceptors.response.use(
 		) {
 			// window.location.href = 'http://localhost:8080/login';
             alert('Twoje hasło niedawno zostało zmienione, zaloguj się ponownie.')
+			store.commit('setIsAuthenticated', false)
 			return Promise.reject(error);
 		}
 
@@ -70,42 +84,40 @@ AUTH_API.interceptors.response.use(
 
 			try{
 				if (refreshToken) {
-					console.log('tal')
 					const tokenParts = JSON.parse(atob(refreshToken.split('.')[1]));
 	
 					// exp date in token is expressed in seconds, while now() returns milliseconds:
 					const now = Math.ceil(Date.now() / 1000);
-					console.log(tokenParts.exp);
-					console.log(originalRequest)
 	
 					if (tokenParts.exp > now) {
 						return AUTH_API
 							.post('/api/v1/token/refresh/', { refresh: localStorage.getItem('refreshToken') })
 							.then((response) => {
-								// localStorage.setItem( 'token', response.data.access );
-								// localStorage.setItem( 'refreshToken', response.data.refresh );
 								store.commit('setToken', {
 									access: response.data.access,
 									refresh: response.data.refresh
 								})
+
+								store.commit('setIsAuthenticated', true);
 	
 								AUTH_API.defaults.headers['Authorization'] =
 									'JWT ' + response.data.access;
 								originalRequest.headers['Authorization'] =
 									'JWT ' + response.data.access;
-	
-								return AUTH_API(originalRequest);
+									
+								return AUTH_API(originalRequest)
 							})
 							.catch((err) => {
-								console.log('tutaj error z auth api po wyjenaiu sie')
+								store.commit('setIsAuthenticated', false);
 								return Promise.reject(error);
 							});
 					} else {
 						alert('Refresh token is expired', tokenParts.exp, now);
+						store.commit('setIsAuthenticated', false);
 						// window.location.href = 'http://localhost:8080/login';
 					}
 				} else {
-					console.log('Refresh token not available.');
+					store.commit('setIsAuthenticated', false);
 					// window.location.href = 'http://localhost:8080/login';
 				}
 			}catch( error ){
@@ -113,10 +125,8 @@ AUTH_API.interceptors.response.use(
 				// return
 			}
 		}
-		console.log('a')
 		// specific error handling done elsewhere
 		return Promise.reject(error);
 	}
 );
-
 export {AUTH_API}

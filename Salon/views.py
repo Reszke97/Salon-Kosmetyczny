@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.shortcuts import redirect, render
+from rest_framework import permissions
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.serializers import TokenVerifySerializer
@@ -7,6 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils.translation import gettext as _
 from rest_framework_simplejwt.state import token_backend
 from datetime import timedelta
+from django.utils import timezone
 from rest_framework.permissions import (
     SAFE_METHODS, 
     IsAuthenticated, 
@@ -26,6 +28,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.views import TokenVerifyView
 from rest_framework_simplejwt.exceptions import TokenError
 # Sending E-Mail
+from django.core.mail import EmailMultiAlternatives, message
 import threading
 from django.conf import settings
 from django.core.mail import EmailMessage
@@ -66,7 +69,7 @@ class CheckIfPasswordWasChanged(BasePermission):
             user_id = decoded_payload['user_id']
             iat = decoded_payload['iat']
             user = User.objects.get(pk = user_id)
-            updated_at = user.updated_at
+            updated_at = user.last_password_update
             updated_at = int(updated_at.timestamp())
         except TokenBackendError:
             raise TokenError(_('Token jest niepoprawny.'))
@@ -89,22 +92,27 @@ class EmailThread(threading.Thread):
 
 def send_activation_email(user, request):
     current_site = get_current_site(request)
-    email_subject = 'Aktywuj swoje konto'
     token = RefreshToken()
     token.set_exp(lifetime=timedelta(minutes=10))
+    subject = 'Aktywuj swoje konto'
     email_body = render_to_string('authentication/activate.html', {
         'user': user.user_name,
         'domain': current_site,
         'uid': urlsafe_base64_encode(smart_bytes(user.pk)),
         'token': token
     })
+    from_email = settings.EMAIL_FROM_USER
 
-    email = EmailMessage(
-        subject=email_subject, 
-        body=email_body, 
-        from_email = settings.EMAIL_FROM_USER,
-        to = [user.email]
-    )
+    email = EmailMultiAlternatives( subject, email_body, from_email, to=[user.email] )
+    email.mixed_subtype = 'related'
+    email.attach_alternative(email_body, "text/html")
+
+    # email = EmailMessage(
+    #     subject=email_subject, 
+    #     body=email_body, 
+        
+        
+    # )
     EmailThread(email).start()
     # email.send()
 
@@ -168,6 +176,25 @@ class CustomUserCreate(APIView):
                 return Response(status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class GetUserRole(APIView):
+    permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        try:
+            if request.user.is_anonymous:
+                raise Exception()
+        except Exception:
+            return Response({
+                'code': status.HTTP_400_BAD_REQUEST
+            })
+        response = {
+            'status': 'success',
+            'code': status.HTTP_200_OK,
+            'role': user.role
+        }
+        return Response(response)
+
 
 def send_reset_email(user, request):
     current_site = get_current_site(request)
@@ -199,7 +226,7 @@ class RequestPasswordResetEmail(APIView):
             user = User.objects.get(email = email)
             send_reset_email(user, request)
             return Response({'success': 'We have sent you a link to reset your password'}, status=status.HTTP_201_CREATED)
-        return Response('Podany email nie istniej.', status=status.HTTP_404_NOT_FOUND)
+        return Response('Podany email nie istnieje.', status=status.HTTP_404_NOT_FOUND)
 
 def check_reset_token(request, uidb64, token):
 
@@ -214,7 +241,7 @@ def check_reset_token(request, uidb64, token):
         user = None
     
     if user and PasswordResetTokenGenerator().check_token(user, token):
-        return redirect('http://192.168.0.108:8080/passwordreset?uidb64='+uidb64+'&token='+token)
+        return redirect('http://localhost:8080/passwordreset?uidb64='+uidb64+'&token='+token)
 
     return HttpResponse(
         """<html 
@@ -239,6 +266,7 @@ class ResetPassword(APIView):
                 if not PasswordResetTokenGenerator().check_token(user, request.data["token"]):
                     raise AuthenticationFailed('The reset token is invalid', 401)
                 user.set_password(request.data["password"])
+                user.last_password_update = timezone.now()
                 user.save()
             except Exception as e:
                 raise AuthenticationFailed('The reset link is invalid', 401)
@@ -293,6 +321,7 @@ class ChangePasswordView(APIView):
                 return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
             # set_password also hashes the password that the user will get
             self.object.set_password(serializer.data.get("new_password"))
+            self.object.last_password_update = timezone.now()
             self.object.save()
             response = {
                 'status': 'success',

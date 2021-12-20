@@ -36,6 +36,13 @@ class CustomUserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+class UserRoleSerializer(serializers.Serializer):
+    model = User
+    fields = ('role')
+    extra_kwargs = {
+        'role': {'write_only': True, 'required': True},
+    }
+
 class SetNewPasswordSerializer(serializers.Serializer):
     password = serializers.CharField(
         min_length=8, max_length=68, write_only=True)
@@ -57,7 +64,7 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
             user_id = decoded_payload['user_id']
             iat = decoded_payload['iat']
             user = User.objects.get(pk = user_id)
-            updated_at = user.updated_at
+            updated_at = user.last_password_update
             updated_at = int(updated_at.timestamp())
         except TokenBackendError:
             raise TokenError(_('Token jest niepoprawny.'))

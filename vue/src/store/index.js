@@ -6,45 +6,53 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
+    role: null,
     test: false,
     accessToken: localStorage.getItem("token"),
     refreshToken: localStorage.getItem("refreshToken"),
     isAuthenticated: false,
+    isEditing: false,
+    dealerChosen: false,
+    basketPositionIndex: null,
+    dealerDialog: false,
+    installationDialog: false,
+    info: false,
+    userQuoteID: null,
     countries: [
       {
-          link: 'https://lipis.github.io/flag-icon-css/flags/4x3/pl.svg', 
-          label: 'Polska',
-          phone: '+48',
-          countryCode: "PL",
-          rule: [
-            v => (v.length == 0 || v.length <= 9) || 'Błędny nr telefonu',
-            v => (v.length == 0 || /\d{3}[ -]?\d{3}[ -]?\d{3}/.test(v)) || 'Błędny nr telefonu',
-          ],
+        // link: 'https://github.com/lipis/flag-icons/blob/main/flags/4x3/pl.svg',
+        label: 'Polska',
+        phone: '+48',
+        countryCode: "PL",
+        rule: [
+          v => {return(v.length == 0 || v.length <= 9) || 'Błędny nr telefonu'},
+          v => {return(v.length == 0 || /\d{3}[ -]?\d{3}[ -]?\d{3}/.test(v)) || 'Błędny nr telefonu'},
+        ],
       },
       {
-          link: 'https://lipis.github.io/flag-icon-css/flags/4x3/de.svg', 
-          label: 'Niemcy',
-          phone: '+49',
-          countryCode: "DE",
-          rule: [
-            v => (v.length == 0 || (v.length >= 2 && v.length <= 12)) || 'Falsche Telefonnummer',
-            v => (v.length == 0 || /\d{3}[ -]?\d{3}[ -]?\d{3}/.test(v)) || 'Falsche Telefonnummer',
-          ],
+        // link: 'https://github.com/lipis/flag-icons/blob/main/flags/4x3/de.svg',
+        label: 'Niemcy',
+        phone: '+49',
+        countryCode: "DE",
+        rule: [
+          v => {return(v.length == 0 || (v.length >= 2 && v.length <= 12)) || 'Falsche Telefonnummer'},
+          v => {return(v.length == 0 || /\d{3}[ -]?\d{3}[ -]?\d{3}/.test(v)) || 'Falsche Telefonnummer'},
+        ],
       },
       {
-          link: 'https://lipis.github.io/flag-icon-css/flags/4x3/gb.svg', 
-          label: 'Wielka Brytania',
-          phone: '+44',
-          countryCode: "GB",
-          rule: [
-            v => (v.length == 0 || /\d{3}[ -]?\d{3}[ -]?\d{3}/.test(v)) || 'Wrong phone number',
-          ],
+        // link: 'https://github.com/lipis/flag-icons/blob/main/flags/4x3/gb.svg',
+        label: 'Wielka Brytania',
+        phone: '+44',
+        countryCode: "GB",
+        rule: [
+          v => {return(v.length == 0 || /\d{3}[ -]?\d{3}[ -]?\d{3}/.test(v)) || 'Wrong phone number'},
+        ],
       }
     ],
     rules: {
       emailRules: [
         v => !!v || 'E-mail jest wymagany',
-        v => /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v) 
+        v => /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v)
           || 'E-mail musi być poprawny przykład:\n example@mail.com',
       ],
       userNameRules: [
@@ -56,9 +64,9 @@ export default new Vuex.Store({
         v => /^[a-zA-ZżźćńółęąśŻŹĆĄŚĘŁÓŃ]*$/.test(v) || 'Imię może zawierać jedynie litery',
       ],
       lastNameRules: [
-          v => !!v || 'Nazwisko jest wymagane',
-          v => (v && v.length >= 3) || 'Nazwisko musi zawierać co najmniej 3 znaki',
-          v => /^[a-zA-ZżźćńółęąśŻŹĆĄŚĘŁÓŃ\s-]*$/.test(v) || 'Nazwisko może zawierać jedynie litery',
+        v => !!v || 'Nazwisko jest wymagane',
+        v => (v && v.length >= 3) || 'Nazwisko musi zawierać co najmniej 3 znaki',
+        v => /^[a-zA-ZżźćńółęąśŻŹĆĄŚĘŁÓŃ\s-]*$/.test(v) || 'Nazwisko może zawierać jedynie litery',
       ],
       onlyLetters: [
         v => !!v || 'Pole wymagane',
@@ -80,8 +88,48 @@ export default new Vuex.Store({
       ],
     },
   },
+  getters: {
+    totalSumToPay(state) {
+      return state.basket.reduce((sum, item) => {
+        sum += (item.getters.totalPrice * item.chosenConfiguration.windowFeatures.quantity);
+        return sum
+      }, 0)
+    },
+  },
   mutations: {
-
+    setRole(state, value){
+      state.role = value
+    },
+    setUserQuoteID(state, value){
+      state.userQuoteID = value
+    },
+    clearBasket(state){
+      state.basket = [...basketTestData]
+    },
+    setInfo(state){
+      state.info = !state.info
+    },
+    setIsEditing(state, value){
+      state.isEditing = value
+    },
+    setInstallationDialog(state){
+      state.installationDialog = !state.installationDialog
+    },
+    setDealerDialog(state){
+      state.dealerDialog = !state.dealerDialog
+    },
+    setBasketPositionIndex(state, index){
+      state.basketPositionIndex = index
+    },
+    setBasket(state, object){
+      state.basket.push(object);
+    },
+    deleteDataFromBasket(state, index){
+      state.basket.splice(index, 1)
+    },
+    copyDataToBasket(state, index){
+      state.basket.push(state.basket[index])
+    },
     setToken (state, { access, refresh }) {
       localStorage.setItem( 'token', access );
       localStorage.setItem( 'refreshToken', refresh );
@@ -119,7 +167,12 @@ export default new Vuex.Store({
 
   },
   actions: {
+    async editBasket({state, commit}, object){
+      state.basket.splice(state.basketPositionIndex, 1, object)
+      commit("setIsEditing")
+    },
   },
-  modules: {
-  }
+  // modules: {
+  //   configuration
+  // }
 })

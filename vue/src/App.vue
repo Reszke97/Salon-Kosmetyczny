@@ -22,14 +22,10 @@ export default {
 
   created(){
     // sprawdzenie czy refresh token istnieje
-    console.log(localStorage.getItem('refreshToken'))
     if(localStorage.getItem('refreshToken')){
       try {
-        //const REFRESH_TOKEN_PARTS2 = JSON.parse(atob(localStorage.getItem('token').split('.')[1]));
-        //console.log(REFRESH_TOKEN_PARTS2)
         const NOW = Math.ceil(Date.now() / 1000);
         const REFRESH_TOKEN_PARTS = JSON.parse(atob(localStorage.getItem('refreshToken').split('.')[1]));
-        console.log(REFRESH_TOKEN_PARTS)
         // sprawdź czy refresh token wygasł
         if(REFRESH_TOKEN_PARTS.exp < NOW ){
           AUTH_API.post('/api/v1/token/refresh/', {
@@ -51,9 +47,15 @@ export default {
           AUTH_API.post('/api/v1/token/verify/', {
             token: localStorage.getItem('refreshToken')
           })
-          .then(response => {
+          .then(() => {
             this.$store.commit('setRefreshToken')
             this.$store.commit('setIsAuthenticated', true)
+          })
+          .then(() => {
+            AUTH_API.get('/api/v1/user/getuserrole/')
+            .then(response=>{
+              this.$store.commit('setRole', response.data.role)
+            })
           })
           .catch(error => {
             console.log(error)
@@ -69,9 +71,6 @@ export default {
       return
     }
   },
-  updated(){
-    // console.log(document.getElementById("image"))
-  }
 }
 </script>
 
