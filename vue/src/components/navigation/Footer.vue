@@ -4,6 +4,7 @@
         padless
         bottom 
         fixed
+        style="position:relative!important;margin-top: auto;"
     >
         <v-card
             flat

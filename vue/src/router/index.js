@@ -77,7 +77,14 @@ const routes = [
     path: '/passwordchange',
     name: 'PasswordChange',
     component: PasswordChange
-  }
+  },
+
+  {
+    path: '/passwordchange',
+    name: 'PasswordChange',
+    component: PasswordChange
+  },
+
 ]
 
 const router = new VueRouter({

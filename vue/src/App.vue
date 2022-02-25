@@ -1,10 +1,21 @@
 <template>
-  <v-app>
-    <div id="app">
+  <v-app 
+    id="app"
+  >
+    <div 
+      style="
+        padding: 0px !important;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      "
+    >
       <nav-bar></nav-bar>
-      <router-view></router-view>
+      <v-container style="max-width:1080px">
+        <router-view></router-view>
+      </v-container>
       <Footer></Footer>
-    </div>
+    </div >
   </v-app>
 </template>
 

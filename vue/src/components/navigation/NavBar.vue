@@ -1,5 +1,8 @@
 <template>
-  <div>
+  <v-container
+    fluid
+    style="padding:0;position:sticky;top:0"
+  >
     <v-app-bar class="indigo white--text">
       <v-toolbar-title>Salon Kosmetyczny</v-toolbar-title>
       <v-spacer></v-spacer>
@@ -44,7 +47,7 @@
         </v-list-item-group>
       </v-list>
     </v-navigation-drawer>
-  </div>
+  </v-container>
 </template>
 
 <script>

@@ -1,7 +1,7 @@
 <template>
-    <div>
-        <h1>Patryk literka 7</h1>
-    </div>
+    <v-container>
+        <h1>Patryk literka 1</h1>
+    </v-container>
 </template>
 
 
