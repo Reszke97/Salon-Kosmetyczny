@@ -3,6 +3,7 @@ from django.views.generic.base import View
 # from rest_framework import views
 from .views import *
 from . import views
+from .employee_views import *
 
 
 urlpatterns = [
@@ -18,5 +19,10 @@ urlpatterns = [
     path('api/v1/user/requestpasswordreset/', RequestPasswordResetEmail.as_view(), name = 'request_passwordreset'),
     path('api/v1/user/passwordresetcomplete/', ResetPassword.as_view(), name = 'password_reset_complete'),
     path('api/v1/user/getuserrole/', GetUserRole.as_view(), name= 'get_user_role'),
+    path('api/v1/employee/getmonth/', GetMonthDays.as_view(), name= 'get_user_role'),
+
+
+
+    
     # path('api/user/isauthenticated/', IsUserAuthenticated.as_view(), name = 'is_authenticated'),
 ]

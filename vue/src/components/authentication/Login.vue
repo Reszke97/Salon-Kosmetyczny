@@ -103,6 +103,9 @@
                     AUTH_API.get('/api/v1/user/getuserrole/')
                     .then(response=>{
                         this.$store.commit('setRole', response.data.role)
+                        if(response.data.role === 'pracownik' || response.data.role === 'wlasciciel'){
+                            this.$router.push({name: 'Calendar'})
+                        }
                         this.$router.push({name: 'Home' })
                     })
                 })

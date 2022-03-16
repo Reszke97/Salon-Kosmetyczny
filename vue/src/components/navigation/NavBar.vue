@@ -69,7 +69,11 @@
           let menuItems = []
           if(this.role !== null){
             menuItems = [
-              { title: 'Home', path: '/', icon: 'mdi-home' },
+              // { title: 'Home', path: '/', icon: 'mdi-home' },
+              { 
+                title: this.role === 'client' ? 'Home' : 'Kalendarz',
+                path: this.role === 'client' ? '/' : 'calendar'
+              },
               this.auth,
               this.rights,
               // { title: 'register', path: '/register', icon: 'mdi-account-plus ' }
@@ -91,7 +95,6 @@
         rights(){
           return this.role === 'client'?{ title: 'panel klienta', path: '/logout', icon: 'mdi-account'}
           : this.role === 'pracownik'?{ title: 'panel pracownika', path: '/logout', icon: 'mdi-account'}
-          : this.role === 'admin'?{ title: 'panel admina', path: '/logout', icon: 'mdi-account'}
           : null
         }
       },

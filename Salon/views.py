@@ -1,6 +1,5 @@
 from django.contrib import messages
 from django.shortcuts import redirect, render
-from rest_framework import permissions
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.serializers import TokenVerifySerializer
@@ -10,12 +9,8 @@ from rest_framework_simplejwt.state import token_backend
 from datetime import timedelta
 from django.utils import timezone
 from rest_framework.permissions import (
-    SAFE_METHODS, 
-    IsAuthenticated, 
-    IsAuthenticatedOrReadOnly, 
+    IsAuthenticated,  
     BasePermission, 
-    IsAdminUser, 
-    DjangoModelPermissions, 
     AllowAny
 )
 from rest_framework.views import APIView
@@ -28,7 +23,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.views import TokenVerifyView
 from rest_framework_simplejwt.exceptions import TokenError
 # Sending E-Mail
-from django.core.mail import EmailMultiAlternatives, message
+from django.core.mail import EmailMultiAlternatives
 import threading
 from django.conf import settings
 from django.core.mail import EmailMessage
@@ -44,7 +39,6 @@ from django.utils.encoding import(
     smart_bytes,
 )
 from rest_framework.exceptions import AuthenticationFailed
-from .utils import genarate_token
 # Sending E-mail End
 
 
@@ -166,7 +160,6 @@ class CustomUserCreate(APIView):
     def post(self, request, format='json'):
         formatted_email = request.data["email"].lower()
         request.data["email"] = formatted_email
-        print(request.data)
         serializer = CustomUserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -220,7 +213,6 @@ class RequestPasswordResetEmail(APIView):
     
     def post(self, request):
         email = request.data['email']
-        print(email)
 
         if User.objects.filter(email=email).exists():
             user = User.objects.get(email = email)
@@ -308,7 +300,6 @@ class ChangePasswordView(APIView):
 
     def get_object(self, queryset=None):
         obj = self.request.user
-        print(obj)
         return obj
 
     def put(self, request, *args, **kwargs):
