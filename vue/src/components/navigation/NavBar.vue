@@ -4,7 +4,7 @@
     style="padding:0;position:sticky;top:0"
   >
     <v-app-bar class="indigo white--text">
-      <v-toolbar-title>Salon Kosmetyczny</v-toolbar-title>
+      <v-toolbar-title v-if="isAuthenticated">Salon Kosmetyczny</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items 
         class="d-none d-sm-flex"

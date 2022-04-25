@@ -11,7 +11,7 @@
       "
     >
       <nav-bar></nav-bar>
-      <v-container style="max-width:1080px">
+      <v-container>
         <router-view></router-view>
       </v-container>
       <Footer></Footer>
