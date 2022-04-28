@@ -11,7 +11,7 @@
       >
         <v-btn
           class="elevation-0 indigo white--text"
-          v-for="item in menuItems"
+          v-for="item in menuItemsLoaded"
           :key="item.title"
           :to="item.path">
           <v-icon left dark>{{ item.icon }}</v-icon>
@@ -58,45 +58,45 @@
           drawer: false,
           tab: null,
           loaded: false,
+          menuItems: [
+            { title: 'Home', path: '/', icon: 'mdi-home' },
+            { title: 'login', path: 'login', icon: 'mdi-login'},
+            { title: 'register', path: '/register', icon: 'mdi-account-plus ' }
+          ],
         }
       },
+
       computed: {
         ...mapState({
           isAuthenticated: (state) => state.isAuthenticated,
           role: (state) => state.role
         }),
-        menuItems(){
-          let menuItems = []
-          if(this.role !== null){
-            menuItems = [
-              // { title: 'Home', path: '/', icon: 'mdi-home' },
-              { 
-                title: this.role === 'client' ? 'Home' : 'Kalendarz',
-                path: this.role === 'client' ? '/' : 'calendar'
-              },
-              this.auth,
-              this.rights,
-              // { title: 'register', path: '/register', icon: 'mdi-account-plus ' }
-            ]
-          }
-          else{
+        menuItemsLoaded(){
+          if(this.role && this.isAuthenticated){
+            let menuItems = []
             menuItems = [
               { title: 'Home', path: '/', icon: 'mdi-home' },
               this.auth,
+              // this.rights,
               { title: 'register', path: '/register', icon: 'mdi-account-plus ' }
             ]
+            return menuItems
           }
-          return menuItems
+          return this.menuItems 
         },
         auth(){
-          return this.isAuthenticated?{ title: 'wyloguj', path: '/logout', icon: 'mdi-logout'}:{ title: 'login', path: '/login', icon: 'mdi-login'}
+          return this.isAuthenticated
+          ? { title: 'wyloguj', path: '/logout', icon: 'mdi-logout' }
+          : { title: 'login', path: '/login', icon: 'mdi-login' }
         },
 
-        rights(){
-          return this.role === 'client'?{ title: 'panel klienta', path: '/logout', icon: 'mdi-account'}
-          : this.role === 'pracownik'?{ title: 'panel pracownika', path: '/logout', icon: 'mdi-account'}
-          : null
-        }
+        // rights(){
+        //   return this.role === 'client'
+        //   ?{ title: 'panel klienta', path: '/logout', icon: 'mdi-account'}
+        //   : this.role === 'pracownik'
+        //     ?{ title: 'panel pracownika', path: '/logout', icon: 'mdi-account'}
+        //     : null
+        // }
       },
 
     }

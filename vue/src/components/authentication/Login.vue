@@ -17,8 +17,8 @@
             class = "mt1 w100"
         >
             <v-text-field
-                v-model="email"
-                :rules="emailRules"
+                v-model="user_name"
+                :rules="[]"
                 label="E-mail"
                 required
             ></v-text-field>
@@ -64,8 +64,8 @@
         data: () => ({
             valid: true,
             route: null,
-            email: '',
-            emailRules: [
+            user_name: '',
+            user_nameRules: [
                 v => !!v || 'E-mail jest wymagany',
                 v => /.+@.+\..+/.test(v) || 'E-mail musi być poprawny przykład:\n example@mail.com',
             ],
@@ -87,27 +87,14 @@
             },
             login(){
                 axios.post('http://127.0.0.1:8000/api/v1/token/', {
-                    email: this.email,
+                    user_name: this.user_name,
                     password: this.password1,
                     type: 'login'
                 })
                 .then(response => {
-                    this.$store.commit('setToken', {
-                        access: response.data.access,
-                        refresh: response.data.refresh
-                    })
-                    this.$store.commit('setIsAuthenticated', true)
-                    
-                })
-                .then(()=>{
-                    AUTH_API.get('/api/v1/user/getuserrole/')
-                    .then(response=>{
-                        this.$store.commit('setRole', response.data.role)
-                        if(response.data.role === 'pracownik' || response.data.role === 'wlasciciel'){
-                            this.$router.push({name: 'Calendar'})
-                        }
-                        this.$router.push({name: 'Home' })
-                    })
+                    localStorage.setItem( 'token', response.data.access );
+                    localStorage.setItem( 'refreshToken', response.data.refresh );
+                    window.location.href = '/'
                 })
                 .catch(error =>{
                     if(error.response.data.detail === 'No active account found with the given credentials'){

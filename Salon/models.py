@@ -87,16 +87,16 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Employee(models.Model):
     is_owner = models.BooleanField(default=False)
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 class ClientEmployeeRelation(models.Model):
-    employee_id = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    client_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    client = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 class Service(models.Model):
-    employee_id = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     duration = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -106,17 +106,17 @@ class Appointment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 class AppointmentHistory(models.Model):
-    appointment_id = models.ForeignKey(Appointment, on_delete=models.CASCADE)
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 class CosmeticProcedure(models.Model):
-    appointment_id = models.ForeignKey(Appointment, on_delete=models.CASCADE)
-    service_id = models.ForeignKey(Service, on_delete=models.CASCADE)
-    client_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    client = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 class BusinessActivity(models.Model):
-    owner_id = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    owner = models.ForeignKey(Employee, on_delete=models.CASCADE)
     name = models.CharField(blank=False, max_length=100)
     post_code = models.CharField(blank=False, max_length=45)
     street = models.CharField(blank=False, max_length=45)
