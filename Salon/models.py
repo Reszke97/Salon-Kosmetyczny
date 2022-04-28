@@ -1,8 +1,6 @@
 from django.db import models
 
 from django.db import models
-from django.db.models.base import Model
-from django.db.models.deletion import CASCADE, SET_NULL
 from django.db.models.fields import IntegerField, TextField
 from django.db.models.fields.related import ForeignKey
 from django.utils import timezone
@@ -66,15 +64,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=255, blank=False)
     last_name = models.CharField(max_length=255, blank=False)
     phone_number = models.CharField(max_length=255, blank=True, null=True)
-    role = models.CharField(blank=True, max_length=255, default='client')
     last_password_update = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     objects = CustomAccountManager()# Istotne - ustawia Manager'owie atrybut 'get_by_natural_key'
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['user_name', 'first_name', 'last_name']
+    USERNAME_FIELD = 'user_name'
+    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
 
     def __str__(self):
         return self.user_name
@@ -88,3 +85,44 @@ class User(AbstractBaseUser, PermissionsMixin):
         "Does the user have permissions to view the app `app_label`?"
         # Simplest possible answer: Yes, always
         return True
+
+class Employee(models.Model):
+    is_owner = models.BooleanField(default=False)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+class ClientEmployeeRelation(models.Model):
+    employee_id = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    client_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+class Service(models.Model):
+    employee_id = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    duration = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+class Appointment(models.Model):
+    date = models.CharField(max_length=100)
+    time_start = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+class AppointmentHistory(models.Model):
+    appointment_id = models.ForeignKey(Appointment, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+class CosmeticProcedure(models.Model):
+    appointment_id = models.ForeignKey(Appointment, on_delete=models.CASCADE)
+    service_id = models.ForeignKey(Service, on_delete=models.CASCADE)
+    client_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+class BusinessActivity(models.Model):
+    owner_id = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    name = models.CharField(blank=False, max_length=100)
+    post_code = models.CharField(blank=False, max_length=45)
+    street = models.CharField(blank=False, max_length=45)
+    apartment_number = models.CharField(blank=False, max_length=45)
+    house_number = models.CharField(blank=False, max_length=45)
+    contact_phone = models.CharField(blank=False, max_length=45)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
