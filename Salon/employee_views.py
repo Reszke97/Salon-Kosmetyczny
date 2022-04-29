@@ -1,3 +1,4 @@
+from ast import Or
 from rest_framework.permissions import (
     IsAuthenticated,  
     BasePermission, 
@@ -12,12 +13,28 @@ from rest_framework import status
 from .auth_views import CheckIfPasswordWasChanged
 import datetime as dt
 import calendar
+from .easter_dates import easter_dates
+from .non_working_days import non_working_days
 
 class GetMonthDays(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
     def __init__(self):
-        self.month = dt.datetime.now().month
-        self.year = dt.datetime.now().year
+        self.monthly_calendar = {
+            "days": {
+                "Poniedziałek": [],
+                "Wtorek": [],
+                "Środa": [],
+                "Czwartek": [],
+                "Piątek": [],
+                "Sobota": [],
+                "Niedziela": []
+            },
+            "day_count": 0
+        }
+    
+    def assignBaseData(self, month = None, year = None):
+        self.month = int(month) if month else dt.datetime.now().month
+        self.year = int(year) if year else dt.datetime.now().year
         self.today = dt.datetime.now().day
         self.always_day_one = 1
         self.last_day_current_month = calendar.monthrange(self.year, self.month)
@@ -39,18 +56,6 @@ class GetMonthDays(APIView):
             self.next_month,
             self.always_day_one
         ).weekday()
-        self.monthly_calendar = {
-            "days": {
-                "Poniedziałek": [],
-                "Wtorek": [],
-                "Środa": [],
-                "Czwartek": [],
-                "Piątek": [],
-                "Sobota": [],
-                "Niedziela": []
-            },
-            "day_count": 0
-        }
     
     def getDay(self,day):
         return {
@@ -79,8 +84,9 @@ class GetMonthDays(APIView):
             "next_day": next_day + 1 if next_day < 6 else 0,
             "day_number": day_number + 1
         })
-
-    def get_days(self, month_type):
+    
+    def get_days(self, month_type, month = None, year = None):
+        self.assignBaseData(month, year)
         day_info = {}
         if month_type == "next":
             day_info["next_day"] = self.first_week_day_next_month
@@ -99,9 +105,11 @@ class GetMonthDays(APIView):
                 day_info = self.assign_days(day_info["next_day"], day_info["day_number"], self.month)
 
     def get(self, request, *args, **kwargs):
-        self.get_days("prev")
-        self.get_days("current")
-        self.get_days("next")
-        print('aa')
-
+        month = request.query_params.get("month")
+        year = request.query_params.get("year")
+        self.get_days("prev", month, year)
+        self.get_days("current", month, year)
+        self.get_days("next", month, year)
         return Response(self.monthly_calendar)
+
+
