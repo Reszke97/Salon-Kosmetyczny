@@ -34,7 +34,12 @@ class GetMonthDays(APIView):
     
     def assignBaseData(self, month = None, year = None):
         self.month = int(month) if month else dt.datetime.now().month
+        self.monthly_calendar["month"] = {
+            "number": self.month,
+            "name": self.get_month_name(self.month)
+        }
         self.year = int(year) if year else dt.datetime.now().year
+        self.monthly_calendar["year"] = self.year
         self.today = dt.datetime.now().day
         self.always_day_one = 1
         self.last_day_current_month = calendar.monthrange(self.year, self.month)
@@ -68,6 +73,22 @@ class GetMonthDays(APIView):
             6: 'Niedziela',
         }[day]
 
+    def get_month_name(self, month):
+        return {
+            1: 'Styczeń',
+            2: 'Luty',
+            3: 'Marzec',
+            4: 'Kwiecień',
+            5: 'Maj',
+            6: 'Czerwiec',
+            7: 'Lipiec',
+            8: 'Sierpień',
+            9: 'Wrzesień',
+            10: 'Październik',
+            11: 'Listopad',
+            12: 'Grudzień',
+        }[month]
+
     def assign_days(self, next_day, day_number, month):
         day = {
             "week_day": self.getDay(next_day),
@@ -76,7 +97,8 @@ class GetMonthDays(APIView):
         self.monthly_calendar["days"][day["week_day"]].append(
             {
                 "number": day["day_number"],
-                "month": month
+                "month": month,
+                "month_in_words": self.get_month_name(month),
             }
         )
         self.monthly_calendar["day_count"] += 1

@@ -17,7 +17,7 @@
                     style="width:100%"
                     :color="'#5cb85c'"
                 >
-                    Miesiąc
+                    Miesiąc - {{daysData.month.name}} {{daysData.year}}
                 </v-btn>
             </div>
             <div 
@@ -61,9 +61,14 @@
                     width:5%;
                 "
             >
-                <v-icon large>
-                    mdi-chevron-left
-                </v-icon>
+                <v-btn 
+                    icon
+                    @click="getMonthlyCalendar(false, true)"
+                >
+                    <v-icon large>
+                        mdi-chevron-left
+                    </v-icon>
+                </v-btn>
             </div>
             <div
                 style="
@@ -87,7 +92,7 @@
                         text-align: center;
                     "
                     v-for="day in daysData.days[weekDay]"
-                    :key="day.number"
+                    :key="day.number + day.month_in_words"
                 >
                     <div
                         class="py-5"
@@ -102,9 +107,14 @@
                     width:5%;
                 "
             >
-                <v-icon large>
-                    mdi-chevron-right
-                </v-icon>
+                <v-btn 
+                    icon
+                    @click="getMonthlyCalendar(true, false)"
+                >
+                    <v-icon large>
+                        mdi-chevron-right
+                    </v-icon>
+                </v-btn>
             </div>
         </div>
     </v-container>
@@ -129,14 +139,40 @@
                     "Niedziela": []
                 },
                 "day_count": 0,
+                "month": {
+                    "number": new Date().getMonth() + 1,
+                    "name": ""
+                },
+                "year": new Date().getFullYear(),
             }
         }),
         async created(){
-            // await AUTH_API.get(`/api/v1/employee/getmonth/`)
-            await AUTH_API.get(`/api/v1/employee/getmonth/?month=${5}`)
-            .then((res) => {
-                this.daysData = res.data
-            })
+            await this.getMonthlyCalendar()
         },
+        methods: {
+            async getMonthlyCalendar(next = false, prev = false){
+                if(next){
+                    if(this.daysData.month.number === 12){
+                        this.daysData.year += 1
+                        this.daysData.month.number = 1
+                    } else {
+                        this.daysData.month.number += 1
+                    }
+                } else if (prev) {
+                    if(this.daysData.month.number === 1){
+                        this.daysData.year -= 1
+                        this.daysData.month.number = 12
+                    } else {
+                        this.daysData.month.number -= 1
+                    }
+                }
+                await AUTH_API.get(
+                        `/api/v1/employee/getmonth/?month=${this.daysData.month.number}&year=${this.daysData.year}`
+                    )
+                    .then((res) => {
+                        this.daysData = {...res.data}
+                    })
+            }
+        }
     }
 </script>
