@@ -8,7 +8,7 @@ import PasswordChange from '../components/authentication/PasswordChange.vue'
 import ResetPassword from '../components/authentication/ResetPassword.vue'
 import PasswordResetEmail from '../components/authentication/ResetPasswordEmail.vue'
 import Home from '../components/home/Home.vue'
-import Calendar from '../components/employee/Calendar.vue'
+import Calendar from '../components/employee/views/Calendar.vue'
 
 Vue.use(VueRouter)
 
