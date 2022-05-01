@@ -122,15 +122,21 @@
                     "Sobota": [],
                     "Niedziela": []
                 },
-                "day_count": 0,
                 "month": {
-                    "number": new Date().getMonth() + 1,
+                    "number": 0,
                     "name": ""
                 },
-                "year": new Date().getFullYear()
+                "day_count": 0,
+                "week": 0,
+                "year": 0,
+                "day": 0,
             }
         }),
         async created(){
+            const today = new Date()
+            this.daysData.month.number = today.getMonth() + 1
+            this.daysData.year = today.getFullYear()
+            this.daysData.day = today.getDay()
             await this.getMonthlyCalendar()
         },
         methods: {
@@ -151,7 +157,8 @@
                     }
                 }
                 await AUTH_API.get(
-                        `/api/v1/employee/getmonth/?month=${this.daysData.month.number}&year=${this.daysData.year}`
+                        // `/api/v1/employee/getmonth/?month=${this.daysData.month.number}&year=${this.daysData.year}&calendarType=monthly`
+                        `/api/v1/employee/getmonth/?year=${this.daysData.year}&calendarType=weekly&day=30&month=5`
                     )
                     .then((res) => {
                         this.daysData = {...res.data}

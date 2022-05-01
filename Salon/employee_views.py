@@ -29,18 +29,28 @@ class GetMonthDays(APIView):
                 "Sobota": [],
                 "Niedziela": []
             },
-            "day_count": 0
+            "day_count": 0,
+            "day": 0,
+            "week":0,
+            "year":0,
         }
     
-    def assignBaseData(self, month = None, year = None):
-        self.month = int(month) if month else dt.datetime.now().month
+    def assignBaseData(self, month = None, year = None, day = None):
+        date_now = dt.datetime.now()
+        self.today = date_now.day
+        self.day = int(day) if day else self.today
+        self.month = int(month) if month else date_now.month
+        self.year = int(year) if year else date_now.year
+        self.week = (
+            dt.datetime(month = self.month, day = self.day, year = self.year).isocalendar().week 
+            if day and month and year
+            else date_now.isocalendar().week
+        )
         self.monthly_calendar["month"] = {
             "number": self.month,
             "name": self.get_month_name(self.month)
         }
-        self.year = int(year) if year else dt.datetime.now().year
         self.monthly_calendar["year"] = self.year
-        self.today = dt.datetime.now().day
         self.always_day_one = 1
         self.last_day_current_month = calendar.monthrange(self.year, self.month)
         self.first_week_day_current_month = dt.datetime(self.year,self.month,self.always_day_one).weekday()
@@ -107,31 +117,79 @@ class GetMonthDays(APIView):
             "day_number": day_number + 1
         })
     
-    def get_days(self, month_type, month = None, year = None):
-        self.assignBaseData(month, year)
+    def get_days(
+        self, action_type = "current", 
+        month = None, year = None, calendar_type = "monthly", day = None,
+        week = None
+    ):
+        self.assignBaseData(month, year, day)
         day_info = {}
-        if month_type == "next":
-            day_info["next_day"] = self.first_week_day_next_month
-            day_info["day_number"] = 1
-            while self.monthly_calendar["day_count"] < 42:
-                day_info = self.assign_days(day_info["next_day"], day_info["day_number"], self.next_month)
-        elif month_type == "prev":
+        if calendar_type == "monthly":
+            if action_type == "next":
+                day_info["next_day"] = self.first_week_day_next_month
+                day_info["day_number"] = 1
+                while self.monthly_calendar["day_count"] < 42:
+                    day_info = self.assign_days(day_info["next_day"], day_info["day_number"], self.next_month)
+            elif action_type == "prev":
+                day_info["next_day"] = 0
+                day_info["day_number"] = self.last_month_last_day
+                while day_info["next_day"] < self.first_week_day_current_month:
+                    day_info = self.assign_days(day_info["next_day"], day_info["day_number"], self.last_month)
+            else:
+                day_info["next_day"] = self.first_week_day_current_month
+                day_info["day_number"] = 1
+                while day_info["day_number"] <= self.last_day_current_month[1]:
+                    day_info = self.assign_days(day_info["next_day"], day_info["day_number"], self.month)
+                    
+        elif calendar_type == "weekly":
+            if week:
+                self.week = week
+            if action_type == "next":
+                if(week > 52):
+                    self.week = 1
+                    self.month = 1
+                    self.year += 1
+            elif action_type == "prev":
+                if(week < 1):
+                    self.week = 52
+                    self.month = 12
+                    self.year -= 1
+            given_year_week = str(self.year) + '-' + 'W' + str(self.week)
+            date = dt.datetime.strptime(given_year_week + '-1', "%G-W%V-%u")
             day_info["next_day"] = 0
-            day_info["day_number"] = self.last_month_last_day
-            while day_info["next_day"] < self.first_week_day_current_month:
-                day_info = self.assign_days(day_info["next_day"], day_info["day_number"], self.last_month)
-        else:
-            day_info["next_day"] = self.first_week_day_current_month
-            day_info["day_number"] = 1
-            while day_info["day_number"] <= self.last_day_current_month[1]:
-                day_info = self.assign_days(day_info["next_day"], day_info["day_number"], self.month)
+            day_info["day_number"] = date.day
+            month = self.month
+            while self.monthly_calendar["day_count"] < 7:
+                print(day_info)
+                if day_info["day_number"] > self.last_day_current_month[1]:
+                    month += 1
+                    if month > 12:
+                        month = 1
+                    day_info["day_number"] = 1
+                day_info = self.assign_days(day_info["next_day"], day_info["day_number"], month)
+            
+        # elif calendar_type == "daily":
+
+
 
     def get(self, request, *args, **kwargs):
         month = request.query_params.get("month")
         year = request.query_params.get("year")
-        self.get_days("prev", month, year)
-        self.get_days("current", month, year)
-        self.get_days("next", month, year)
+        day = request.query_params.get("day")
+        week = request.query_params.get("week")
+
+        if request.query_params.get("calendarType") == "weekly":
+            self.get_days(calendar_type = "weekly", year = year, day = day, month = month, week = week)
+        elif request.query_params.get("calendarType") == "monthly":
+            self.get_days("prev", month, year)
+            self.get_days("current", month, year)
+            self.get_days("next", month, year)
+            
+        # elif request.query_params.get("daily"):
+        self.monthly_calendar["week"] = self.week
+        self.monthly_calendar["day"] = self.day
+        self.monthly_calendar["year"] = self.year
+        
         return Response(self.monthly_calendar)
 
 
