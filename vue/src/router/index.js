@@ -81,14 +81,28 @@ const routes = [
   },
 
   {
-    path: '/passwordchange',
-    name: 'PasswordChange',
-    component: PasswordChange
+    path: '/calendar/monthly',
+    name: 'CalendarMonthly',
+    component: Calendar,
+    props: {
+      calendarType: "monthly"
+    },
   },
   {
-    path: '/calendar',
-    name: 'Calendar',
-    component: Calendar
+    path: '/calendar/weekly',
+    name: 'CalendarWeekly',
+    component: Calendar,
+    props: {
+      calendarType: "weekly"
+    },
+  },
+  {
+    path: '/calendar/daily',
+    name: 'CalendarDaily',
+    component: Calendar,
+    props: {
+      calendarType: "daily"
+    },
   },
 
 ]
