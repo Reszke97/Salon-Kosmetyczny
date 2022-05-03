@@ -1,7 +1,7 @@
 <template>
   <v-container
     fluid
-    style="padding:0;position:sticky;top:0"
+    style="padding:0"
   >
     <v-app-bar class="indigo white--text">
       <v-toolbar-title v-if="isAuthenticated">Salon Kosmetyczny</v-toolbar-title>

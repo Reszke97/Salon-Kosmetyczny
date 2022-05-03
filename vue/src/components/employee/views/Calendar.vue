@@ -16,7 +16,7 @@
                 <v-btn 
                     style="width:100%"
                     :color="calendarType === 'monthly' ? '#5cb85c' : null"
-                    @click="getMonthlyCalendar(undefined, undefined, undefined, 'monthly')"
+                    @click="chooseAndGetCalendarData(undefined, undefined, undefined, 'monthly')"
                 >
                     Miesiąc
                 </v-btn>
@@ -30,7 +30,7 @@
                 <v-btn 
                     style="width:100%"
                     :color="calendarType === 'weekly' ? '#5cb85c' : null"
-                    @click="getMonthlyCalendar(undefined, undefined, undefined, 'weekly')"
+                    @click="chooseAndGetCalendarData(undefined, undefined, undefined, 'weekly')"
                 >
                     Tydzień
                 </v-btn>
@@ -44,7 +44,7 @@
                 <v-btn 
                     style="width:100%"
                     :color="calendarType === 'daily' ? '#5cb85c' : null"
-                    @click="getMonthlyCalendar(undefined, undefined, undefined, 'daily')"
+                    @click="chooseAndGetCalendarData(undefined, undefined, undefined, 'daily')"
                 >
                     Dzień
                 </v-btn>
@@ -89,7 +89,7 @@
                 >
                     <v-date-picker
                         v-if="pickDate"
-                        v-model="date"
+                        v-model="monthYearDate"
                         type="month"
                         no-title
                         scrollable
@@ -106,15 +106,15 @@
                     </v-date-picker>
                 </div>
             </div>
-        <div 
-            id="calendar-wrapper"
-            style="
-                display:flex;
-                flex-direction:row;
-                background-color:#0892d0;
-                width:100%;
-            "
-        >
+            <div 
+                id="calendar-wrapper"
+                style="
+                    display:flex;
+                    flex-direction:row;
+                    background-color:#0892d0;
+                    width:100%;
+                "
+            >
             <div 
                 id="prev-month"
                 style="
@@ -126,14 +126,14 @@
                 <v-btn
                     style="width:100%"
                     icon
-                    @click="getMonthlyCalendar(false, true, true)"
+                    @click="chooseAndGetCalendarData(false, true, true, calendarType)"
                 >
                     <v-icon large>
                         mdi-chevron-left
                     </v-icon>
                 </v-btn>
             </div>
-            <monthly-weekly-calendar
+            <monthly-calendar
                 style="
                     display:flex;
                     width:95%;
@@ -151,7 +151,7 @@
                 <v-btn
                     style="width:100%" 
                     icon
-                    @click="getMonthlyCalendar(true, false, true)"
+                    @click="chooseAndGetCalendarData(true, false, true, calendarType)"
                 >
                     <v-icon large>
                         mdi-chevron-right
@@ -169,10 +169,10 @@
     import { AUTH_API } from '../../../authorization/AuthAPI'
     import axios from 'axios'
     import getMonthName from "../utils/getMonthName"
-    import MonthlyWeeklyCalendar from "../components/MonthlyWeeklyCalendar.vue"
+    import MonthlyCalendar from "../components/MonthlyCalendar.vue"
     export default {
         components: {
-            MonthlyWeeklyCalendar
+            MonthlyCalendar
         },
         mixins: [
             getMonthName
@@ -204,18 +204,19 @@
                 "day": 0,
             },
             activePicker: null,
-            date: "",
+            fullDate: "",
+            monthYearDate: "",
             pickDate: false,
         }),
         async created(){
             const today = new Date()
             this.daysData.month.number = today.getMonth() + 1
             this.daysData.year = today.getFullYear()
-            this.daysData.day = today.getDay()
+            this.daysData.day = today.getDay() + 1
             const monthNumber = this.daysData.month.number >= 10 
                 ? this.daysData.month.number: 0 + this.daysData.month.number.toString()
-            await this.getMonthlyCalendar(undefined, undefined, true)
-            this.date = `${this.daysData.year}-${monthNumber}`
+            await this.chooseAndGetCalendarData(undefined, undefined, true)
+            this.monthYearDate = `${this.daysData.year}-${monthNumber}`
         },
         mounted(){
             document.getElementById("month-info").addEventListener("click", () => {
@@ -241,21 +242,41 @@
         },
         methods: {
             async getPickedMonthCalendar(){
-                const date = this.date.split('-')
+                const date = this.monthYearDate.split('-')
                 this.daysData.month.number = date[1] !== "10" ? date[1].replace('0', ''): date[1]
                 this.daysData.year = date[0]
-                await this.getMonthlyCalendar(undefined, undefined, true, "monthly")
+                await this.chooseAndGetCalendarData(undefined, undefined, true, "monthly")
             },
-            async getMonthlyCalendar(next = false, prev = false, sameView = false, calendarType = ""){
+            async chooseAndGetCalendarData(next = false, prev = false, sameView = false, calendarType = ""){
                 if(!calendarType) calendarType = this.calendarType
+                let url = ``
+                if(calendarType === "monthly"){
+                    await this.prepareMonthlyDays(next, prev)
+                    url = `
+                    /api/v1/employee/getmonth/?month=${this.daysData.month.number}
+                    &year=${this.daysData.year}&calendarType=monthly`.replace(/\s/g, "")
+                    await this.getCalendarData(sameView, calendarType, url)
+                } else if(calendarType === "weekly"){
+                    url = `/api/v1/employee/getmonth/?year=${this.daysData.year}
+                    &calendarType=weekly&day=${this.daysData.day}
+                    &month=${this.daysData.month.number}`.replace(/\s/g, "")
+                    if(next){
+                        //podczepić wybieranie daty z dniem, miesiącem, rokiem
+                    } else if(prev){
+
+                    }
+                    await this.getCalendarData(sameView, calendarType, url)
+                }
+            },
+            async prepareMonthlyDays(next, prev){
                 if(next){
                     if(this.daysData.month.number === 12){
                         this.daysData.year += 1
                         this.daysData.month.number = 1
-                        this.date = `${this.daysData.year}-0${this.daysData.month.number}`
+                        this.monthYearDate = `${this.daysData.year}-0${this.daysData.month.number}`
                     } else {
                         this.daysData.month.number += 1
-                        this.date = this.daysData.month.number >= "10" 
+                        this.monthYearDate = this.daysData.month.number >= "10" 
                             ? `${this.daysData.year}-${this.daysData.month.number}`
                             : `${this.daysData.year}-0${this.daysData.month.number}`
                     }
@@ -263,22 +284,17 @@
                     if(this.daysData.month.number === 1){
                         this.daysData.year -= 1
                         this.daysData.month.number = 12
-                        this.date = `${this.daysData.year}-${this.daysData.month.number}`
+                        this.monthYearDate = `${this.daysData.year}-${this.daysData.month.number}`
                     } else {
                         this.daysData.month.number -= 1
-                        this.date = this.daysData.month.number >= "10" 
+                        this.monthYearDate = this.daysData.month.number >= "10" 
                             ? `${this.daysData.year}-${this.daysData.month.number}`
                             : `${this.daysData.year}-0${this.daysData.month.number}`
                     }
                 }
-                let url = ``
-                if(calendarType === "monthly"){
-                    url = `/api/v1/employee/getmonth/?month=${this.daysData.month.number}&year=${this.daysData.year}&calendarType=monthly`
-                } else if(calendarType === "weekly"){
-                    url = `/api/v1/employee/getmonth/?year=${this.daysData.year}&calendarType=weekly&day=30&month=5`
-                } else if(calendarType === "daily"){
+            },
 
-                }
+            async getCalendarData(sameView, calendarType, url){
                 await AUTH_API.get(url)
                     .then((res) => {
                         this.daysData = {...res.data}
