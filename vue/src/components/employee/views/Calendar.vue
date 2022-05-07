@@ -170,12 +170,17 @@
     import axios from 'axios'
     import getMonthName from "../utils/getMonthName"
     import MonthlyCalendar from "../components/MonthlyCalendar.vue"
+    import getNextDayOrWeek from "../utils/getNextDayOrWeek"
+    import getPrevDayOrWeek from "../utils/getPrevDayOrWeek"
+
     export default {
         components: {
             MonthlyCalendar
         },
         mixins: [
-            getMonthName
+            getMonthName,
+            getNextDayOrWeek,
+            getPrevDayOrWeek
         ],
         props: {
             calendarType: {
@@ -199,9 +204,12 @@
                     "name": ""
                 },
                 "day_count": 0,
-                "week": 0,
+                "week": 1,
                 "year": 0,
                 "day": 0,
+                "current_month_days": 0,
+                "last_month_days": 0,
+                "next_month_days": 0,
             },
             activePicker: null,
             fullDate: "",
@@ -230,10 +238,16 @@
         },
         computed: {
             calendarHeader(){
+                let year = this.daysData.year
+                if(this.daysData.month.number === 12 && this.daysData.week === 1){
+                     year += 1
+                } else if(this.daysData.month.number === 1 && this.daysData.week >= 52){
+                    year -= 1
+                }
                 return (this.calendarType === "monthly" 
-                    ? `${this.daysData.month.name} - ${this.daysData.year}` 
+                    ? `${this.daysData.month.name} - ${year}` 
                     :  this.calendarType === "weekly" 
-                    ?  `${this.daysData.week} - ${this.daysData.year}`
+                    ?  `${this.daysData.week} - ${year}`
                     : this.calendarType === "daily"
                     ? `Dzień`
                     : null
@@ -247,24 +261,41 @@
                 this.daysData.year = date[0]
                 await this.chooseAndGetCalendarData(undefined, undefined, true, "monthly")
             },
+            prepareDataForNextOrPrevDayOrWeek(dayCount, type){
+                return {
+                    month: this.daysData.month.number,
+                    day: this.daysData.day,
+                    year: this.daysData.year,
+                    dayCount: dayCount,
+                        monthDays: type === "next" 
+                            ? this.daysData.current_month_days 
+                            : this.daysData.last_month_days
+                }
+            },
             async chooseAndGetCalendarData(next = false, prev = false, sameView = false, calendarType = ""){
                 if(!calendarType) calendarType = this.calendarType
                 let url = ``
                 if(calendarType === "monthly"){
                     await this.prepareMonthlyDays(next, prev)
                     url = `
-                    /api/v1/employee/getmonth/?month=${this.daysData.month.number}
-                    &year=${this.daysData.year}&calendarType=monthly`.replace(/\s/g, "")
+                        /api/v1/employee/getmonth/?month=${this.daysData.month.number}
+                        &year=${this.daysData.year}&calendarType=monthly`.replace(/\s/g, "")
                     await this.getCalendarData(sameView, calendarType, url)
                 } else if(calendarType === "weekly"){
-                    url = `/api/v1/employee/getmonth/?year=${this.daysData.year}
-                    &calendarType=weekly&day=${this.daysData.day}
-                    &month=${this.daysData.month.number}`.replace(/\s/g, "")
-                    if(next){
-                        //podczepić wybieranie daty z dniem, miesiącem, rokiem
-                    } else if(prev){
-
+                    let newDate = {}
+                    if(next) newDate = this.getNextDayOrWeek(this.prepareDataForNextOrPrevDayOrWeek(7, "next"))
+                    else if(prev) newDate = this.getPrevDayOrWeek(this.prepareDataForNextOrPrevDayOrWeek(7, "prev"))
+                    if(Object.keys(newDate).length){
+                        this.daysData = {
+                            ...this.daysData, 
+                            month: {...this.daysData.month, number: newDate.month},
+                            year: newDate.year,
+                            day: newDate.day,
+                        }
                     }
+                    url = `/api/v1/employee/getmonth/?year=${this.daysData.year}
+                        &calendarType=weekly&day=${this.daysData.day}
+                        &month=${this.daysData.month.number}`.replace(/\s/g, "")
                     await this.getCalendarData(sameView, calendarType, url)
                 }
             },

@@ -1,15 +1,15 @@
 export default {
     methods: {
-        getNextMonthDays(date, dayCount, currentMonthDays) {
-            const {day, month, year} = date
-            if(day + dayCount > currentMonthDays){
+        getNextDayOrWeek(date) {
+            let {day, month, year, dayCount, monthDays} = date
+            if(day + dayCount > monthDays){
                 if (month === 12){
                     month = 1
                     year += 1
                 } else{
                     month += 1
                 }
-                day = day + dayCount - currentMonthDays
+                day = day + dayCount - monthDays
             } else {
                 day += dayCount
             }

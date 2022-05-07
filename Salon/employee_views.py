@@ -155,16 +155,24 @@ class GetMonthDays(APIView):
                     day_info = self.assign_days(day_info["next_day"], day_info["day_number"], self.month)
                     
         elif calendar_type == "weekly":
-            given_year_week = str(self.year) + '-' + 'W' + str(self.week)
+            year = self.year
+            if self.month == 1 and self.week >= 52:
+                year -= 1
+            if self.month == 12 and self.week == 1:
+                year += 1
+            print(year)
+            given_year_week = str(year) + '-' + 'W' + str(self.week)
             date = dt.datetime.strptime(given_year_week + '-1', "%G-W%V-%u")
+            print(date)
             day_info["next_day"] = 0
             day_info["day_number"] = date.day
-            print(date.day)
+            month_days = self.last_day_current_month[1]
+            if self.month > date.month:
+                month_days = self.last_month_days
+
             month = self.month
             while self.monthly_calendar["day_count"] < 7:
-                print(day_info)
-                print(self.last_day_current_month[1] )
-                if day_info["day_number"] > self.last_day_current_month[1]:
+                if day_info["day_number"] > month_days:
                     month += 1
                     if month > 12:
                         month = 1
