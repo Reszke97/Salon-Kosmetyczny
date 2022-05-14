@@ -1,120 +1,25 @@
 <template>
     <v-container fluid>
+        <calendar-header 
+            :choose-and-get-calendar-data="chooseAndGetCalendarData"
+            :calendar-header="calendarHeader"
+            :set-pick-date="setPickDate"
+            :pick-date="pickDate"
+            :calendar-type="calendarType"
+            :full-date="fullDate"
+            :set-day-of-month="setDayOfMonth"
+            :set-date="setDate"
+            :days-data="daysData"
+        />
         <div 
-            id="buttons-wrapper"
+            id="calendar-wrapper"
             style="
                 display:flex;
                 flex-direction:row;
+                background-color:#0892d0;
+                width:100%;
             "
         >
-            <div
-                id="monthly-preview" 
-                :style="{
-                    width:'100%',
-                }"
-            >
-                <v-btn 
-                    style="width:100%"
-                    :color="calendarType === 'monthly' ? '#5cb85c' : null"
-                    @click="chooseAndGetCalendarData(undefined, undefined, undefined, 'monthly')"
-                >
-                    Miesiąc
-                </v-btn>
-            </div>
-            <div 
-                id="weekly-preview" 
-                :style="{
-                    width:'100%',
-                }"
-            >
-                <v-btn 
-                    style="width:100%"
-                    :color="calendarType === 'weekly' ? '#5cb85c' : null"
-                    @click="chooseAndGetCalendarData(undefined, undefined, undefined, 'weekly')"
-                >
-                    Tydzień
-                </v-btn>
-            </div>
-            <div 
-                id="daily-preview"
-                :style="{
-                    width:'100%',
-                }"
-            >
-                <v-btn 
-                    style="width:100%"
-                    :color="calendarType === 'daily' ? '#5cb85c' : null"
-                    @click="chooseAndGetCalendarData(undefined, undefined, undefined, 'daily')"
-                >
-                    Dzień
-                </v-btn>
-            </div>
-        </div>
-            <div
-                id="month-info-wrapper"
-                style="
-                    width:100%;
-                    background-color:#0892d0;
-                    position:relative;
-                "
-                class="pt-4 pb-2"
-            >
-                <div 
-                    style="
-                        width:100%;
-                        display:flex;
-                        justify-content:center;
-                    "
-                >
-                    <h1
-                        style="cursor: pointer;"
-                        id="month-info"
-                    >
-                        <v-icon
-                            large
-                        >
-                            mdi-calendar
-                        </v-icon>
-                        {{calendarHeader}}
-                    </h1>
-                </div>
-                <div 
-                    style="
-                        width:100%;
-                        position:absolute;
-                        display:flex;
-                        justify-content:center;
-                    "
-                    class="py-2"
-                >
-                    <v-date-picker
-                        v-if="pickDate"
-                        v-model="fullDate"
-                        :type="calendarType === 'monthly' ? 'month' : 'date'"
-                        @change="chooseAndGetCalendarData(undefined, undefined, true, calendarType)"
-                        no-title
-                        scrollable
-                    >
-                        <v-spacer></v-spacer>
-                        <v-btn
-                            text
-                            color="primary"
-                            @click="pickDate = false"
-                        >
-                            Cancel
-                        </v-btn>
-                    </v-date-picker>
-                </div>
-            </div>
-            <div 
-                id="calendar-wrapper"
-                style="
-                    display:flex;
-                    flex-direction:row;
-                    background-color:#0892d0;
-                    width:100%;
-                "
-            >
             <div 
                 id="prev-month"
                 style="
@@ -133,7 +38,7 @@
                     </v-icon>
                 </v-btn>
             </div>
-            <monthly-calendar
+            <monthly-weekly-calendar
                 style="
                     display:flex;
                     width:95%;
@@ -163,20 +68,19 @@
     </v-container>
 </template>
 
-
-
-
 <script>
     import { AUTH_API } from '../../../authorization/AuthAPI'
     import axios from 'axios'
     import getMonthName from "../utils/getMonthName"
-    import MonthlyCalendar from "../components/MonthlyCalendar.vue"
+    import MonthlyWeeklyCalendar from "../components/MonthlyWeeklyCalendar.vue"
     import getNextDayOrWeek from "../utils/getNextDayOrWeek"
     import getPrevDayOrWeek from "../utils/getPrevDayOrWeek"
+    import calendarHeader from "../components/CalendarHeader.vue"
 
     export default {
         components: {
-            MonthlyCalendar
+            MonthlyWeeklyCalendar,
+            calendarHeader
         },
         mixins: [
             getMonthName,
@@ -237,7 +141,6 @@
         computed: {
             fullDate: {
                 async set(date) {
-                    console.log(date)
                     date = date.split('-')
                     this.daysData.month.number = date[1] !== "10" ? date[1].replace('0', ''): date[1]
                     this.daysData.year = date[0]
@@ -275,6 +178,9 @@
             }
         },
         methods: {
+            setPickDate(value){
+                this.pickDate = value
+            },
             prepareDataForNextOrPrevDayOrWeek(dayCount, type){
                 return {
                     month: this.daysData.month.number,
@@ -285,6 +191,13 @@
                             ? this.daysData.current_month_days 
                             : this.daysData.last_month_days
                 }
+            },
+            setDate(date){
+                this.daysData.month.number = date[1] !== "10" ? date[1].replace('0', ''): date[1]
+                this.daysData.year = date[0]
+            },
+            setDayOfMonth(dayOfMonth){
+                this.daysData.dayOfMonth = dayOfMonth
             },
             async chooseAndGetCalendarData(next = false, prev = false, sameView = false, calendarType = ""){
                 if(!calendarType) calendarType = this.calendarType
