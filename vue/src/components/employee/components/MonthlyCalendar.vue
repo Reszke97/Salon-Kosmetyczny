@@ -27,7 +27,38 @@
             >
                 <div
                     class="py-5"
-                >{{day.number}}</div>
+                >
+                    <span
+                        :style="
+                            day.number === today.getDate()
+                            ?
+                            {
+                                borderWidth: '1px',
+                                border: 'solid',
+                                borderRadius: '100%',
+                                padding: '8px 2px 8px 2px',
+                                display: 'inline-flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                minWidth: '50px',
+                                minHeight: '50px',
+                                borderColor: '#5cb85c',
+                                backgroundColor: '#5cb85c'
+                            }
+                            : 
+                            {
+                                display: 'inline-flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                minHeight: '50px',
+                                padding: '8px 2px 8px 2px',
+                            }
+                        "
+                    >
+                        {{day.number}}
+                    </span>
+
+                </div>
             </div>
         </div>
     </div>
@@ -39,6 +70,10 @@ export default {
             type: Object,
             required: true
         },
+        today: {
+            type: Date,
+            required: true
+        }
     }
 }
 </script>

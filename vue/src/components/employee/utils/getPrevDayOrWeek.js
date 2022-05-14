@@ -1,8 +1,8 @@
 export default {
     methods: {
         getPrevDayOrWeek(date) {
-            let {day, month, year, dayCount, monthDays} = date
-            if(day - dayCount <= 0){
+            let {dayOfMonth, month, year, dayCount, monthDays} = date
+            if(dayOfMonth - dayCount <= 0){
                 if (month === 1){
                     month = 12
                     year -= 1
@@ -12,15 +12,15 @@ export default {
                 // Aby uzyskać odpowiedni dzień zeszłego miesiąca
                 // najpierw od przekazanego dnia odejmuje ilość dni
                 // a następnie zamieniam na liczbę dodatnią
-                let daysToSubstract = (day - dayCount) * (-1) 
-                day = monthDays - daysToSubstract
+                let daysToSubstract = (dayOfMonth - dayCount) * (-1) 
+                dayOfMonth = monthDays - daysToSubstract
             } else {
-                day -= dayCount
+                dayOfMonth -= dayCount
             }
             return {
                 month,
                 year,
-                day
+                dayOfMonth
             }
         },
     },

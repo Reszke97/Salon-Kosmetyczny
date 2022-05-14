@@ -89,20 +89,20 @@
                 >
                     <v-date-picker
                         v-if="pickDate"
-                        v-model="monthYearDate"
-                        type="month"
+                        v-model="fullDate"
+                        :type="calendarType === 'monthly' ? 'month' : 'date'"
+                        @change="chooseAndGetCalendarData(undefined, undefined, true, calendarType)"
                         no-title
                         scrollable
-                        @change="getPickedMonthCalendar"
                     >
-                    <v-spacer></v-spacer>
-                    <v-btn
-                        text
-                        color="primary"
-                        @click="pickDate = false"
-                    >
-                        Cancel
-                    </v-btn>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                            text
+                            color="primary"
+                            @click="pickDate = false"
+                        >
+                            Cancel
+                        </v-btn>
                     </v-date-picker>
                 </div>
             </div>
@@ -139,6 +139,7 @@
                     width:95%;
                 "
                 :days-data="daysData"
+                :today="today"
             />
             <div 
                 id="next-month"
@@ -206,25 +207,22 @@
                 "day_count": 0,
                 "week": 1,
                 "year": 0,
-                "day": 0,
+                "dayOfMonth": 1,
                 "current_month_days": 0,
                 "last_month_days": 0,
                 "next_month_days": 0,
             },
             activePicker: null,
-            fullDate: "",
-            monthYearDate: "",
             pickDate: false,
+            today: "",
         }),
         async created(){
             const today = new Date()
+            this.today = today;
             this.daysData.month.number = today.getMonth() + 1
             this.daysData.year = today.getFullYear()
-            this.daysData.day = today.getDay() + 1
-            const monthNumber = this.daysData.month.number >= 10 
-                ? this.daysData.month.number: 0 + this.daysData.month.number.toString()
+            this.daysData.dayOfMonth = today.getDate();
             await this.chooseAndGetCalendarData(undefined, undefined, true)
-            this.monthYearDate = `${this.daysData.year}-${monthNumber}`
         },
         mounted(){
             document.getElementById("month-info").addEventListener("click", () => {
@@ -237,6 +235,28 @@
             },
         },
         computed: {
+            fullDate: {
+                async set(date) {
+                    console.log(date)
+                    date = date.split('-')
+                    this.daysData.month.number = date[1] !== "10" ? date[1].replace('0', ''): date[1]
+                    this.daysData.year = date[0]
+
+                    if(this.calendarType !== "monthly"){
+                        this.daysData.dayOfMonth = date[2]
+                    }
+                },
+                get() {
+                    if(this.calendarType !== "monthly"){
+                        return `${this.daysData.year}-${this.daysData.month.number}-${this.daysData.dayOfMonth}`
+                    } else {
+                        const monthNumber = this.daysData.month.number >= 10 
+                            ? this.daysData.month.number: 0 + this.daysData.month.number.toString()
+                        return `${this.daysData.year}-${monthNumber}`
+                    }
+                },
+            },
+
             calendarHeader(){
                 let year = this.daysData.year
                 if(this.daysData.month.number === 12 && this.daysData.week === 1){
@@ -255,16 +275,10 @@
             }
         },
         methods: {
-            async getPickedMonthCalendar(){
-                const date = this.monthYearDate.split('-')
-                this.daysData.month.number = date[1] !== "10" ? date[1].replace('0', ''): date[1]
-                this.daysData.year = date[0]
-                await this.chooseAndGetCalendarData(undefined, undefined, true, "monthly")
-            },
             prepareDataForNextOrPrevDayOrWeek(dayCount, type){
                 return {
                     month: this.daysData.month.number,
-                    day: this.daysData.day,
+                    dayOfMonth: this.daysData.dayOfMonth,
                     year: this.daysData.year,
                     dayCount: dayCount,
                         monthDays: type === "next" 
@@ -290,11 +304,11 @@
                             ...this.daysData, 
                             month: {...this.daysData.month, number: newDate.month},
                             year: newDate.year,
-                            day: newDate.day,
+                            dayOfMonth: newDate.dayOfMonth,
                         }
                     }
                     url = `/api/v1/employee/getmonth/?year=${this.daysData.year}
-                        &calendarType=weekly&day=${this.daysData.day}
+                        &calendarType=weekly&dayOfMonth=${this.daysData.dayOfMonth}
                         &month=${this.daysData.month.number}`.replace(/\s/g, "")
                     await this.getCalendarData(sameView, calendarType, url)
                 }
@@ -304,10 +318,10 @@
                     if(this.daysData.month.number === 12){
                         this.daysData.year += 1
                         this.daysData.month.number = 1
-                        this.monthYearDate = `${this.daysData.year}-0${this.daysData.month.number}`
+                        this.fullDate = `${this.daysData.year}-0${this.daysData.month.number}`
                     } else {
                         this.daysData.month.number += 1
-                        this.monthYearDate = this.daysData.month.number >= "10" 
+                        this.fullDate = this.daysData.month.number >= "10" 
                             ? `${this.daysData.year}-${this.daysData.month.number}`
                             : `${this.daysData.year}-0${this.daysData.month.number}`
                     }
@@ -315,10 +329,10 @@
                     if(this.daysData.month.number === 1){
                         this.daysData.year -= 1
                         this.daysData.month.number = 12
-                        this.monthYearDate = `${this.daysData.year}-${this.daysData.month.number}`
+                        this.fullDate = `${this.daysData.year}-${this.daysData.month.number}`
                     } else {
                         this.daysData.month.number -= 1
-                        this.monthYearDate = this.daysData.month.number >= "10" 
+                        this.fullDate = this.daysData.month.number >= "10" 
                             ? `${this.daysData.year}-${this.daysData.month.number}`
                             : `${this.daysData.year}-0${this.daysData.month.number}`
                     }
@@ -329,9 +343,13 @@
                 await AUTH_API.get(url)
                     .then((res) => {
                         this.daysData = {...res.data}
-                        //this.date zupadtetować tyź
+                        if(calendarType === "monthly" && this.daysData.month.number !== this.today.getMonth() + 1){
+                            this.daysData.dayOfMonth = 1
+                        }
                     })
-                if(!sameView) this.$router.push({ path: `/calendar/${calendarType}` })
+                if(!sameView){
+                    this.$router.push({ path: `/calendar/${calendarType}` })
+                } 
             }
         }
     }

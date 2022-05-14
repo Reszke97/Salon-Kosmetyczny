@@ -30,7 +30,7 @@ class GetMonthDays(APIView):
                 "Niedziela": []
             },
             "day_count": 0,
-            "day": 0,
+            "dayOfMonth": 0,
             "week":0,
             "year":0,
             "next_month_days": 0,
@@ -38,15 +38,15 @@ class GetMonthDays(APIView):
             "current_month_days": 0,
         }
     
-    def assignBaseData(self, month = None, year = None, day = None):
+    def assignBaseData(self, month = None, year = None, dayOfMonth = None):
         date_now = dt.datetime.now()
         self.today = date_now.day
-        self.day = int(day) if day else self.today
+        self.dayOfMonth = int(dayOfMonth) if dayOfMonth else self.today
         self.month = int(month) if month else date_now.month
         self.year = int(year) if year else date_now.year
         self.week = (
-            dt.datetime(month = self.month, day = self.day, year = self.year).isocalendar().week 
-            if day and month and year
+            dt.datetime(month = self.month, day = self.dayOfMonth, year = self.year).isocalendar().week 
+            if dayOfMonth and month and year
             else date_now.isocalendar().week
         )
         self.monthly_calendar["month"] = {
@@ -113,13 +113,13 @@ class GetMonthDays(APIView):
         }[month]
 
     def assign_days(self, next_day, day_number, month):
-        day = {
+        dayOfMonth = {
             "week_day": self.getDay(next_day),
             "day_number": day_number,
         }
-        self.monthly_calendar["days"][day["week_day"]].append(
+        self.monthly_calendar["days"][dayOfMonth["week_day"]].append(
             {
-                "number": day["day_number"],
+                "number": dayOfMonth["day_number"],
                 "month": month,
                 "month_in_words": self.get_month_name(month),
             }
@@ -132,10 +132,10 @@ class GetMonthDays(APIView):
     
     def get_days(
         self, action_type = "current", 
-        month = None, year = None, calendar_type = "monthly", day = None,
+        month = None, year = None, calendar_type = "monthly", dayOfMonth = None,
         week = None
     ):
-        self.assignBaseData(month, year, day)
+        self.assignBaseData(month, year, dayOfMonth)
         day_info = {}
         if calendar_type == "monthly":
             if action_type == "next":
@@ -160,10 +160,8 @@ class GetMonthDays(APIView):
                 year -= 1
             if self.month == 12 and self.week == 1:
                 year += 1
-            print(year)
             given_year_week = str(year) + '-' + 'W' + str(self.week)
             date = dt.datetime.strptime(given_year_week + '-1', "%G-W%V-%u")
-            print(date)
             day_info["next_day"] = 0
             day_info["day_number"] = date.day
             month_days = self.last_day_current_month[1]
@@ -186,10 +184,10 @@ class GetMonthDays(APIView):
     def get(self, request, *args, **kwargs):
         month = request.query_params.get("month")
         year = request.query_params.get("year")
-        day = request.query_params.get("day")
+        dayOfMonth = request.query_params.get("dayOfMonth")
 
         if request.query_params.get("calendarType") == "weekly":
-            self.get_days(calendar_type = "weekly", year = year, day = day, month = month)
+            self.get_days(calendar_type = "weekly", year = year, dayOfMonth = dayOfMonth, month = month)
         elif request.query_params.get("calendarType") == "monthly":
             self.get_days("prev", month, year)
             self.get_days("current", month, year)
@@ -197,7 +195,7 @@ class GetMonthDays(APIView):
             
         # elif request.query_params.get("daily"):
         self.monthly_calendar["week"] = self.week
-        self.monthly_calendar["day"] = self.day
+        self.monthly_calendar["dayOfMonth"] = self.dayOfMonth
         self.monthly_calendar["year"] = self.year
         self.monthly_calendar["next_month_days"] = self.next_month_days
         self.monthly_calendar["last_month_days"] = self.last_month_days
