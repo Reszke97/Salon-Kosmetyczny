@@ -13,8 +13,7 @@ from rest_framework import status
 from .auth_views import CheckIfPasswordWasChanged
 import datetime as dt
 import calendar
-from .easter_dates import easter_dates
-from .non_working_days import non_working_days
+from .non_working_days import EasterDate
 
 class GetMonthDays(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
@@ -200,6 +199,8 @@ class GetMonthDays(APIView):
         self.monthly_calendar["next_month_days"] = self.next_month_days
         self.monthly_calendar["last_month_days"] = self.last_month_days
         self.monthly_calendar["current_month_days"] = self.last_day_current_month[1]
+        a = EasterDate("2021")
+        print(a.non_working_days)
         
         return Response(self.monthly_calendar)
 

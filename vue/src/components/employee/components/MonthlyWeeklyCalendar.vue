@@ -29,31 +29,7 @@
                     class="py-5"
                 >
                     <span
-                        :style="
-                            day.number === today.getDate()
-                            ?
-                            {
-                                borderWidth: '1px',
-                                border: 'solid',
-                                borderRadius: '100%',
-                                padding: '8px 2px 8px 2px',
-                                display: 'inline-flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                minWidth: '50px',
-                                minHeight: '50px',
-                                borderColor: '#5cb85c',
-                                backgroundColor: '#5cb85c'
-                            }
-                            : 
-                            {
-                                display: 'inline-flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                minHeight: '50px',
-                                padding: '8px 2px 8px 2px',
-                            }
-                        "
+                        :style="colorHolidaysAndToday(day.number, day.month)"
                     >
                         {{day.number}}
                     </span>
@@ -74,6 +50,36 @@ export default {
             type: Date,
             required: true
         }
+    },
+    methods: {
+        colorHolidaysAndToday(day, month){
+            if(day === this.today.getDate() && month === this.today.getMonth() + 1){
+                return {
+                    borderWidth: '1px',
+                    border: 'solid',
+                    borderRadius: '100%',
+                    padding: '8px 2px 8px 2px',
+                    display: 'inline-flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    minWidth: '50px',
+                    minHeight: '50px',
+                    borderColor: '#5cb85c',
+                    backgroundColor: '#5cb85c'
+                }
+            } else {
+                return {
+                    display: 'inline-flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    minHeight: '50px',
+                    padding: '8px 2px 8px 2px',
+                }
+            }
+        }
+    },
+    computed: {
+        
     }
 }
 </script>
