@@ -1,4 +1,5 @@
-class EasterDate:
+import calendar
+class NonWorkingDays:
     def __init__(self, year):
         self.easter_dates = [
             "23-4-2000",   "20-4-2025",   "10-4-2050",    "7-4-2075",
@@ -46,6 +47,28 @@ class EasterDate:
         for easter in self.easter_dates:
             split_easter_date = easter.split('-')
             if(split_easter_date[2] == year):
-                self.non_working_days.append(split_easter_date[0] + '-' + split_easter_date[1])
+                _easter = split_easter_date[0] + '-' + split_easter_date[1]
+                month = int(split_easter_date[1])
+                day = int(split_easter_date[0])
+                self.non_working_days.append(_easter)
                 break
-        # print(self.non_working_days)
+        
+        year = int(year)
+        days_left = 60
+        month_days = calendar.monthrange(year, month)[1]
+        while days_left > 0:
+            if day == month_days:
+                month += 1
+                day = 1
+                month_days = calendar.monthrange(year, month)[1]
+            else:
+                day += 1
+            days_left -= 1
+        self.non_working_days.append(str(day) + '-' + str(month))
+    
+    def checkForHoliday(self, day, month):
+        for non_working_day in self.non_working_days:
+            _non_working_day = non_working_day.split('-')
+            if int(_non_working_day[0]) == day and int(_non_working_day[1]) == month:
+                return True
+        return False

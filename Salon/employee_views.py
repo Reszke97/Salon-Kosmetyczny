@@ -13,7 +13,7 @@ from rest_framework import status
 from .auth_views import CheckIfPasswordWasChanged
 import datetime as dt
 import calendar
-from .non_working_days import EasterDate
+from .non_working_days import NonWorkingDays
 
 class GetMonthDays(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
@@ -121,6 +121,7 @@ class GetMonthDays(APIView):
                 "number": dayOfMonth["day_number"],
                 "month": month,
                 "month_in_words": self.get_month_name(month),
+                "holiday": self.non_working_days.checkForHoliday(day_number, month)
             }
         )
         self.monthly_calendar["day_count"] += 1
@@ -168,6 +169,7 @@ class GetMonthDays(APIView):
                 month_days = self.last_month_days
 
             month = self.month
+            ###HERE zrobić obejście
             while self.monthly_calendar["day_count"] < 7:
                 if day_info["day_number"] > month_days:
                     month += 1
@@ -184,6 +186,7 @@ class GetMonthDays(APIView):
         month = request.query_params.get("month")
         year = request.query_params.get("year")
         dayOfMonth = request.query_params.get("dayOfMonth")
+        self.non_working_days  = NonWorkingDays(year)
 
         if request.query_params.get("calendarType") == "weekly":
             self.get_days(calendar_type = "weekly", year = year, dayOfMonth = dayOfMonth, month = month)
@@ -198,10 +201,7 @@ class GetMonthDays(APIView):
         self.monthly_calendar["year"] = self.year
         self.monthly_calendar["next_month_days"] = self.next_month_days
         self.monthly_calendar["last_month_days"] = self.last_month_days
-        self.monthly_calendar["current_month_days"] = self.last_day_current_month[1]
-        a = EasterDate("2021")
-        print(a.non_working_days)
-        
+        self.monthly_calendar["current_month_days"] = self.last_day_current_month[1]    
         return Response(self.monthly_calendar)
 
 

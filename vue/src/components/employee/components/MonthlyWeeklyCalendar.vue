@@ -29,7 +29,7 @@
                     class="py-5"
                 >
                     <span
-                        :style="colorHolidaysAndToday(day.number, day.month)"
+                        :style="colorHolidaysAndToday(day, weekDay)"
                     >
                         {{day.number}}
                     </span>
@@ -52,23 +52,29 @@ export default {
         }
     },
     methods: {
-        colorHolidaysAndToday(day, month){
-            if(day === this.today.getDate() && month === this.today.getMonth() + 1){
-                return {
-                    borderWidth: '1px',
-                    border: 'solid',
-                    borderRadius: '100%',
-                    padding: '8px 2px 8px 2px',
+        colorHolidaysAndToday(day, weekDay){
+            console.log(weekDay)
+            let style;
+            if(
+                day.number === this.today.getDate() 
+                && day.month === this.today.getMonth() + 1 
+                && this.daysData.year === this.today.getFullYear()
+            ){
+                style =  {
                     display: 'inline-flex',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    minWidth: '50px',
                     minHeight: '50px',
+                    padding: '8px 2px 8px 2px',
+                    borderWidth: '1px',
+                    border: 'solid',
+                    borderRadius: '100%',
+                    minWidth: '50px',
                     borderColor: '#5cb85c',
                     backgroundColor: '#5cb85c'
                 }
-            } else {
-                return {
+            } else{
+                style =  {
                     display: 'inline-flex',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -76,6 +82,11 @@ export default {
                     padding: '8px 2px 8px 2px',
                 }
             }
+            if(weekDay == "Niedziela" || day.holiday){
+                style.color = 'red'
+                style.fontWeight = 'bold'
+            }
+            return style
         }
     },
     computed: {
