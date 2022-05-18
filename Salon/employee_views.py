@@ -162,13 +162,14 @@ class GetMonthDays(APIView):
                 year += 1
             given_year_week = str(year) + '-' + 'W' + str(self.week)
             date = dt.datetime.strptime(given_year_week + '-1', "%G-W%V-%u")
+            ## zwraca pierwszy dzień tygodnia na podstawie podanych danych
             day_info["next_day"] = 0
             day_info["day_number"] = date.day
             month_days = self.last_day_current_month[1]
             if self.month > date.month:
                 month_days = self.last_month_days
 
-            month = self.month
+            month = date.month
             ###HERE zrobić obejście
             while self.monthly_calendar["day_count"] < 7:
                 if day_info["day_number"] > month_days:

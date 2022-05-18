@@ -39,36 +39,46 @@ class NonWorkingDays:
             "25-12",
             "26-12"
         ]
-        self.getEaster(year)
+        self.getMovableHolidays(year)
 
-# Boże ciało + 60 dni od wielkanocy zawsze
+    def getMovableHolidays(self, year):
+        self.year = year
+        self.getEaster()
+        self.getCorpusChristiDay()
 
-    def getEaster(self, year):
+    def getEaster(self):
         for easter in self.easter_dates:
             split_easter_date = easter.split('-')
-            if(split_easter_date[2] == year):
+            if(split_easter_date[2] == self.year):
                 _easter = split_easter_date[0] + '-' + split_easter_date[1]
-                month = int(split_easter_date[1])
-                day = int(split_easter_date[0])
+                self.month = int(split_easter_date[1])
+                self.day = int(split_easter_date[0])
                 self.non_working_days.append(_easter)
                 break
-        
-        year = int(year)
+        easter_month_days = calendar.monthrange(int(self.year), int(self.month))
+        if easter_month_days[1] == self.day:
+            self.non_working_days.append('1' + '-' + str(self.month+1))
+        else:
+            self.non_working_days.append(str(self.day+1) + '-' + str(self.month))
+
+    # Boże ciało + 60 dni od wielkanocy zawsze
+    def getCorpusChristiDay(self):
+        self.year = int(self.year)
         days_left = 60
-        month_days = calendar.monthrange(year, month)[1]
+        month_days = calendar.monthrange(int(self.year), int(self.month))[1]
         while days_left > 0:
-            if day == month_days:
-                month += 1
-                day = 1
-                month_days = calendar.monthrange(year, month)[1]
+            if self.day == month_days:
+                self.month += 1
+                self.day = 1
+                month_days = calendar.monthrange(int(self.year), int(self.month))[1]
             else:
-                day += 1
+                self.day += 1
             days_left -= 1
-        self.non_working_days.append(str(day) + '-' + str(month))
+        self.non_working_days.append(str(self.day) + '-' + str(self.month))
     
     def checkForHoliday(self, day, month):
         for non_working_day in self.non_working_days:
             _non_working_day = non_working_day.split('-')
-            if int(_non_working_day[0]) == day and int(_non_working_day[1]) == month:
+            if int(_non_working_day[0]) == int(day) and int(_non_working_day[1]) == int(month):
                 return True
         return False
