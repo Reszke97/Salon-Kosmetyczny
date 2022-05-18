@@ -35,6 +35,8 @@ class GetMonthDays(APIView):
             "next_month_days": 0,
             "last_month_days": 0,
             "current_month_days": 0,
+            "week_start": "",
+            "week_end":""
         }
     
     def assignBaseData(self, month = None, year = None, dayOfMonth = None):
@@ -170,14 +172,18 @@ class GetMonthDays(APIView):
                 month_days = self.last_month_days
 
             month = date.month
-            ###HERE zrobić obejście
+            week_start_year = date.year
+            week_end_year = date.year
             while self.monthly_calendar["day_count"] < 7:
                 if day_info["day_number"] > month_days:
                     month += 1
                     if month > 12:
+                        week_end_year = date.year + 1
                         month = 1
                     day_info["day_number"] = 1
                 day_info = self.assign_days(day_info["next_day"], day_info["day_number"], month)
+            self.monthly_calendar["week_start"] = str(date.day) + ' ' + self.get_month_name(month) + ' ' + str(week_start_year)
+            self.monthly_calendar["week_end"] = str(day_info["day_number"] - 1) + ' ' + self.get_month_name(month) + ' ' + str(week_end_year)
             
         # elif calendar_type == "daily":
 

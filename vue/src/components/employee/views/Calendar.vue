@@ -170,7 +170,8 @@
                 return (this.calendarType === "monthly" 
                     ? `${this.daysData.month.name} - ${year}` 
                     :  this.calendarType === "weekly" 
-                    ?  `${this.daysData.week} - ${year}`
+                    // ?  `${this.daysData.week} - ${year}`
+                    ? `${this.daysData.week_start} do ${this.daysData.week_end}`
                     : this.calendarType === "daily"
                     ? `Dzień`
                     : null
