@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
-import Register from '../components/authentication/Register.vue'
+import Register from '../components/registration/Register.vue'
 import Login from '../components/authentication/Login.vue'
 import Logout from '../components/authentication/Logout.vue'
 import PasswordChange from '../components/authentication/PasswordChange.vue'

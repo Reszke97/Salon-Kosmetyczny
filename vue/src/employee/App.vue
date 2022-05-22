@@ -11,7 +11,7 @@
       "
     >
       <nav-bar></nav-bar>
-      <v-container>
+      <v-container fill-height>
         <router-view></router-view>
       </v-container>
       <Footer></Footer>

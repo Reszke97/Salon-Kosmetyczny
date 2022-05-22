@@ -1,20 +1,52 @@
 <template>
-    <div>
+    <div
+        style="width:100%"
+    >
+        <!-- <v-row
+            align="center"
+            justify="center"
+        >
+            <v-col
+                class="py-0 px-2"
+                cols="12"
+            >
+                <v-card >
+                    <v-card-title
+                        class="justify-center"
+                    >
+                        Dane o właścicielu
+                    </v-card-title>
+                </v-card>
+            </v-col>
+        </v-row> -->
         <v-row 
             align="center"
             justify="center"
         >
             <v-col
-                cols="11"
-                sm="9"
-                md="6"
-                lg="3"
+                cols="12"
             >
                 <v-form
                     ref="form"
                     v-model="valid"
                     lazy-validation
                 >
+                    <v-text-field
+                        v-model="name"
+                        :rules="nameRules"
+                        label="Imię"
+                        :counter="50"
+                        required
+                    ></v-text-field>
+
+                    <v-text-field
+                        v-model="lastName"
+                        :rules="lastNameRules"
+                        label="Nazwisko"
+                        :counter="50"
+                        required
+                    ></v-text-field>
+
                     <v-text-field
                         v-model="email"
                         :rules="emailRules"
@@ -45,69 +77,6 @@
                         required
                         type="password"
                     ></v-text-field>
-
-                    <v-text-field
-                        v-model="name"
-                        :rules="nameRules"
-                        label="Imię"
-                        :counter="50"
-                        required
-                    ></v-text-field>
-
-                    <v-text-field
-                        v-model="lastName"
-                        :rules="lastNameRules"
-                        label="Nazwisko"
-                        :counter="50"
-                        required
-                    ></v-text-field>
-                    <v-row>
-                        <v-col
-                            cols="3"
-                            sm="3"
-                        >
-                            <v-select
-                                :items="countriesWithImages"
-                                v-model="selectedCountry"
-                                label="Kraj"
-                                @change="handleInput()"
-                            >
-                                <template slot="selection" slot-scope="data">
-                                    <v-img
-                                        class="mr-1"
-                                        max-height="15"
-                                        max-width="20"
-                                        :src="data.item.src"
-                                    ></v-img>
-                                    {{ data.item.phone }}
-                                </template>
-                                <template 
-                                    slot="item" 
-                                    slot-scope="data"
-                                >
-                                    <v-img
-                                        class="mr-1"
-                                        max-height="15"
-                                        max-width="20"
-                                        :src="data.item.src"
-                                    ></v-img>
-                                    {{ data.item.phone }}
-                                </template>
-                            </v-select>
-                        </v-col>
-                        <v-col
-                            cols="9"
-                            sm="9"
-                        >
-                            <v-text-field
-                                label="Nr telefonu"
-                                required
-                                :rules="selectedCountry.rule"
-                                v-model="phone"
-                            ></v-text-field>
-
-                        </v-col>
-                    </v-row>
 
                     <v-checkbox
                         v-model="checkbox"
@@ -180,7 +149,6 @@
             </v-card>
         </v-dialog>
     </div>
-    
 </template>
 <script>
     import axios from 'axios'
@@ -224,21 +192,9 @@
             checkboxRules : [
                 v => !!v || 'Aby kontynuować konieczna jest zgoda!'
             ],
-            selectedCountry: '',
-            imgSrc: '',
         }),
         computed: {
-            ...mapState({
-                countries: state => state.countries,
-                rules: state => state.rules,
-            }),
-            countriesWithImages(){
-                let _countries = this.countries
-                _countries[0].src = require('../../assets/images/countries_flags/pl.svg')
-                _countries[1].src = require('../../assets/images/countries_flags/de.svg')
-                _countries[2].src = require('../../assets/images/countries_flags/gb.svg')
-                return _countries
-            }
+
         },
         methods: {
             submit () {
@@ -246,23 +202,6 @@
                 if(IS_VALID){
                     this.sendForm()
                 }
-            },
-            assingFlag(head){
-                switch(head){
-                    case '+48':
-                        this.imgSrc=require('../../assets/images/countries_flags/pl.svg')
-                    break
-                    
-                    case '+49':
-                        this.imgSrc=require('../../assets/images/countries_flags/de.svg')
-                    break
-                    case '+44':
-                        this.imgSrc=require('../../assets/images/countries_flags/gb.svg')
-                    break
-                }
-            },
-            handleInput(){
-                this.assingFlag(this.selectedCountry.phone)
             },
             reset () {
                 this.selectedCountry = ''
@@ -280,20 +219,12 @@
                 this.$refs.form.resetValidation()
             },
             sendForm(){
-                let _phone = ''
-                if(this.phone !== '' && this.phone.length > 3){
-                    _phone = this.selectedCountry.phone + ' ' + this.phone
-                }
-                else{
-                    _phone = ''
-                }
                 axios.post('http://127.0.0.1:8000/api/v1/user/register/', {
                     'email': this.email,
                     'user_name': this.userName,
                     'password': this.password1,
                     'first_name': this.name,
                     'last_name': this.lastName,
-                    'phone_number': _phone === '' ? null : _phone,
                 })
                 .then(response => {
                     this.activation = true
