@@ -9,6 +9,7 @@ import ResetPassword from '../components/authentication/ResetPassword.vue'
 import PasswordResetEmail from '../components/authentication/ResetPasswordEmail.vue'
 import Home from '../components/home/Home.vue'
 import Calendar from '../components/employee/views/Calendar.vue'
+import Service from "../components/service/views/Service.vue"
 
 Vue.use(VueRouter)
 
@@ -103,6 +104,14 @@ const routes = [
     props: {
       calendarType: "daily"
     },
+  },
+  {
+    path: "/defineservice",
+    name: "Service",
+    component: Service,
+    // props: {
+    //   calendarType: "daily"
+    // },
   },
 
 ]

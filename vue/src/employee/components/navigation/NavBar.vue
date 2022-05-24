@@ -59,9 +59,10 @@
           tab: null,
           loaded: false,
           menuItems: [
-            { title: 'Home', path: '/', icon: 'mdi-home' },
-            { title: 'login', path: 'login', icon: 'mdi-login'},
-            { title: 'register', path: '/register', icon: 'mdi-account-plus ' }
+            { title: "Home", path: '/', icon: "mdi-home" },
+            { title: "login", path: "login", icon: "mdi-login" },
+            { title: "register", path: "/register", icon: "mdi-account-plus" },
+            { title: "Nowa usługa", path: "/defineservice", icon: "mdi-plus" },
           ],
         }
       },
@@ -78,7 +79,8 @@
               { title: 'Home', path: '/', icon: 'mdi-home' },
               this.auth,
               // this.rights,
-              { title: 'register', path: '/register', icon: 'mdi-account-plus ' }
+              { title: "register", path: '/register', icon: 'mdi-account-plus ' },
+              { title: "Nowa usługa", path: "/defineservice", icon: "mdi-plus" },
             ]
             return menuItems
           }
