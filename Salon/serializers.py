@@ -58,8 +58,6 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
     def validate(self, attrs):
         # sprawdzenie czy Issued_at jest > updated_at
         try:
-            print('refresh')
-            print(attrs['refresh'])
             decoded_payload = token_backend.decode(attrs['refresh'])
             user_id = decoded_payload['user_id']
             iat = decoded_payload['iat']
@@ -77,6 +75,10 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
 
 class ChangePasswordSerializer(serializers.Serializer):
     model = User
-
     old_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
+
+class ServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Service
+        fields = ('duration', 'name', 'price', 'employee')

@@ -5,15 +5,15 @@ from rest_framework.permissions import (
     AllowAny
 )
 from rest_framework.views import APIView
-from .models import *
-from .serializers import *
+from ..models import *
+from ..serializers import *
+from ..auth.auth_backend import CheckIfPasswordWasChanged
+from .utils.non_working_days import NonWorkingDays
 from rest_framework.response import Response
 from django.http import HttpResponse
 from rest_framework import status
-from .auth_views import CheckIfPasswordWasChanged
 import datetime as dt
 import calendar
-from .non_working_days import NonWorkingDays
 
 class GetMonthDays(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
@@ -172,6 +172,7 @@ class GetMonthDays(APIView):
                 month_days = self.last_month_days
 
             month = date.month
+            week_start_month = date.month
             week_start_year = date.year
             week_end_year = date.year
             while self.monthly_calendar["day_count"] < 7:
@@ -182,7 +183,7 @@ class GetMonthDays(APIView):
                         month = 1
                     day_info["day_number"] = 1
                 day_info = self.assign_days(day_info["next_day"], day_info["day_number"], month)
-            self.monthly_calendar["week_start"] = str(date.day) + ' ' + self.get_month_name(month) + ' ' + str(week_start_year)
+            self.monthly_calendar["week_start"] = str(date.day) + ' ' + self.get_month_name(week_start_month) + ' ' + str(week_start_year)
             self.monthly_calendar["week_end"] = str(day_info["day_number"] - 1) + ' ' + self.get_month_name(month) + ' ' + str(week_end_year)
             
         # elif calendar_type == "daily":

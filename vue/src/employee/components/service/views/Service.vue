@@ -22,24 +22,6 @@
                     min-height:112px!important
                 "
             >
-                <!-- <v-app-bar-nav-icon></v-app-bar-nav-icon> -->
-
-                <!-- <v-toolbar-title
-                    v-if="tabs === "
-                >
-                    Twoje usługi
-                </v-toolbar-title>
-                <v-toolbar-title
-                    v-else-if="tabs === "
-                >
-                    Twoje usługi
-                </v-toolbar-title>
-                <v-toolbar-title
-                    v-else="tabs === "
-                >
-                    Twoje usługi
-                </v-toolbar-title> -->
-
                 <v-spacer></v-spacer>
 
                 <template v-slot:extension>
@@ -54,7 +36,7 @@
                             class="primary--text px-3"
                             style="width:100%;"
                         >
-                            Recents
+                            Dodaj usługę
                             <v-icon>mdi-phone</v-icon>
                         </v-tab>
 
@@ -63,7 +45,7 @@
                             class="primary--text px-3"
                             style="width:100%;"
                         >
-                            Favorites
+                            Lista usług
                             <v-icon>mdi-heart</v-icon>
                         </v-tab>
                         <v-tab
@@ -88,17 +70,7 @@
                     :value="'tab-1'"
                     style="height:100%"
                 >
-                    <div>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-                        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip 
-                        ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-                        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip 
-                        ex ea commodo consequat.Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-                        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip 
-                    </div>
+                    <add-new-service />
                 </v-tab-item>
 
                 <v-tab-item
@@ -139,10 +111,14 @@
 </template>
 
 <script>
+    import AddNewService from "../components/AddNewService.vue"
     export default {
         name: "Service",
         props: {
 
+        },
+        components: {
+            AddNewService
         },
         data: () => ({
             tabs: null,
@@ -158,7 +134,7 @@
 </script>
 
 <style>
-    #my-tab .v-toolbar__extension .v-tabs .v-item-group .v-slide-group__prev{
+    /* #my-tab .v-toolbar__extension .v-tabs .v-item-group .v-slide-group__prev{
         display: none!important;
     }
     #my-tab .v-toolbar__extension .v-tabs .v-item-group .v-slide-group__wrapper .v-slide-group__content{
@@ -166,5 +142,5 @@
     }
     #my-tab .v-toolbar__extension .v-tabs .v-item-group .v-slide-group__wrapper{
         justify-content: center;
-    }
+    } */
 </style>

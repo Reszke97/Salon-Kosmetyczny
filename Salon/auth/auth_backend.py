@@ -14,8 +14,8 @@ from rest_framework.permissions import (
     AllowAny
 )
 from rest_framework.views import APIView
-from .models import *
-from .serializers import *
+from ..models import *
+from ..serializers import *
 from rest_framework.response import Response
 from django.http import HttpResponse
 from rest_framework import status

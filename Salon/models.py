@@ -1,5 +1,4 @@
-from django.db import models
-
+from unicodedata import name
 from django.db import models
 from django.db.models.fields import IntegerField, TextField
 from django.db.models.fields.related import ForeignKey
@@ -98,6 +97,8 @@ class ClientEmployeeRelation(models.Model):
 class Service(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     duration = models.CharField(max_length=100)
+    name = models.CharField(max_length=255)
+    price = models.FloatField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 class Appointment(models.Model):
