@@ -6,8 +6,8 @@ const AUTH_API = axios.create({
     baseURL: baseURL,// Adres do serwera Django
     timeout: 5000,
     headers: {
-        Authorization: localStorage.getItem('employeeToken')
-            ? 'JWT ' + localStorage.getItem('employeeToken')
+        Authorization: localStorage.getItem('clientToken')
+            ? 'JWT ' + localStorage.getItem('clientToken')
             : null,
             'Content-Type': 'application/json',
             accept: 'application/json',
@@ -35,20 +35,20 @@ AUTH_API.interceptors.response.use(
 			(
 				error.response.status === 401 && (
 					error.response.data.detail === 'Token contained no recognizable user identification' 
-					||  originalRequest.url === '/api/v1/token/verify/'
+					||  originalRequest.url === '/api/v1/clientToken/verify/'
 				)
 			)
 			|| error.response.status === 400
 		){
 			console.log('a')
-			alert('Niepoprawny token')
+			alert('Niepoprawny clientToken')
 			store.commit('setIsAuthenticated', false)
 			return Promise.reject(error);
 		}
 
 		if (
 			error.response.status === 401 &&
-			originalRequest.url === '/api/v1/token/refresh/'
+			originalRequest.url === '/api/v1/clientToken/refresh/'
 		) {
 			if(error.response.data.detail === 'Twoje Hasło zostało przed chwilą zmienione, proszę zalogować się ponownie.'){
 				alert('Twoje hasło niedawno zostało zmienione, zaloguj się ponownie.')
@@ -74,22 +74,22 @@ AUTH_API.interceptors.response.use(
 
 		if (
 			(error.response.data.code === 'token_not_valid' || error.response.data.detail === 'Authentication credentials were not provided.') &&
-			originalRequest.url !== '/api/v1/token/verify/' &&
+			originalRequest.url !== '/api/v1/clientToken/verify/' &&
 			error.response.status === 401 &&
 			error.response.statusText === 'Unauthorized'
 		) {
-			const refreshToken = localStorage.getItem('employeeRefreshToken');
+			const clientRefreshToken = localStorage.getItem('clientRefreshToken');
 
 			try{
-				if (refreshToken) {
-					const tokenParts = JSON.parse(atob(refreshToken.split('.')[1]));
+				if (clientRefreshToken) {
+					const tokenParts = JSON.parse(atob(clientRefreshToken.split('.')[1]));
 	
-					// exp date in token is expressed in seconds, while now() returns milliseconds:
+					// exp date in clientToken is expressed in seconds, while now() returns milliseconds:
 					const now = Math.ceil(Date.now() / 1000);
 	
 					if (tokenParts.exp > now) {
 						return AUTH_API
-							.post('/api/v1/token/refresh/', { refresh: localStorage.getItem('employeeRefreshToken') })
+							.post('/api/v1/clientToken/refresh/', { refresh: localStorage.getItem('clientRefreshToken') })
 							.then((response) => {
 								store.commit('setToken', {
 									access: response.data.access,
@@ -110,7 +110,7 @@ AUTH_API.interceptors.response.use(
 								return Promise.reject(error);
 							});
 					} else {
-						alert('Refresh token is expired', tokenParts.exp, now);
+						alert('Refresh clientToken is expired', tokenParts.exp, now);
 						store.commit('setIsAuthenticated', false);
 						// window.location.href = 'http://localhost:8080/login';
 					}

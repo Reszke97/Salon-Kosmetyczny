@@ -4,7 +4,10 @@ from rest_framework_simplejwt.state import token_backend
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.exceptions import TokenBackendError
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.utils.translation import gettext as _
+from rest_framework.response import Response
+from rest_framework import status
 
 class CustomUserSerializer(serializers.ModelSerializer):
     """
@@ -82,3 +85,23 @@ class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = ('duration', 'name', 'price', 'employee')
+
+class TokenObtainPairSerializerEmployee(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        try:
+            if(Employee.objects.get(user_id = user.pk)):
+                token = super().get_token(user)
+                return token
+        except Employee.DoesNotExist:
+            raise Exception("Błędny login lub hasło")
+
+class TokenObtainPairSerializerClient(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        try:
+            if(Employee.objects.get(user_id = user.pk)):
+                raise Exception("Błędny login lub hasło")
+        except Employee.DoesNotExist:
+            token = super().get_token(user)
+            return token

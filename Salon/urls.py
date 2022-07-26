@@ -9,7 +9,9 @@ from .employee.Service import *
 
 urlpatterns = [
     # User
-    path('api/v1/token/', CustomTokenObtainPairView.as_view(), name = 'token_obtain_pair'),
+
+    path('api/v1/client/token/', CustomTokenObtainPairViewClient.as_view(), name = 'token_obtain_pair_client'),
+    path('api/v1/employee/token/', CustomTokenObtainPairViewEmployee.as_view(), name = 'token_obtain_pair_employee'),
     path('api/v1/token/refresh/', CustomTokenRefreshView.as_view(), name = 'token_refresh'),
     path('api/v1/token/verify/', CustomTokenVerifyView.as_view(), name = 'token_verify'),
     path('api/v1/user/register/', CustomUserCreate.as_view(), name = "register"),

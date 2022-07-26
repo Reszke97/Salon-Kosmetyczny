@@ -13,15 +13,15 @@
             }),
         created(){
             axios.post('/api/v1/user/logout/', {
-                refresh_token: localStorage.getItem('employeeRefreshToken'),
+                refresh_token: localStorage.getItem('clientRefreshToken'),
             })
             .then(response => {
                 this.$store.commit('userLogout')
-                window.location.href = '/employee/login'
+                window.location.href = '/client/login'
             })
             .catch(error => {
                 this.$store.commit('userLogout')
-                window.location.href = '/employee/login'
+                window.location.href = '/client/login'
             })
         },
     }

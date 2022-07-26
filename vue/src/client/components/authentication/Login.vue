@@ -86,15 +86,15 @@
                 }
             },
             login(){
-                axios.post('http://127.0.0.1:8000/api/v1/employee/token/', {
+                axios.post('http://127.0.0.1:8000/api/v1/client/token/', {
                     user_name: this.user_name,
                     password: this.password1,
                     type: 'login'
                 })
                 .then(response => {
-                    localStorage.setItem( 'employeeToken', response.data.access );
-                    localStorage.setItem( 'employeeRefreshToken', response.data.refresh );
-                    window.location.href = '/employee'
+                    localStorage.setItem( 'clientToken', response.data.access );
+                    localStorage.setItem( 'clientRefreshToken', response.data.refresh );
+                    window.location.href = '/client'
                 })
                 .catch(error =>{
                     if(error.response.data.detail === 'No active account found with the given credentials'){

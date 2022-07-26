@@ -34,14 +34,14 @@ export default {
 
   created(){
     // sprawdzenie czy refresh token istnieje
-    if(localStorage.getItem('refreshToken')){
+    if(localStorage.getItem('employeeRefreshToken')){
       try {
         const NOW = Math.ceil(Date.now() / 1000);
-        const REFRESH_TOKEN_PARTS = JSON.parse(atob(localStorage.getItem('refreshToken').split('.')[1]));
+        const REFRESH_TOKEN_PARTS = JSON.parse(atob(localStorage.getItem('employeeRefreshToken').split('.')[1]));
         // sprawdź czy refresh token wygasł
         if(REFRESH_TOKEN_PARTS.exp < NOW ){
           AUTH_API.post('/api/v1/token/refresh/', {
-            refresh: localStorage.getItem('refreshToken')
+            refresh: localStorage.getItem('employeeRefreshToken')
           })
           .then(response => {
             this.$store.commit('setToken', {
@@ -57,7 +57,7 @@ export default {
         // sprawdzenie czy token jest legitny
         else{
           AUTH_API.post('/api/v1/token/verify/', {
-            token: localStorage.getItem('refreshToken')
+            token: localStorage.getItem('employeeRefreshToken')
           })
           .then(() => {
             this.$store.commit('setRefreshToken')

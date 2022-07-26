@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { AUTH_API } from '../authorization/AuthAPI'
 
 Vue.use(Vuex)
 
@@ -8,8 +7,8 @@ export default new Vuex.Store({
   state: {
     role: null,
     test: false,
-    accessToken: localStorage.getItem("employeeToken"),
-    refreshToken: localStorage.getItem("employeeRefreshToken"),
+    accessToken: localStorage.getItem("clientToken"),
+    refreshToken: localStorage.getItem("clientRefreshToken"),
     isAuthenticated: false,
     isEditing: false,
     dealerChosen: false,
@@ -131,23 +130,23 @@ export default new Vuex.Store({
       state.basket.push(state.basket[index])
     },
     setToken (state, { access, refresh }) {
-      localStorage.setItem( 'token', access );
-      localStorage.setItem( 'refreshToken', refresh );
+      localStorage.setItem( 'clientToken', access );
+      localStorage.setItem( 'clientRefreshToken', refresh );
       AUTH_API.defaults.headers['Authorization'] = 'JWT ' + access;
       state.accessToken = access
       state.refreshToken = refresh
     },
 
     setRefreshToken (state){
-      state.refreshToken = localStorage.getItem('employeeRefreshToken')
+      state.refreshToken = localStorage.getItem('clientRefreshToken')
     },
 
     userLogout (state){
       if(state.isAuthenticated){
-        if(localStorage.getItem("employeeToken")){
-          localStorage.removeItem("employeeToken")
+        if(localStorage.getItem("clientToken")){
+          localStorage.removeItem("clientToken")
         }
-        localStorage.removeItem("employeeRefreshToken")
+        localStorage.removeItem("clientRefreshToken")
         state.accessToken = null
         state.refreshToken = null
         state.isAuthenticated = false;

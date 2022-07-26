@@ -271,9 +271,12 @@ class ResetPassword(APIView):
                 raise AuthenticationFailed('The reset link is invalid', 401)
         return Response(status=status.HTTP_200_OK)        
 
-class CustomTokenObtainPairView(TokenObtainPairView):
+class CustomTokenObtainPairViewClient(TokenObtainPairView):
     permission_classes = [AllowAny]
-    serializer_class = TokenObtainPairSerializer
+    serializer_class = TokenObtainPairSerializerClient
+class CustomTokenObtainPairViewEmployee(TokenObtainPairView):
+    permission_classes = [AllowAny]
+    serializer_class = TokenObtainPairSerializerEmployee
 
 class CustomTokenRefreshView(TokenRefreshView):
     permission_classes = [AllowAny]
