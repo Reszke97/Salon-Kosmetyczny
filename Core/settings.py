@@ -170,7 +170,7 @@ AUTH_PASSWORD_VALIDATORS = [
 EMAIL_FROM_USER = 'salonkosmetycznyapp@gmail.com'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'salonkosmetycznyapp@gmail.com'
-EMAIL_HOST_PASSWORD = 'g?8`K3z%'
+EMAIL_HOST_PASSWORD = 'qxkbsjckakrxylmk'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 

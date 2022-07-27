@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import { AUTH_API } from '../authorization/AuthAPI'
 
 Vue.use(Vuex)
 

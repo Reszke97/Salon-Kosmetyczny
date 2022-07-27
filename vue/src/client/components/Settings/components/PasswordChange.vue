@@ -21,6 +21,7 @@
                 required
                 class="w40"
                 type="password"
+                dark
             ></v-text-field>
 
             <v-text-field
@@ -30,6 +31,7 @@
                 required
                 class="w40"
                 type="password"
+                dark
             ></v-text-field>
             <v-text-field
                 v-model="repeatPassword"
@@ -38,6 +40,7 @@
                 required
                 class="w40"
                 type="password"
+                dark
             ></v-text-field>
 
             <div
@@ -56,7 +59,7 @@
     </div>
 </template>
 <script>
-    import { AUTH_API } from '../../authorization/AuthAPI'
+    import { AUTH_API } from '../../../authorization/AuthAPI'
     export default {
         data: () => ({
             valid: true,
@@ -79,7 +82,6 @@
         
         created(){
             this.route = this.$route.params.activated
-            console.log(this.route = this.$route.params.activated)
         },
         methods: {
             submit () {

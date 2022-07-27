@@ -141,7 +141,11 @@ def activate_user(request, uidb64, token):
         user.is_active = True
         user.save()
         RefreshToken(str(token)).blacklist()
-        return redirect('http://localhost:8080/emailactivation/true')
+        try:
+            if(Employee.objects.get(user_id = user.pk)):
+                return redirect('http://localhost:8080/employee/emailactivation/true')
+        except Employee.DoesNotExist:
+            return redirect('http://localhost:8080/client/emailactivation/true')
 
     return HttpResponse(
         """<html 

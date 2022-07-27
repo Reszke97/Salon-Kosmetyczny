@@ -5,6 +5,7 @@ from .auth.auth_backend import *
 from .auth import auth_backend
 from .employee.Calendar import *
 from .employee.Service import *
+from .client.client_info import *
 
 
 urlpatterns = [
@@ -24,6 +25,7 @@ urlpatterns = [
     path('api/v1/user/getuserrole/', GetUserRole.as_view(), name= 'get_user_role'),
     path('api/v1/employee/getmonth/', GetMonthDays.as_view(), name= 'get_month'),
     path('api/v1/employee/postnewservice/', ServiceApi.as_view(), name= 'post_new_service'),
+    path('api/v1/client/info/', ClientApi.as_view(), name= 'client_api'),
 
 
 

@@ -35,7 +35,7 @@ AUTH_API.interceptors.response.use(
 			(
 				error.response.status === 401 && (
 					error.response.data.detail === 'Token contained no recognizable user identification' 
-					||  originalRequest.url === '/api/v1/clientToken/verify/'
+					||  originalRequest.url === '/api/v1/token/verify/'
 				)
 			)
 			|| error.response.status === 400
@@ -48,7 +48,7 @@ AUTH_API.interceptors.response.use(
 
 		if (
 			error.response.status === 401 &&
-			originalRequest.url === '/api/v1/clientToken/refresh/'
+			originalRequest.url === '/api/v1/token/refresh/'
 		) {
 			if(error.response.data.detail === 'Twoje Hasło zostało przed chwilą zmienione, proszę zalogować się ponownie.'){
 				alert('Twoje hasło niedawno zostało zmienione, zaloguj się ponownie.')
@@ -74,7 +74,7 @@ AUTH_API.interceptors.response.use(
 
 		if (
 			(error.response.data.code === 'token_not_valid' || error.response.data.detail === 'Authentication credentials were not provided.') &&
-			originalRequest.url !== '/api/v1/clientToken/verify/' &&
+			originalRequest.url !== '/api/v1/token/verify/' &&
 			error.response.status === 401 &&
 			error.response.statusText === 'Unauthorized'
 		) {
@@ -89,7 +89,7 @@ AUTH_API.interceptors.response.use(
 	
 					if (tokenParts.exp > now) {
 						return AUTH_API
-							.post('/api/v1/clientToken/refresh/', { refresh: localStorage.getItem('clientRefreshToken') })
+							.post('/api/v1/token/refresh/', { refresh: localStorage.getItem('clientRefreshToken') })
 							.then((response) => {
 								store.commit('setToken', {
 									access: response.data.access,

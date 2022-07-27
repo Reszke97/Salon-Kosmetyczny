@@ -4,7 +4,14 @@
     style="padding:0"
   >
     <v-app-bar class="indigo white--text">
-      <v-toolbar-title v-if="isAuthenticated">Salon Kosmetyczny</v-toolbar-title>
+      <v-toolbar-title>
+        <v-btn
+          class="elevation-0 indigo white--text no-highlight"
+          :to="'/'"
+        >
+          Salon Kosmetyczny
+        </v-btn>
+      </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items 
         class="d-none d-sm-flex"
@@ -61,8 +68,7 @@
           menuItems: [
             { title: "Home", path: '/', icon: "mdi-home" },
             { title: "login", path: "login", icon: "mdi-login" },
-            { title: "register", path: "/register", icon: "mdi-account-plus" },
-            { title: "Usługi", path: "/defineservice", icon: "mdi-plus" },
+            { title: "Ustawienia", path: "/settings", icon: "mdi-cog-outline" },
           ],
         }
       },
@@ -76,11 +82,8 @@
           if(this.role && this.isAuthenticated){
             let menuItems = []
             menuItems = [
-              { title: 'Home', path: '/', icon: 'mdi-home' },
               this.auth,
-              // this.rights,
-              { title: "register", path: '/register', icon: 'mdi-account-plus ' },
-              { title: "Usługi", path: "/defineservice", icon: "mdi-plus" },
+              { title: "Ustawienia", path: "/settings", icon: "mdi-cog-outline" },
             ]
             return menuItems
           }
@@ -91,15 +94,12 @@
           ? { title: 'wyloguj', path: '/logout', icon: 'mdi-logout' }
           : { title: 'login', path: '/login', icon: 'mdi-login' }
         },
-
-        // rights(){
-        //   return this.role === 'client'
-        //   ?{ title: 'panel klienta', path: '/logout', icon: 'mdi-account'}
-        //   : this.role === 'pracownik'
-        //     ?{ title: 'panel pracownika', path: '/logout', icon: 'mdi-account'}
-        //     : null
-        // }
       },
-
     }
 </script>
+
+<style>
+  .no-highlight::before{
+    background: transparent!important;
+  }
+</style>

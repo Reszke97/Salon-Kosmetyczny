@@ -86,6 +86,16 @@ class ServiceSerializer(serializers.ModelSerializer):
         model = Service
         fields = ('duration', 'name', 'price', 'employee')
 
+class GetUserInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "first_name",
+            "last_name",
+            "phone_number",
+            "user_name",
+            "email",
+        )
 class TokenObtainPairSerializerEmployee(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -95,6 +105,8 @@ class TokenObtainPairSerializerEmployee(TokenObtainPairSerializer):
                 return token
         except Employee.DoesNotExist:
             raise Exception("Błędny login lub hasło")
+
+
 
 class TokenObtainPairSerializerClient(TokenObtainPairSerializer):
     @classmethod
