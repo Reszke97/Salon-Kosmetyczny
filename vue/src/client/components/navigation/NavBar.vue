@@ -66,7 +66,6 @@
           tab: null,
           loaded: false,
           menuItems: [
-            { title: "Home", path: '/', icon: "mdi-home" },
             { title: "login", path: "login", icon: "mdi-login" },
             { title: "Ustawienia", path: "/settings", icon: "mdi-cog-outline" },
           ],
