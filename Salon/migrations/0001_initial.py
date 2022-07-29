@@ -105,7 +105,6 @@ class Migration(migrations.Migration):
                 ('contact_phone', models.CharField(max_length=45)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='Salon.employee')),
             ],
         ),
         migrations.CreateModel(

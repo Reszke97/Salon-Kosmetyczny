@@ -3,15 +3,21 @@
         style="height:100%"
         justify="center"
     >
-        <v-col :cols="8">
-            <v-row style="background-color:#3f51b5;" >
+        <v-col 
+            cols="11"
+            sm="9"
+            md="6"
+            lg="5" 
+            style="background-color:#3f51b5;"
+        >
+            <v-row style="min-height:95px" >
                 <v-col :cols="4">
                     <v-text-field
                         dark
                         v-model="selectedEmployee"
                         :menu-props="{ maxHeight: '400' }"
                         label="Kogo szukasz?"
-                        hint="Pick your favorite states"
+                        hint="Podaj nazwę zawodu"
                         persistent-hint
                     ></v-text-field>
                 </v-col>
@@ -20,8 +26,8 @@
                         dark
                         v-model="selectedEmployee"
                         :menu-props="{ maxHeight: '400' }"
-                        label="Miejscowość?"
-                        hint="Pick your favorite states"
+                        label="Miejscowość"
+                        hint="Podaj nazwę miejscowości"
                         persistent-hint
                     ></v-text-field>
                 </v-col>
@@ -31,19 +37,19 @@
                         v-model="selectedEmployee"
                         :menu-props="{ maxHeight: '400' }"
                         label="Kod Pocztowy"
-                        hint="Pick your favorite states"
+                        hint="Podaj kod pocztowy"
                         persistent-hint
                     ></v-text-field>
                 </v-col>
             </v-row>
-            <v-row style="background-color:#3f51b5;">
+            <v-row style="min-height:95px">
                 <v-col :cols="4">
                     <v-text-field
                         dark
                         v-model="selectedEmployee"
                         :menu-props="{ maxHeight: '400' }"
-                        label="Kogo szukasz?"
-                        hint="Pick your favorite states"
+                        label="Szukana usługa"
+                        hint="Podaj nazwę usługi"
                         persistent-hint
                     ></v-text-field>
                 </v-col>
@@ -52,25 +58,32 @@
                         dark
                         v-model="selectedEmployee"
                         :menu-props="{ maxHeight: '400' }"
-                        label="Miejscowość?"
-                        hint="Pick your favorite states"
+                        label="Nazwa Salonu"
+                        hint="Podaj nazwę salonu"
                         persistent-hint
                     ></v-text-field>
                 </v-col>
                 <v-col :cols="4">
-                    <v-text-field
-                        dark
-                        v-model="selectedEmployee"
-                        :menu-props="{ maxHeight: '400' }"
-                        label="Miejscowość?"
-                        hint="Pick your favorite states"
-                        persistent-hint
-                    ></v-text-field>
+                    
                 </v-col>
             </v-row>
-            <v-row style="height:60%">
-                <v-col :cols="12">
+            <v-row style="height:calc(100% - 240px)">
+                <v-col :cols="12" >
 
+                </v-col>
+            </v-row>
+            <v-row 
+                style="min-height:50px"
+            >
+                <v-col 
+                    :cols="12"
+                    class="d-flex justify-end"
+                >
+                    <v-btn
+                        color="primary"
+                    >
+                        Szukaj
+                    </v-btn>
                 </v-col>
             </v-row>
         </v-col>

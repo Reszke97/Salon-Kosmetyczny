@@ -117,3 +117,18 @@ class TokenObtainPairSerializerClient(TokenObtainPairSerializer):
         except Employee.DoesNotExist:
             token = super().get_token(user)
             return token
+
+class BusinessEntitiesInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Employee
+        # fields = (
+        #     "id",
+        #     "name",
+        #     "post_code",
+        #     "street",
+        #     "apartment_number",
+        #     "house_number",
+        #     "contact_phone",
+        #     "owner_id",
+        # )
+        fields = '__all__'

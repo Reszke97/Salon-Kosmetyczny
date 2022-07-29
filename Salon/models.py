@@ -83,24 +83,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         "Does the user have permissions to view the app `app_label`?"
         # Simplest possible answer: Yes, always
         return True
-
-class Employee(models.Model):
-    is_owner = models.BooleanField(default=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-class ClientEmployeeRelation(models.Model):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    client = models.ForeignKey(User, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-class Service(models.Model):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    duration = models.CharField(max_length=100)
-    name = models.CharField(max_length=255)
-    price = models.FloatField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 class Appointment(models.Model):
     date = models.CharField(max_length=100)
     time_start = models.CharField(max_length=100)
@@ -110,19 +92,47 @@ class AppointmentHistory(models.Model):
     appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-class CosmeticProcedure(models.Model):
-    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
-    service = models.ForeignKey(Service, on_delete=models.CASCADE)
-    client = models.ForeignKey(User, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
 class BusinessActivity(models.Model):
-    owner = models.ForeignKey(Employee, on_delete=models.CASCADE)
     name = models.CharField(blank=False, max_length=100)
     post_code = models.CharField(blank=False, max_length=45)
     street = models.CharField(blank=False, max_length=45)
     apartment_number = models.CharField(blank=False, max_length=45)
     house_number = models.CharField(blank=False, max_length=45)
     contact_phone = models.CharField(blank=False, max_length=45)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class Employee(models.Model):
+    is_owner = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    business_activity = models.ForeignKey(BusinessActivity, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class EmployeeSpecialization(models.Model):
+    name = models.CharField(blank=False, max_length=100)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class Service(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    duration = models.CharField(max_length=100)
+    name = models.CharField(max_length=255)
+    price = models.FloatField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class ClientEmployeeRelation(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    client = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class CosmeticProcedure(models.Model):
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    client = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
