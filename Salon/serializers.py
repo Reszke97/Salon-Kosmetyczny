@@ -84,7 +84,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
-        fields = ('duration', 'name', 'price', 'employee')
+        fields = ('duration', 'name', 'price')
 
 class GetUserInfoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -95,6 +95,7 @@ class GetUserInfoSerializer(serializers.ModelSerializer):
             "phone_number",
             "user_name",
             "email",
+            "id"
         )
 class TokenObtainPairSerializerEmployee(TokenObtainPairSerializer):
     @classmethod
@@ -118,17 +119,45 @@ class TokenObtainPairSerializerClient(TokenObtainPairSerializer):
             token = super().get_token(user)
             return token
 
-class BusinessEntitiesInfoSerializer(serializers.ModelSerializer):
+class BusinessActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessActivity
+        fields = (
+            "id",
+            "name",
+            "city",
+            "post_code",
+            "street",
+            "apartment_number",
+            "house_number",
+            "contact_phone"
+        )
+
+class EmployeeSpecializationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmployeeSpecialization
+        fields = (
+            "id",
+            "name",
+        )
+
+class EmployeeFullInfoSerializer(serializers.ModelSerializer):
+    user = GetUserInfoSerializer()
+    spec = EmployeeSpecializationSerializer()
     class Meta:
         model = Employee
-        # fields = (
-        #     "id",
-        #     "name",
-        #     "post_code",
-        #     "street",
-        #     "apartment_number",
-        #     "house_number",
-        #     "contact_phone",
-        #     "owner_id",
-        # )
-        fields = '__all__'
+        fields = (
+            "id",
+            "is_owner",
+            "user",
+            "business_activity_id",
+            "spec"
+        )
+
+class DistinctServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Service
+        fields = (
+            "id",
+            "name", 
+        )

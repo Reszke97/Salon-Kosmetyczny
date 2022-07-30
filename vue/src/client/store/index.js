@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import { AUTH_API } from '../authorization/AuthAPI'
+import axios from "axios"
 
 Vue.use(Vuex)
 
@@ -18,6 +19,9 @@ export default new Vuex.Store({
     installationDialog: false,
     info: false,
     userQuoteID: null,
+    allBusinessActivities: [],
+    distinctServices: [],
+    distinctEmployeeSpecs: [],
     countries: [
       {
         // link: 'https://github.com/lipis/flag-icons/blob/main/flags/4x3/pl.svg',
@@ -97,6 +101,15 @@ export default new Vuex.Store({
     },
   },
   mutations: {
+    setBusinessActivities(state, value){
+      state.allBusinessActivities = value
+    },
+    setDistinctEmployeeSpecs(state, value){
+      state.distinctEmployeeSpecs = value
+    },
+    setDistinctServices(state, value){
+      state.distinctServices = value
+    },
     setRole(state, value){
       state.role = value
     },
@@ -171,6 +184,15 @@ export default new Vuex.Store({
       state.basket.splice(state.basketPositionIndex, 1, object)
       commit("setIsEditing")
     },
+
+    async getBusinessActivitesAndServices({commit}){
+      await axios.get('http://127.0.0.1:8000/api/v1/client/businessactivities/')
+      .then(res => {
+        commit("setBusinessActivities", res.data.business_activity)
+        commit("setDistinctServices", res.data.distinct_services)
+        commit("setDistinctEmployeeSpecs", res.data.distinct_employee_specs)
+      })
+    }
   },
   // modules: {
   //   configuration

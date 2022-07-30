@@ -100,27 +100,33 @@ class BusinessActivity(models.Model):
     apartment_number = models.CharField(blank=False, max_length=45)
     house_number = models.CharField(blank=False, max_length=45)
     contact_phone = models.CharField(blank=False, max_length=45)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-class Employee(models.Model):
-    is_owner = models.BooleanField(default=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    business_activity = models.ForeignKey(BusinessActivity, on_delete=models.CASCADE)
+    city = models.CharField(blank=False, max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
 class EmployeeSpecialization(models.Model):
     name = models.CharField(blank=False, max_length=100)
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+class Employee(models.Model):
+    is_owner = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    business_activity = models.ForeignKey(BusinessActivity, on_delete=models.CASCADE)
+    spec = models.ForeignKey(EmployeeSpecialization, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
 class Service(models.Model):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     duration = models.CharField(max_length=100)
     name = models.CharField(max_length=255)
     price = models.FloatField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class EmployeeServiceRelation(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

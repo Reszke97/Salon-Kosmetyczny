@@ -101,6 +101,7 @@
                 </v-col> -->
 
 <script>
+    import axios from "axios"
     import { AUTH_API } from "../../../authorization/AuthAPI";
     import { filters } from "../utils"
     import { About } from "../components"
@@ -125,6 +126,17 @@
 
             },
         },
+
+        async created(){
+            if(
+                this.$store.state.allBusinessActivities.length < 1 
+                || this.$store.state.distinctServices.length < 1
+                || this.$store.state.distinctEmployeeSpecs.length < 1
+            ){
+                this.$store.dispatch('getBusinessActivitesAndServices')
+            }
+        },
+
         methods: {
             
         }
