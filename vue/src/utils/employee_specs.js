@@ -97,14 +97,14 @@ export const employeeSpecs = () => {
             spec: "Perukarz",
             label: "Perukarz",
         },
-        {
-            spec: "Technik usług fryzjerskich",
-            label: "Technik usług fryzjerskich",
-        },
-        {
-            spec: "Pozostali fryzjerzy",
-            label: "Pozostali fryzjerzy",
-        },
+        // {
+        //     spec: "Technik usług fryzjerskich",
+        //     label: "Technik usług fryzjerskich",
+        // },
+        // {
+        //     spec: "Pozostali fryzjerzy",
+        //     label: "Pozostali fryzjerzy",
+        // },
         {
             spec: "Kosmetyczka",
             label: "Kosmetyczka",
