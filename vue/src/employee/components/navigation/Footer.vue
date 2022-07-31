@@ -12,21 +12,6 @@
             width="100%"
             class="indigo white--text text-center"
         >
-            <v-card-text>
-                <v-btn
-                    v-for="item in footerItems"
-                    :key="item.icon"
-                    :href="item.path"
-                    icon
-                    class="mx-4"
-                >
-                    <v-icon size="24px">
-                        {{ item.icon }}
-                    </v-icon>
-                </v-btn>
-            </v-card-text>
-
-            <v-divider></v-divider>
 
             <v-card-text class="white--text">
                 {{ new Date().getFullYear() }} — <strong>Marcin Reszke</strong>
@@ -39,12 +24,12 @@
     export default {
       data(){
         return {
-          footerItems: [
-            { path: 'https://www.facebook.com/', icon: 'mdi-facebook' },
-            { path: 'https://twitter.com/', icon: 'mdi-twitter' },
-            { path: 'https://www.linkedin.com/', icon: 'mdi-linkedin' },
-            { path: 'https://www.instagram.com/', icon: 'mdi-instagram ' },
-          ],
+        //   footerItems: [
+        //     { path: 'https://www.facebook.com/', icon: 'mdi-facebook' },
+        //     { path: 'https://twitter.com/', icon: 'mdi-twitter' },
+        //     { path: 'https://www.linkedin.com/', icon: 'mdi-linkedin' },
+        //     { path: 'https://www.instagram.com/', icon: 'mdi-instagram ' },
+        //   ],
         }
       },
 

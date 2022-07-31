@@ -78,11 +78,11 @@ AUTH_API.interceptors.response.use(
 			error.response.status === 401 &&
 			error.response.statusText === 'Unauthorized'
 		) {
-			const refreshToken = localStorage.getItem('employeeRefreshToken');
+			const employeeRefreshToken = localStorage.getItem('employeeRefreshToken');
 
 			try{
-				if (refreshToken) {
-					const tokenParts = JSON.parse(atob(refreshToken.split('.')[1]));
+				if (employeeRefreshToken) {
+					const tokenParts = JSON.parse(atob(employeeRefreshToken.split('.')[1]));
 	
 					// exp date in token is expressed in seconds, while now() returns milliseconds:
 					const now = Math.ceil(Date.now() / 1000);

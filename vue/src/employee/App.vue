@@ -8,7 +8,7 @@
         height: 100vh;
         display: flex;
         flex-direction: column;
-        background-color:#BFD7ED;
+        background-color: #0844a4!important;
       "
     >
       <nav-bar></nav-bar>

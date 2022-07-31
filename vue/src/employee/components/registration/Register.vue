@@ -7,7 +7,7 @@
             cols="11"
             sm="9"
             md="6"
-            lg="3"
+            lg="5"
         >
           <v-stepper v-model="stepperPosition" class="indigo" dark>
             <v-stepper-header class="">

@@ -41,7 +41,7 @@ AUTH_API.interceptors.response.use(
 			|| error.response.status === 400
 		){
 			console.log('a')
-			alert('Niepoprawny clientToken')
+			alert('Niepoprawny token')
 			store.commit('setIsAuthenticated', false)
 			return Promise.reject(error);
 		}
@@ -110,7 +110,7 @@ AUTH_API.interceptors.response.use(
 								return Promise.reject(error);
 							});
 					} else {
-						alert('Refresh clientToken is expired', tokenParts.exp, now);
+						alert('Refresh token is expired', tokenParts.exp, now);
 						store.commit('setIsAuthenticated', false);
 						// window.location.href = 'http://localhost:8080/login';
 					}

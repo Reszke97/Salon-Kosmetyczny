@@ -1,5 +1,5 @@
-import { employee_specs } from "./employee_specs";
+import { employeeSpecs } from "./employee_specs";
 
 export {
-    employee_specs
+    employeeSpecs
 }

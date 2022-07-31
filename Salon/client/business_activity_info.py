@@ -13,7 +13,17 @@ from ..serializers import *
 class BusinessActivityInfo(APIView):
     permission_classes = [AllowAny]
     def get(self, request, *args, **kwargs):
-        business_activity = BusinessActivity.objects.all()
+
+        city = request.query_params.get("city")
+        post_code = request.query_params.get("post_code")
+        search_nearby = request.query_params.get("nearby")
+        business_activity = []
+        if search_nearby == "true":
+            business_activity = BusinessActivity.objects.filter(
+                post_code__icontains = str(post_code[:4])
+            )
+        else:
+            business_activity = BusinessActivity.objects.filter(city = city)
         employees = Employee.objects.all()
         emoloyees_serialized = EmployeeFullInfoSerializer(employees, many=True)
         business_activity_serialized = BusinessActivitySerializer(business_activity, many=True)

@@ -2,23 +2,6 @@
     <div
         style="width:100%"
     >
-        <!-- <v-row
-            align="center"
-            justify="center"
-        >
-            <v-col
-                class="py-0 px-2"
-                cols="12"
-            >
-                <v-card >
-                    <v-card-title
-                        class="justify-center"
-                    >
-                        Dane o właścicielu
-                    </v-card-title>
-                </v-card>
-            </v-col>
-        </v-row> -->
         <v-row 
             align="center"
             justify="center"
@@ -46,6 +29,49 @@
                         :counter="50"
                         required
                     ></v-text-field>
+
+                    <v-autocomplete
+                        v-if="!isNewSpec"
+                        v-model="selectedSpec"
+                        :items="defaultSpecializations"
+                        item-text="label"
+                        item-value="value"
+                        label="Specjalność"
+                        placeholder="Wybierz specjalność"
+                        hint="Kliknij na ikonę aby dodać własną specjalność."
+                        persistent-hint
+                    >
+                        <template #append-outer>
+                            <v-btn
+                                icon
+                                @click="toggleSpecInput"
+                            >
+                                <v-icon>
+                                    mdi-swap-horizontal
+                                </v-icon>
+                            </v-btn>
+                        </template>
+                    </v-autocomplete>
+
+                    <v-text-field
+                        v-if="isNewSpec"
+                        v-model="selectedSpec"
+                        label="Specjalność"
+                        placeholder="Podaj specjalność"
+                        hint="Kliknij na ikonę aby wybrać specjalność z listy."
+                        persistent-hint
+                    >
+                        <template #append-outer>
+                            <v-btn
+                                icon
+                                @click="toggleSpecInput"
+                            >
+                                <v-icon>
+                                    mdi-keyboard-backspace 
+                                </v-icon>
+                            </v-btn>
+                        </template>
+                    </v-text-field>
 
                     <v-text-field
                         v-model="email"
@@ -153,6 +179,7 @@
 <script>
     import axios from 'axios'
     import { mapState} from 'vuex';
+    import { employeeSpecs } from "../../../utils"
     export default {
         data: () => ({
             valid: true,
@@ -192,6 +219,9 @@
             checkboxRules : [
                 v => !!v || 'Aby kontynuować konieczna jest zgoda!'
             ],
+            defaultSpecializations: employeeSpecs(),
+            selectedSpec: "",
+            isNewSpec: false,
         }),
         computed: {
 
@@ -202,6 +232,9 @@
                 if(IS_VALID){
                     this.sendForm()
                 }
+            },
+            toggleSpecInput() {
+                this.isNewSpec = !this.isNewSpec
             },
             reset () {
                 this.selectedCountry = ''
