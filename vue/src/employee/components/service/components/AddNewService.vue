@@ -1,6 +1,7 @@
 <template>
     <v-row
         class="pt-5"
+        style="background-color:#3f51b5!important"
     >
         <v-col>
             <v-row
@@ -17,6 +18,7 @@
                         v-model="serviceName"
                         label="Nazwa usługi"
                         placeholder="Podaj nazwę usługi"
+                        dark
                     ></v-text-field>
                 </v-col>
             </v-row>
@@ -34,6 +36,7 @@
                         v-model="price"
                         label="Cena [PLN]"
                         placeholder="Podaj cenę"
+                        dark
                     ></v-text-field>
                 </v-col>
             </v-row>
@@ -51,6 +54,7 @@
                         v-model="timeSpan"
                         label="Czas trwania usługi"
                         placeholder="Podaj czas trwania"
+                        dark
                     ></v-text-field>
                 </v-col>
             </v-row>
@@ -75,7 +79,6 @@
 
 <script>
     import { AUTH_API } from "../../../authorization/AuthAPI";
-    
     export default {
         name: "",
         components: {
@@ -94,7 +97,8 @@
         },
         methods: {
             async postNewService(){
-                await AUTH_API.post("/api/v1/employee/postnewservice/", {
+                const API = await AUTH_API();
+                await API.post("/api/v1/employee/postnewservice/", {
                     name: this.serviceName,
                     price: this.price,
                     duration: this.timeSpan

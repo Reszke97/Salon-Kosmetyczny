@@ -1,3 +1,4 @@
+from pyexpat import model
 from rest_framework import serializers
 from . models import *
 from rest_framework_simplejwt.state import token_backend
@@ -160,4 +161,12 @@ class DistinctServiceSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name", 
+        )
+
+class EmployeeServices(serializers.ModelSerializer):
+    service = ServiceSerializer()
+    class Meta:
+        model = EmployeeServiceRelation
+        fields = (
+            "service",
         )

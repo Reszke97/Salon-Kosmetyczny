@@ -254,7 +254,8 @@
             },
 
             async getCalendarData(sameView, calendarType, url){
-                await AUTH_API.get(url)
+                const API = await AUTH_API();
+                await API.get(url)
                     .then((res) => {
                         this.daysData = {...res.data}
                         if(calendarType === "monthly" && this.daysData.month.number !== this.today.getMonth() + 1){

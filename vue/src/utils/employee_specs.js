@@ -93,10 +93,6 @@ export const employeeSpecs = () => {
             spec: "Perukarz",
             label: "Perukarz",
         },
-        {
-            spec: "Perukarz",
-            label: "Perukarz",
-        },
         // {
         //     spec: "Technik usług fryzjerskich",
         //     label: "Technik usług fryzjerskich",

@@ -32,15 +32,16 @@ export default {
     Footer
   },
 
-  created(){
+  async created(){
     // sprawdzenie czy refresh token istnieje
+    const API = await AUTH_API();
     if(localStorage.getItem('employeeRefreshToken')){
       try {
         const NOW = Math.ceil(Date.now() / 1000);
         const REFRESH_TOKEN_PARTS = JSON.parse(atob(localStorage.getItem('employeeRefreshToken').split('.')[1]));
         // sprawdź czy refresh token wygasł
         if(REFRESH_TOKEN_PARTS.exp < NOW ){
-          AUTH_API.post('/api/v1/token/refresh/', {
+          API.post('/api/v1/token/refresh/', {
             refresh: localStorage.getItem('employeeRefreshToken')
           })
           .then(response => {
@@ -56,7 +57,7 @@ export default {
         }
         // sprawdzenie czy token jest legitny
         else{
-          AUTH_API.post('/api/v1/token/verify/', {
+          API.post('/api/v1/token/verify/', {
             token: localStorage.getItem('employeeRefreshToken')
           })
           .then(() => {
@@ -64,7 +65,7 @@ export default {
             this.$store.commit('setIsAuthenticated', true)
           })
           .then(() => {
-            AUTH_API.get('/api/v1/user/getuserrole/')
+            API.get('/api/v1/user/getuserrole/')
             .then(response=>{
               this.$store.commit('setRole', response.data.role)
             })

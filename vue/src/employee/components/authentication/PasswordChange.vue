@@ -88,8 +88,9 @@
                     this.passwordChange()
                 }
             },
-            passwordChange(){
-                AUTH_API.put('api/v1/user/passwordchange/', {
+            async passwordChange(){
+                const API = await AUTH_API();
+                API.put('api/v1/user/passwordchange/', {
                     old_password: this.oldPassword,
                     new_password: this.newPassword
                 })

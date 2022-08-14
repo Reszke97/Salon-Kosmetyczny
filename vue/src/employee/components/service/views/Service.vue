@@ -13,13 +13,14 @@
             lg="6"
             style="
                 height:100%;
-                background-color:#BFD7ED;
+                background-color:#3f51b5;
             "
         >
             <v-toolbar flat
                 id="my-tab"
                 style="
-                    min-height:112px!important
+                    min-height:112px!important;
+                    background-color:#3f51b5;
                 "
             >
                 <v-spacer></v-spacer>
@@ -64,6 +65,7 @@
                 v-model="tabs"
                 style="
                     height: calc(100% - 112px);
+                    background-color:#3f51b5!important
                 "
             >
                 <v-tab-item
@@ -77,33 +79,14 @@
                     :value="'tab-2'"
                     style="height:100%"
                 >
-                    <div>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-                        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip 
-                        ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-                        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip 
-                        ex ea commodo consequat.Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-                        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip 
-                    </div>
+                    <get-services
+                        :services="services"
+                    />
                 </v-tab-item>
                 <v-tab-item
                     :value="'tab-3'"
                     style="height:100%"
                 >
-                    <div>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-                        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip 
-                        ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-                        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip 
-                        ex ea commodo consequat.Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-                        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip 
-                    </div>
                 </v-tab-item>
             </v-tabs-items>
         </v-col>
@@ -112,24 +95,31 @@
 
 <script>
     import AddNewService from "../components/AddNewService.vue"
+    import GetServices from "../components/GetServices.vue"
+    import { AUTH_API } from "../../../authorization/AuthAPI";
+
     export default {
         name: "Service",
         props: {
 
         },
         components: {
-            AddNewService
+            AddNewService,
+            GetServices
         },
         data: () => ({
             tabs: null,
-            text: `
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-                sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip 
-                ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-                sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-            `,
-        })
+            services: []
+        }),
+        async created(){
+            setTimeout( async () => {
+                const API = await AUTH_API();
+                API.get("/api/v1/employee/getemployeeservices/")
+                .then(res => {
+                    this.services = res.data
+                })
+            }, 100)
+        },
     }
 </script>
 

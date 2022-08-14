@@ -131,9 +131,8 @@ export default new Vuex.Store({
       state.basket.push(state.basket[index])
     },
     setToken (state, { access, refresh }) {
-      localStorage.setItem( 'token', access );
-      localStorage.setItem( 'refreshToken', refresh );
-      AUTH_API.defaults.headers['Authorization'] = 'JWT ' + access;
+      localStorage.setItem( 'employeeToken', access );
+      localStorage.setItem( 'employeeRefreshToken', refresh );
       state.accessToken = access
       state.refreshToken = refresh
     },
@@ -151,7 +150,6 @@ export default new Vuex.Store({
         state.accessToken = null
         state.refreshToken = null
         state.isAuthenticated = false;
-        AUTH_API.defaults.headers['Authorization'] = null;
       }
     },
 
