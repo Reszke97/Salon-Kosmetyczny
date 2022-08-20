@@ -1,4 +1,4 @@
-from unicodedata import name
+from unicodedata import category, name
 from django.db import models
 from django.db.models.fields import IntegerField, TextField
 from django.db.models.fields.related import ForeignKey
@@ -116,20 +116,41 @@ class Employee(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+class ServiceCategory(models.Model):
+    name = models.CharField(blank=False, max_length=100)
+    styles = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 class Service(models.Model):
     duration = models.CharField(max_length=100)
     name = models.CharField(max_length=255)
     price = models.FloatField()
+    service_category = models.ForeignKey(ServiceCategory, on_delete=models.CASCADE, null=True)
+    styles = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-class EmployeeServiceRelation(models.Model):
+def upload_path(instance, filename):
+    return '/'.join(['images',str(instance.employee.pk),filename])
+class EmployeeImage(models.Model):
+    content = models.ImageField(blank=True, null=True, upload_to=upload_path)
+    name = models.CharField(max_length=255)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    service = models.ForeignKey(Service, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+class EmployeeServiceConfiguration(models.Model):
+    # display_order -> nr kolejności w jakiej usługa będzie wyświetlona
+    display_order = models.IntegerField()
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    employee_image = models.ForeignKey(EmployeeImage, on_delete=models.CASCADE)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    styles = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+#TODO wywalić ClientEmployeeRelation
 class ClientEmployeeRelation(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     client = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -142,6 +163,3 @@ class CosmeticProcedure(models.Model):
     client = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-class EmployeeServicesCustomViews(models.Model):
-    

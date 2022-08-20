@@ -163,10 +163,10 @@ class DistinctServiceSerializer(serializers.ModelSerializer):
             "name", 
         )
 
-class EmployeeServices(serializers.ModelSerializer):
-    service = ServiceSerializer()
-    class Meta:
-        model = EmployeeServiceRelation
-        fields = (
-            "service",
-        )
+# class EmployeeServices(serializers.ModelSerializer):
+#     service = ServiceSerializer()
+#     class Meta:
+#         model = EmployeeServiceRelation
+#         fields = (
+#             "service",
+#         )
