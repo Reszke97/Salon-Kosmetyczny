@@ -87,6 +87,17 @@ class ServiceSerializer(serializers.ModelSerializer):
         model = Service
         fields = ('duration', 'name', 'price')
 
+class EmployeeServiceConfigurationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmployeeServiceConfiguration
+        fields = (
+            'display_order', 
+            'styles', 
+            'employee_id',
+            'employee_image_id',
+            'service_id',
+        )
+
 class GetUserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

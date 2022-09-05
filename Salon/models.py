@@ -144,7 +144,7 @@ class EmployeeServiceConfiguration(models.Model):
     # display_order -> nr kolejności w jakiej usługa będzie wyświetlona
     display_order = models.IntegerField()
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
-    employee_image = models.ForeignKey(EmployeeImage, on_delete=models.CASCADE)
+    employee_image = models.ForeignKey(EmployeeImage, on_delete=models.CASCADE, null=True)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     styles = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

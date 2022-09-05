@@ -25,8 +25,19 @@ class ServiceApi(APIView):
     def get(self, request):
         # EmployeeServices
         employee = Employee.objects.get(user_id = request.user.pk)
-        print(employee)
-        services = EmployeeServiceRelation.objects.filter(employee_id = employee.pk)
-        services_serialized = EmployeeServices(services, many=TRUE)
+        employee_service_configs = EmployeeServiceConfiguration.objects.filter(employee_id=employee)
+        employee_service_configs_serialized = EmployeeServiceConfigurationSerializer(employee_service_configs, many=True)
 
-        return Response(services_serialized.data, status=status.HTTP_200_OK)
+        services = []
+        for empl_srv_config in employee_service_configs_serialized.data:
+            services.append(
+                ServiceSerializer(Service.objects.get(pk=empl_srv_config["service_id"])).data
+            )
+        
+        print(services)
+
+
+
+        
+        # services = Service.objects.filter(pk=)
+        # return Response(services_serialized.data, status=status.HTTP_200_OK)
