@@ -33,11 +33,6 @@ class ServiceApi(APIView):
             services.append(
                 ServiceSerializer(Service.objects.get(pk=empl_srv_config["service_id"])).data
             )
-        
-        print(services)
-
-
-
-        
+        # print(services)
         # services = Service.objects.filter(pk=)
-        # return Response(services_serialized.data, status=status.HTTP_200_OK)
+        return Response(services, status=status.HTTP_200_OK)

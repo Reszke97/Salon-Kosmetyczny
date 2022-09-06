@@ -1,7 +1,10 @@
 <template>
     <v-row
         class="pt-5"
-        style="background-color:#3f51b5!important"
+        :style="{
+            backgroundColor:'#3f51b5!important',
+            minHeight: minHeight
+        }"
     >
         <v-col>
             <v-row
@@ -68,6 +71,7 @@
                     md="8"
                     lg="6"
                 >
+                    <slot name="closeDialog" />
                     <v-btn
                         @click="postNewService"
                     >Dodaj usługę</v-btn>
@@ -85,7 +89,10 @@
             
         },
         props: {
-            
+            minHeight: {
+                type: String,
+                default: "auto"
+            }
         },
         data: () => ({
             serviceName: "",

@@ -79,8 +79,9 @@
                     :value="'tab-2'"
                     style="height:100%"
                 >
-                    <get-services
+                    <services
                         :services="services"
+                        :get-services="getServices"
                     />
                 </v-tab-item>
                 <v-tab-item
@@ -95,7 +96,7 @@
 
 <script>
     import AddNewService from "../components/AddNewService.vue"
-    import GetServices from "../components/GetServices.vue"
+    import Services from "../components/Services.vue"
     import { AUTH_API } from "../../../authorization/AuthAPI";
 
     export default {
@@ -105,20 +106,20 @@
         },
         components: {
             AddNewService,
-            GetServices
+            Services
         },
         data: () => ({
             tabs: null,
             services: []
         }),
-        async created(){
-            setTimeout( async () => {
+        methods: {
+            async getServices(){
                 const API = await AUTH_API();
                 API.get("/api/v1/employee/getemployeeservices/")
                 .then(res => {
                     this.services = res.data
                 })
-            }, 100)
+            }
         },
     }
 </script>

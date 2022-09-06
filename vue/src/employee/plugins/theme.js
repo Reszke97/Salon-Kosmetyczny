@@ -9,6 +9,7 @@ export default {
     error: colors.purple.base,
     warning: colors.pink.base,
     info: colors.red.base,
-    success: colors.cyan.base,
+    success: colors.indigo.accent1,
+    'success--text': '#FF00FF'
     // background: colors.indigo,
 }
