@@ -98,6 +98,15 @@ class EmployeeServiceConfigurationSerializer(serializers.ModelSerializer):
             'service_id',
         )
 
+class EmployeeImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmployeeImage
+        fields = (
+            'name',
+            'content',
+            'employee',
+        )
+
 class GetUserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

@@ -18,7 +18,7 @@
                     lg="6"
                 >
                     <v-text-field
-                        v-model="serviceName"
+                        v-model="serviceInfo.name"
                         label="Nazwa usługi"
                         placeholder="Podaj nazwę usługi"
                         dark
@@ -36,7 +36,7 @@
                     lg="6"
                 >
                     <v-text-field
-                        v-model="price"
+                        v-model="serviceInfo.price"
                         label="Cena [PLN]"
                         placeholder="Podaj cenę"
                         dark
@@ -54,7 +54,7 @@
                     lg="6"
                 >
                     <v-text-field
-                        v-model="timeSpan"
+                        v-model="serviceInfo.duration"
                         label="Czas trwania usługi"
                         placeholder="Podaj czas trwania"
                         dark
@@ -71,10 +71,45 @@
                     md="8"
                     lg="6"
                 >
+                    <v-file-input
+                        v-model="serviceInfo.images"
+                        accept=".png, .jpg"
+                        label="Załącznik"
+                        placeholder="Dodaj zdjęcia"
+                        multiple
+                        prepend-icon="mdi-paperclip"
+                        :show-size="1000"
+                        counter
+                        dark
+                    >
+                        <template #selection="{ text }">
+                        <v-chip
+                            small
+                            label
+                            color="success"
+                        >
+                            {{ text }}
+                        </v-chip>
+                        </template>
+                    </v-file-input>
+                </v-col>
+            </v-row>
+            <v-row
+                align="center"
+                justify="center"
+            >
+                <v-col
+                    cols="11"
+                    sm="10"
+                    md="8"
+                    lg="6"
+                >
+                <div class="d-flex justify-end">
                     <slot name="closeDialog" />
                     <v-btn
-                        @click="postNewService"
-                    >Dodaj usługę</v-btn>
+                        @click="postService"
+                    >{{ preview ? "Zapisz zmiany" : "Dodaj usługę" }}</v-btn>
+                </div>
                 </v-col>
             </v-row>
         </v-col>
@@ -92,24 +127,43 @@
             minHeight: {
                 type: String,
                 default: "auto"
+            },
+            preview: {
+                type: Boolean,
+                default: () => false
+            },
+            serviceToEdit: {
+                type: Object,
+                default: () => ({})
             }
         },
         data: () => ({
-            serviceName: "",
-            price: 0,
-            timeSpan: ""
+            serviceInfo: {
+                name: "",
+                price: 0,
+                duration: "",
+                images: [],
+            }
         }),
         computed: {
             
         },
-        methods: {
-            async postNewService(){
-                const API = await AUTH_API();
-                await API.post("/api/v1/employee/postnewservice/", {
-                    name: this.serviceName,
-                    price: this.price,
-                    duration: this.timeSpan
+        created(){
+            if(this.preview){
+                // console.log(this.serviceToEdit)
+                Object.keys(this.serviceToEdit).forEach(key => {
+                    this.serviceInfo[key] = this.serviceToEdit[key];
                 })
+            }
+        },
+        methods: {
+            async postService(){
+                const API = await AUTH_API();
+                let actionType = "post";
+                if(this.preview){
+                    actionType = "put"
+                }
+                await API[actionType]("/api/v1/employee/postnewservice/", this.serviceInfo)
                 .then(() => {
                     console.log("hurra!")
                 })

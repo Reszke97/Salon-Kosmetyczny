@@ -132,7 +132,7 @@ class Service(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 def upload_path(instance, filename):
-    return '/'.join(['images',str(instance.employee.pk),filename])
+    return '/'.join(["images", "employee_" + str(instance.employee.pk),filename])
 class EmployeeImage(models.Model):
     content = models.ImageField(blank=True, null=True, upload_to=upload_path)
     name = models.CharField(max_length=255)

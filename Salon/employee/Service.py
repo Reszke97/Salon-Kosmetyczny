@@ -16,11 +16,30 @@ class ServiceApi(APIView):
 
     def post(self, request):
         request.data["employee"] = Employee.objects.get(user = request.user.pk).pk
-        serializer = ServiceSerializer(data=request.data)
+        # serializer = ServiceSerializer(data=request.data)
+
+        serializer = EmployeeImageSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # def put(self, request):
+    #     request.data["employee"] = Employee.objects.get(user = request.user.pk).pk
+    #     serializer = ServiceSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # def put(self, request):
+    #     request.data["employee"] = Employee.objects.get(user = request.user.pk).pk
+    #     data = request.data
+    #     serializer = GetUserInfoSerializer(data, data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(status=status.HTTP_200_OK)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
         # EmployeeServices

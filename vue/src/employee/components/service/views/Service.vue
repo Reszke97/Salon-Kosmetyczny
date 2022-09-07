@@ -72,7 +72,7 @@
                     :value="'tab-1'"
                     style="height:100%"
                 >
-                    <add-new-service />
+                    <add-or-update-service />
                 </v-tab-item>
 
                 <v-tab-item
@@ -95,7 +95,7 @@
 </template>
 
 <script>
-    import AddNewService from "../components/AddNewService.vue"
+    import AddOrUpdateService from "../components/AddOrUpdateService.vue"
     import Services from "../components/Services.vue"
     import { AUTH_API } from "../../../authorization/AuthAPI";
 
@@ -105,7 +105,7 @@
 
         },
         components: {
-            AddNewService,
+            AddOrUpdateService,
             Services
         },
         data: () => ({
