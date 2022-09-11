@@ -85,7 +85,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
-        fields = ('duration', 'name', 'price')
+        fields = ('duration', 'name', 'price', 'employee')
 
 class EmployeeServiceConfigurationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -102,7 +102,6 @@ class EmployeeImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployeeImage
         fields = (
-            'name',
             'content',
             'employee',
         )

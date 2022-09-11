@@ -72,7 +72,7 @@
                     lg="6"
                 >
                     <v-file-input
-                        v-model="serviceInfo.images"
+                        v-model="images"
                         accept=".png, .jpg"
                         label="Załącznik"
                         placeholder="Dodaj zdjęcia"
@@ -107,7 +107,7 @@
                 <div class="d-flex justify-end">
                     <slot name="closeDialog" />
                     <v-btn
-                        @click="postService"
+                        @click="postImages"
                     >{{ preview ? "Zapisz zmiany" : "Dodaj usługę" }}</v-btn>
                 </div>
                 </v-col>
@@ -142,8 +142,8 @@
                 name: "",
                 price: 0,
                 duration: "",
-                images: [],
-            }
+            },
+            images: [],
         }),
         computed: {
             
@@ -157,6 +157,36 @@
             }
         },
         methods: {
+            async postImages (){
+                const API = await AUTH_API();
+
+                const formData = new FormData();
+                for (let i = 0; i < this.images.length; i += 1) {
+                    formData.append('files', this.images[i]);
+                    // formData.append("employee", 4);
+                }
+
+                console.log(...formData)
+
+                let actionType = "post";
+                if(this.preview){
+                    actionType = "put"
+                }
+                await API[actionType]("/api/v1/employee/postnewimages/",
+                    formData,
+                    {
+                        headers: {
+                            "content-type": "multipart/form-data",
+                        },
+                    }
+                )
+                .then(() => {
+                    console.log("hurra!")
+                })
+                .catch((err) => {
+                    console.log(err)
+                })
+            },
             async postService(){
                 const API = await AUTH_API();
                 let actionType = "post";

@@ -1,5 +1,7 @@
 from django.urls import path
 from django.views.generic.base import View
+
+from Salon.employee.Images import ImagesApi
 # from rest_framework import views
 from .auth.auth_backend import *
 from .auth import auth_backend
@@ -31,6 +33,7 @@ urlpatterns = [
     path('api/v1/employee/token/', CustomTokenObtainPairViewEmployee.as_view(), name = 'token_obtain_pair_employee'),
     path('api/v1/employee/getmonth/', GetMonthDays.as_view(), name= 'get_month'),
     path('api/v1/employee/postnewservice/', ServiceApi.as_view(), name= 'post_new_service'),
+    path('api/v1/employee/postnewimages/', ImagesApi.as_view(), name= 'post_new_images'),
     path('api/v1/employee/getemployeeservices/', ServiceApi.as_view(), name= 'gete_mployee_services'),
 
 

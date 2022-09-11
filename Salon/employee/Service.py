@@ -7,6 +7,7 @@ from rest_framework.permissions import (
 from ..auth.auth_backend import CheckIfPasswordWasChanged
 from rest_framework.response import Response
 from django.http import HttpResponse
+
 from rest_framework import status
 from rest_framework.views import APIView
 from ..serializers import *
@@ -14,15 +15,19 @@ from ..serializers import *
 class ServiceApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
 
-    def post(self, request):
-        request.data["employee"] = Employee.objects.get(user = request.user.pk).pk
-        # serializer = ServiceSerializer(data=request.data)
-
-        serializer = EmployeeImageSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
+    def add_service(self, service):
+        service_serializer = ServiceSerializer(data=service)
+        if service_serializer.is_valid():
+            service_serializer.save()
             return Response(status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(service_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request):
+        employee = Employee.objects.get(user = request.user.pk).pk
+        request.data["employee"] = employee
+        return self.add_service(request.data)
+        
 
     # def put(self, request):
     #     request.data["employee"] = Employee.objects.get(user = request.user.pk).pk

@@ -123,6 +123,7 @@ class ServiceCategory(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 class Service(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     duration = models.CharField(max_length=100)
     name = models.CharField(max_length=255)
     price = models.FloatField()
@@ -135,7 +136,6 @@ def upload_path(instance, filename):
     return '/'.join(["images", "employee_" + str(instance.employee.pk),filename])
 class EmployeeImage(models.Model):
     content = models.ImageField(blank=True, null=True, upload_to=upload_path)
-    name = models.CharField(max_length=255)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
