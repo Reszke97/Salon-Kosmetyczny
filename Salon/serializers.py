@@ -87,6 +87,12 @@ class ServiceSerializer(serializers.ModelSerializer):
         model = Service
         fields = ('duration', 'name', 'price', 'employee')
 
+class ExistingServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Service
+        fields = ('duration', 'name', 'price', 'employee', 'id')
+
+
 class EmployeeServiceConfigurationSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployeeServiceConfiguration
@@ -104,6 +110,19 @@ class EmployeeImageSerializer(serializers.ModelSerializer):
         fields = (
             'content',
             'employee',
+        )
+
+class EmployeeServiceWithConfig(serializers.ModelSerializer):
+    service = ExistingServiceSerializer()
+
+    class Meta:
+        model = EmployeeServiceConfiguration
+        fields = (
+            'display_order', 
+            'styles', 
+            'employee_id',
+            'image_set_id',
+            'service',
         )
 
 class GetUserInfoSerializer(serializers.ModelSerializer):

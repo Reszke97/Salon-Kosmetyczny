@@ -9,11 +9,12 @@
 
 <script>
     import { AUTH_API } from '../../authorization/AuthAPI'
-    import axios from 'axios'
     export default {
         data: () => ({
         }),
-        // created(){
-        // },
+        async created(){
+            const API = await AUTH_API();
+            await API.get('/api/v1/employee/get-images/');
+        },
     }
 </script>

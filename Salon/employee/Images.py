@@ -1,3 +1,4 @@
+import base64
 from rest_framework.parsers import MultiPartParser, FormParser
 from pickle import TRUE
 from rest_framework.permissions import (

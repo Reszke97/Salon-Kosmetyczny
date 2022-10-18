@@ -1,3 +1,4 @@
+import base64
 from pickle import TRUE
 from rest_framework.permissions import (
     IsAuthenticated,  
@@ -23,6 +24,22 @@ class ServiceApi(APIView):
         else:
             return Response(service_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def map_image(self, employee_config):
+        for config in employee_config:
+            images = EmployeeImage.objects.filter(image_set = config["image_set_id"])
+            image_list = []
+            for image in images:
+                content = str(image.content).replace("/", "\\")
+                file_type = content[content.find('.') + 1::].upper()
+                # Note: The "rb" option stands for "read binary".
+                with open(settings.MEDIA_ROOT + "\\" + content, "rb") as image_file:
+                    image_data = base64.b64encode(image_file.read()).decode('utf-8')
+                    image_list.append({
+                        "image": image_data,
+                        "file_type": file_type
+                    })
+            config["employee_image"] = image_list
+
     def post(self, request):
         employee = Employee.objects.get(user = request.user.pk).pk
         request.data["employee"] = employee
@@ -47,16 +64,9 @@ class ServiceApi(APIView):
     #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        # EmployeeServices
         employee = Employee.objects.get(user_id = request.user.pk)
         employee_service_configs = EmployeeServiceConfiguration.objects.filter(employee_id=employee)
-        employee_service_configs_serialized = EmployeeServiceConfigurationSerializer(employee_service_configs, many=True)
+        employee_service_configs_serialized = EmployeeServiceWithConfig(employee_service_configs, many=True)
+        self.map_image(employee_service_configs_serialized.data)
 
-        services = []
-        for empl_srv_config in employee_service_configs_serialized.data:
-            services.append(
-                ServiceSerializer(Service.objects.get(pk=empl_srv_config["service_id"])).data
-            )
-        # print(services)
-        # services = Service.objects.filter(pk=)
-        return Response(services, status=status.HTTP_200_OK)
+        return Response(employee_service_configs_serialized.data, status=status.HTTP_200_OK)

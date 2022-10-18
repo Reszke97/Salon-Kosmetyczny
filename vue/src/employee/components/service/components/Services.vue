@@ -5,14 +5,14 @@
                 <v-expansion-panels dark class="accordion-wrapper">
                     <v-expansion-panel
                         v-for="service of services"
-                        :key="service.id"
+                        :key="service.service.id"
                     >
                         <v-expansion-panel-header>
-                            <h2>Usługa {{ service.name }}</h2>
+                            <h2>Usługa {{ service.service.name }}</h2>
                         </v-expansion-panel-header>
                         <v-expansion-panel-content>
-                            <p><b>Czas Trwania: </b>{{ service.duration }}</p>
-                            <p><b>Cena: </b>{{ service.price }}</p>
+                            <p><b>Czas Trwania: </b>{{ service.service.duration }}</p>
+                            <p><b>Cena: </b>{{ service.service.price }}</p>
                             <v-row
                                 justify="end"
                             >
@@ -92,10 +92,6 @@
         },
         
         methods: {
-            editService(serviceId){
-
-            },
-
             closeDialog(){
                 this.openDialog = false;
             }

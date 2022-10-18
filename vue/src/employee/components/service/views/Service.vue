@@ -115,9 +115,31 @@
         methods: {
             async getServices(){
                 const API = await AUTH_API();
-                API.get("/api/v1/employee/getemployeeservices/")
-                .then(res => {
-                    this.services = res.data
+                await API.get("/api/v1/employee/getemployeeservices/")
+                    .then(res => {
+                        this.services = res.data
+                    })
+                this.mapImagesType(this.services);
+            },
+            mapImagesType(services){
+                services.forEach((service, idx) => {
+                    this.services[idx].employee_image = service.employee_image.map((el) => {
+                        let type;
+                        switch (el.file_type) {
+                            case "PNG":
+                                type = "data:image/png;base64,";
+                            break;
+                            case "JPG":
+                                type = "data:image/jpeg;base64,";
+                            break;
+                            case "JPEG":
+                                type = "data:image/jpeg;base64,";
+                            break;
+                            default:
+                                type = "";
+                        }
+                        return { ...el, image: type + el.image, isFromDB: true };
+                    });
                 })
             }
         },

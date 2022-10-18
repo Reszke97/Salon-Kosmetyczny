@@ -134,9 +134,13 @@ class Service(models.Model):
 
 def upload_path(instance, filename):
     return '/'.join(["images", "employee_" + str(instance.employee.pk),filename])
+class EmployeeImageSet(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 class EmployeeImage(models.Model):
     content = models.ImageField(blank=True, null=True, upload_to=upload_path)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    image_set = models.ForeignKey(EmployeeImageSet, on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -144,7 +148,7 @@ class EmployeeServiceConfiguration(models.Model):
     # display_order -> nr kolejności w jakiej usługa będzie wyświetlona
     display_order = models.IntegerField()
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
-    employee_image = models.ForeignKey(EmployeeImage, on_delete=models.CASCADE, null=True)
+    image_set = models.ForeignKey(EmployeeImageSet, on_delete=models.CASCADE, null=True)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     styles = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -18,7 +18,7 @@
                     lg="6"
                 >
                     <v-text-field
-                        v-model="serviceInfo.name"
+                        v-model="serviceInfo.service.name"
                         label="Nazwa usługi"
                         placeholder="Podaj nazwę usługi"
                         dark
@@ -36,7 +36,7 @@
                     lg="6"
                 >
                     <v-text-field
-                        v-model="serviceInfo.price"
+                        v-model="serviceInfo.service.price"
                         label="Cena [PLN]"
                         placeholder="Podaj cenę"
                         dark
@@ -54,7 +54,7 @@
                     lg="6"
                 >
                     <v-text-field
-                        v-model="serviceInfo.duration"
+                        v-model="serviceInfo.service.duration"
                         label="Czas trwania usługi"
                         placeholder="Podaj czas trwania"
                         dark
@@ -71,6 +71,56 @@
                     md="8"
                     lg="6"
                 >
+                <div 
+                    id="image-set"
+                    style="display: flex; flex-direction: row"
+                >
+                    <div 
+                        style="display: flex; width:100%"
+                        v-for="(img, idx) of serviceInfo.employee_image"
+                        :key="idx"
+                    >
+                        <div style="display: flex; flex-direction: column">
+                            <img
+                                :src="img.image"
+                                style="width:100%;height: 100%"
+                            />
+                            <div style="display: flex; flex-direction: row; width:100%">
+                                <div style="width:100%">
+                                    <v-btn
+                                        @click="setShowImagePreview(idx)"
+                                    >
+                                        Podgląd
+                                    </v-btn>
+                                </div>
+                                <div style="width:100%">
+                                    <v-btn>
+                                        Usuń
+                                    </v-btn>
+                                </div>
+                            </div>
+                        </div>
+                        <v-dialog
+                            id="showImagePreview"
+                            v-model="showImagePreview"
+                            width="75vw"
+                            style="min-height:350px!important"
+                            v-if="showImagePreview"
+                        >
+                            <img
+                                :src="serviceInfo.employee_image[imagePreviewIdx].image"
+                                style="width:100%;height: 100%"
+                            />
+                            <v-btn
+                                dark
+                                @click="setShowImagePreview"
+                                class="mr-2"
+                            >
+                                Zamknij
+                            </v-btn>
+                        </v-dialog>
+                    </div>
+                </div>
                     <v-file-input
                         v-model="images"
                         accept=".png, .jpg"
@@ -81,6 +131,7 @@
                         :show-size="1000"
                         counter
                         dark
+                        @change="() => test()"
                     >
                         <template #selection="{ text }">
                         <v-chip
@@ -139,11 +190,16 @@
         },
         data: () => ({
             serviceInfo: {
-                name: "",
-                price: 0,
-                duration: "",
+                service: {
+                    name: "",
+                    price: 0,
+                    duration: "",
+                },
+                images: [],
             },
+            imagePreviewIdx: null,
             images: [],
+            showImagePreview: false,
         }),
         computed: {
             
@@ -156,7 +212,24 @@
                 })
             }
         },
+        // mounted(){
+        //     if(this.preview){
+        //         const items = document.querySelectorAll("#image-set div")
+        //         for(const item of items){
+        //             item.addEventListener("click", () => {
+
+        //             })
+        //         }
+        //     }
+        // },
         methods: {
+            test(){
+                console.log('sth')
+            },
+            setShowImagePreview(idx = null){
+                this.showImagePreview = !this.showImagePreview;
+                this.imagePreviewIdx = idx;
+            },
             async postImages (){
                 const API = await AUTH_API();
 
