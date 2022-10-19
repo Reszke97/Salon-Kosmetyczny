@@ -83,6 +83,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         "Does the user have permissions to view the app `app_label`?"
         # Simplest possible answer: Yes, always
         return True
+
+def upload_path(instance, filename):
+    return '/'.join(["images", "employee_" + str(instance.employee.pk),filename])
 class Appointment(models.Model):
     date = models.CharField(max_length=100)
     time_start = models.CharField(max_length=100)
@@ -108,11 +111,18 @@ class EmployeeSpecialization(models.Model):
     name = models.CharField(blank=False, max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+class EmployeeAvatar(models.Model):
+    content = models.ImageField(blank=True, null=True, upload_to=upload_path)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
 class Employee(models.Model):
     is_owner = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     business_activity = models.ForeignKey(BusinessActivity, on_delete=models.CASCADE)
     spec = models.ForeignKey(EmployeeSpecialization, on_delete=models.CASCADE)
+    avatar = models.ForeignKey(EmployeeAvatar, on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -132,8 +142,6 @@ class Service(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-def upload_path(instance, filename):
-    return '/'.join(["images", "employee_" + str(instance.employee.pk),filename])
 class EmployeeImageSet(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -143,6 +151,7 @@ class EmployeeImage(models.Model):
     image_set = models.ForeignKey(EmployeeImageSet, on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
 
 class EmployeeServiceConfiguration(models.Model):
     # display_order -> nr kolejności w jakiej usługa będzie wyświetlona
@@ -154,16 +163,10 @@ class EmployeeServiceConfiguration(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-#TODO wywalić ClientEmployeeRelation
-class ClientEmployeeRelation(models.Model):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    client = models.ForeignKey(User, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
 class CosmeticProcedure(models.Model):
     appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     client = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+

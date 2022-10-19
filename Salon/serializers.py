@@ -85,12 +85,12 @@ class ChangePasswordSerializer(serializers.Serializer):
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
-        fields = ('duration', 'name', 'price', 'employee')
+        fields = ('duration', 'name', 'price')
 
 class ExistingServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
-        fields = ('duration', 'name', 'price', 'employee', 'id')
+        fields = ('duration', 'name', 'price', 'id')
 
 
 class EmployeeServiceConfigurationSerializer(serializers.ModelSerializer):
@@ -119,8 +119,7 @@ class EmployeeServiceWithConfig(serializers.ModelSerializer):
         model = EmployeeServiceConfiguration
         fields = (
             'display_order', 
-            'styles', 
-            'employee_id',
+            'styles',
             'image_set_id',
             'service',
         )

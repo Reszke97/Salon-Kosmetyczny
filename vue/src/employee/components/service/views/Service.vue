@@ -16,8 +16,31 @@
                 background-color:#3f51b5;
             "
         >
-            <v-toolbar flat
+            <div
+                v-if="previewAllServices"
+                style="
+                    display: flex;
+                    justify-content: end;
+                "
+            >
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-icon 
+                            style="position: absolute; z-index: 1"
+                            @click="closePreviewTab('tab-1')"
+                            v-bind="attrs"
+                            v-on="on"
+                        >
+                            mdi-keyboard-backspace 
+                        </v-icon>
+                    </template>
+                    <span>Powrót</span>
+                </v-tooltip>
+            </div>
+            <v-toolbar 
+                v-else
                 id="my-tab"
+                flat
                 style="
                     min-height:112px!important;
                     background-color:#3f51b5;
@@ -30,6 +53,7 @@
                         v-model="tabs"
                         centered
                         icons-and-text
+                        @change="(val) => getDataAfterTabChange(val)"
                     >
                         <v-tabs-slider ></v-tabs-slider>
                         <v-tab
@@ -54,8 +78,8 @@
                             class="primary--text px-3"
                             style="width:100%;"
                         >
-                            Nearby
-                            <v-icon>mdi-account-box</v-icon>
+                            Podgląd
+                            <v-icon>mdi-eye</v-icon>
                         </v-tab>
                     </v-tabs>
                 </template>
@@ -80,7 +104,7 @@
                     style="height:100%"
                 >
                     <services
-                        :services="services"
+                        :services="services.service_info"
                         :get-services="getServices"
                     />
                 </v-tab-item>
@@ -88,6 +112,12 @@
                     :value="'tab-3'"
                     style="height:100%"
                 >
+                    <manage-services
+                        :get-services="getServices"
+                        :services="services"
+                        :preview-all-services="previewAllServices"
+                    >
+                    </manage-services>
                 </v-tab-item>
             </v-tabs-items>
         </v-col>
@@ -95,8 +125,9 @@
 </template>
 
 <script>
-    import AddOrUpdateService from "../components/AddOrUpdateService.vue"
-    import Services from "../components/Services.vue"
+    import AddOrUpdateService from "../components/AddOrUpdateService.vue";
+    import Services from "../components/Services.vue";
+    import ManageServices from "../components/ManageServices.vue";
     import { AUTH_API } from "../../../authorization/AuthAPI";
 
     export default {
@@ -106,41 +137,60 @@
         },
         components: {
             AddOrUpdateService,
-            Services
+            Services,
+            ManageServices,
         },
         data: () => ({
             tabs: null,
-            services: []
+            services: [],
+            previewAllServices: false,
         }),
         methods: {
+            closePreviewTab(val){
+                this.setTabs(val);
+                this.previewAllServices = !this.previewAllServices;
+            },
+            setTabs(val){
+                this.tabs = val;
+            },
+            async getDataAfterTabChange(val){
+                if(val === "tab-3"){
+                    this.previewAllServices = true
+                    await this.getServices();
+                } return
+            },
             async getServices(){
                 const API = await AUTH_API();
-                await API.get("/api/v1/employee/getemployeeservices/")
+                await API.get(`/api/v1/employee/getemployeeservices/?preview=${this.previewAllServices}`)
                     .then(res => {
                         this.services = res.data
                     })
                 this.mapImagesType(this.services);
             },
+            appendMimeType(image){
+                let type;
+                switch (image.file_type) {
+                    case "PNG":
+                        type = "data:image/png;base64,";
+                    break;
+                    case "JPG":
+                        type = "data:image/jpg;base64,";
+                    break;
+                    case "JPEG":
+                        type = "data:image/jpeg;base64,";
+                    break;
+                    default:
+                        type = "";
+                }
+                return { ...image, image: type + image.image, isFromDB: true };
+            },
             mapImagesType(services){
-                services.forEach((service, idx) => {
-                    this.services[idx].employee_image = service.employee_image.map((el) => {
-                        let type;
-                        switch (el.file_type) {
-                            case "PNG":
-                                type = "data:image/png;base64,";
-                            break;
-                            case "JPG":
-                                type = "data:image/jpeg;base64,";
-                            break;
-                            case "JPEG":
-                                type = "data:image/jpeg;base64,";
-                            break;
-                            default:
-                                type = "";
-                        }
-                        return { ...el, image: type + el.image, isFromDB: true };
+                services.service_info.forEach((service, idx) => {
+                    this.services.service_info[idx].employee_image = service.employee_image.map((el) => {
+                        return this.appendMimeType(el)
                     });
                 })
+                if(this.previewAllServices) services.avatar = this.appendMimeType(services.avatar)
             }
         },
     }
