@@ -129,18 +129,25 @@ class Employee(models.Model):
 class ServiceCategory(models.Model):
     name = models.CharField(blank=False, max_length=100)
     styles = models.TextField(blank=True, null=True)
+    display_order = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    class Meta:
+        ordering = ['display_order']
 
 class Service(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     duration = models.CharField(max_length=100)
     name = models.CharField(max_length=255)
     price = models.FloatField()
+    # display_order -> nr kolejności w jakiej usługa będzie wyświetlona
+    display_order = models.IntegerField()
     service_category = models.ForeignKey(ServiceCategory, on_delete=models.CASCADE, null=True)
     styles = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    class Meta:
+        ordering = ['display_order']
 
 class EmployeeImageSet(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -154,8 +161,6 @@ class EmployeeImage(models.Model):
 
 
 class EmployeeServiceConfiguration(models.Model):
-    # display_order -> nr kolejności w jakiej usługa będzie wyświetlona
-    display_order = models.IntegerField()
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     image_set = models.ForeignKey(EmployeeImageSet, on_delete=models.CASCADE, null=True)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)

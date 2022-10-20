@@ -142,7 +142,7 @@
         },
         data: () => ({
             tabs: null,
-            services: [],
+            services: { avatar: {}, service_info: [] },
             previewAllServices: false,
         }),
         methods: {
@@ -159,13 +159,42 @@
                     await this.getServices();
                 } return
             },
+            groupByCategory(employeeConfig){
+                let groupedServices = {
+                    avatar: employeeConfig.avatar,
+                    categories: [],
+                }
+                const uniqueCategories = [
+                    ...new Map(employeeConfig.service_info.map(item =>[item.service.service_category.category_id, item.service.service_category])).values()
+                ];
+
+                let categoryIdx = 0;
+                for(const category of uniqueCategories){
+                    const items = employeeConfig.service_info.filter(el => el.service.service_category.category_id === category.category_id)
+                    groupedServices.categories.push({
+                        name: category.name,
+                        category_id: category.category_id,
+                        id: category.category_display_order,
+                        services: [...items]
+                    });
+                    categoryIdx += 1;
+                } return groupedServices
+            },
             async getServices(){
                 const API = await AUTH_API();
+                let employeeConfig = {};
                 await API.get(`/api/v1/employee/getemployeeservices/?preview=${this.previewAllServices}`)
                     .then(res => {
-                        this.services = res.data
+                        res.data.service_info = res.data.service_info.map(el => {
+                            return { ...el, id: el.service.service_display_order }
+                        })
+                        employeeConfig = { ...res.data };
+                        this.services = {... res.data };
                     })
                 this.mapImagesType(this.services);
+                if(this.previewAllServices === true){
+                    this.services = { ...this.groupByCategory(this.services) }
+                }
             },
             appendMimeType(image){
                 let type;
@@ -190,7 +219,7 @@
                         return this.appendMimeType(el)
                     });
                 })
-                if(this.previewAllServices) services.avatar = this.appendMimeType(services.avatar)
+                if(this.previewAllServices) this.services.avatar = { ...this.appendMimeType(services.avatar) }
             }
         },
     }

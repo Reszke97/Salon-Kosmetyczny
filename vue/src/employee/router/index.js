@@ -10,6 +10,7 @@ import PasswordResetEmail from '../components/authentication/ResetPasswordEmail.
 import Home from '../components/home/Home.vue'
 import Calendar from '../components/employee/views/Calendar.vue'
 import Service from "../components/service/views/Service.vue"
+import SettingsPanel from '../components/Settings/views/SettingsPanel.vue'
 
 Vue.use(VueRouter)
 
@@ -52,6 +53,12 @@ const routes = [
     path: '/passwordresetemailsend',
     name: 'PasswordResetEmail',
     component: PasswordResetEmail
+  },
+
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: SettingsPanel
   },
 
 

@@ -59,9 +59,7 @@
           tab: null,
           loaded: false,
           menuItems: [
-            { title: "Home", path: '/', icon: "mdi-home" },
             { title: "login", path: "login", icon: "mdi-login" },
-            { title: "register", path: "/register", icon: "mdi-account-plus" },
             { title: "Usługi", path: "/defineservice", icon: "mdi-plus" },
           ],
         }
@@ -76,11 +74,9 @@
           if(this.role && this.isAuthenticated){
             let menuItems = []
             menuItems = [
-              { title: 'Home', path: '/', icon: 'mdi-home' },
               this.auth,
-              // this.rights,
-              { title: "register", path: '/register', icon: 'mdi-account-plus ' },
               { title: "Usługi", path: "/defineservice", icon: "mdi-plus" },
+              { title: "Ustawienia", path: "/settings", icon: "mdi-cog-outline" },
             ]
             return menuItems
           }

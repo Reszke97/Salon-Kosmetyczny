@@ -85,19 +85,28 @@ class ChangePasswordSerializer(serializers.Serializer):
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
-        fields = ('duration', 'name', 'price')
+        fields = ('duration', 'name', 'price',)
+
+class ServiceCategorySerializer(serializers.ModelSerializer):
+    category_id = serializers.IntegerField(source="id")
+    category_display_order = serializers.IntegerField(source="display_order")
+    class Meta:
+        model = ServiceCategory
+        fields = ('category_id', 'name', 'styles', 'category_display_order')
 
 class ExistingServiceSerializer(serializers.ModelSerializer):
+    service_id = serializers.IntegerField(source="id")
+    service_category = ServiceCategorySerializer()
+    service_display_order = serializers.IntegerField(source="display_order")
     class Meta:
         model = Service
-        fields = ('duration', 'name', 'price', 'id')
+        fields = ('duration', 'name', 'price', 'service_id', 'service_category', 'service_display_order')
 
 
 class EmployeeServiceConfigurationSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployeeServiceConfiguration
         fields = (
-            'display_order', 
             'styles', 
             'employee_id',
             'employee_image_id',
@@ -114,11 +123,12 @@ class EmployeeImageSerializer(serializers.ModelSerializer):
 
 class EmployeeServiceWithConfig(serializers.ModelSerializer):
     service = ExistingServiceSerializer()
+    employee_service_config_id = serializers.IntegerField(source="id")
 
     class Meta:
         model = EmployeeServiceConfiguration
         fields = (
-            'display_order', 
+            'employee_service_config_id',
             'styles',
             'image_set_id',
             'service',
