@@ -112,17 +112,17 @@ class EmployeeSpecialization(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-class EmployeeAvatar(models.Model):
-    content = models.ImageField(blank=True, null=True, upload_to=upload_path)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
 class Employee(models.Model):
     is_owner = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     business_activity = models.ForeignKey(BusinessActivity, on_delete=models.CASCADE)
     spec = models.ForeignKey(EmployeeSpecialization, on_delete=models.CASCADE)
-    avatar = models.ForeignKey(EmployeeAvatar, on_delete=models.CASCADE, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class EmployeeAvatar(models.Model):
+    content = models.ImageField(blank=True, null=True, upload_to=upload_path)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

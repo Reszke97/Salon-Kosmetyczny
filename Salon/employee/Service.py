@@ -1,13 +1,9 @@
 import base64
-from pickle import TRUE
 from rest_framework.permissions import (
     IsAuthenticated,  
-    BasePermission, 
-    AllowAny
 )
 from ..auth.auth_backend import CheckIfPasswordWasChanged
 from rest_framework.response import Response
-from django.http import HttpResponse
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -74,7 +70,7 @@ class ServiceApi(APIView):
         employee_service_configs = EmployeeServiceConfiguration.objects.filter(employee_id=employee)
         employee_service_configs_serialized = EmployeeServiceWithConfig(employee_service_configs, many=True)
         preview_selected = True if request.query_params.get("preview") == "true" else False    
-        avatar = EmployeeAvatar.objects.get(pk = employee.avatar_id)
+        avatar = EmployeeAvatar.objects.get(employee = employee.pk)
         avatar_encoded = self.map_images(avatar)
         self.append_images(employee_service_configs_serialized.data)
 

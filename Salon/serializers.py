@@ -113,6 +113,14 @@ class EmployeeServiceConfigurationSerializer(serializers.ModelSerializer):
             'service_id',
         )
 
+class EmployeeAvatarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmployeeAvatar
+        fields = (
+            'content', 
+            'id',
+            'employee',
+        )
 class EmployeeImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployeeImage
@@ -189,6 +197,12 @@ class EmployeeSpecializationSerializer(serializers.ModelSerializer):
             "name",
         )
 
+class NewEmployeeSpecializationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmployeeSpecialization
+        fields = (
+            "name",
+        )
 class EmployeeFullInfoSerializer(serializers.ModelSerializer):
     user = GetUserInfoSerializer()
     spec = EmployeeSpecializationSerializer()
@@ -199,9 +213,15 @@ class EmployeeFullInfoSerializer(serializers.ModelSerializer):
             "is_owner",
             "user",
             "business_activity_id",
-            "spec"
+            "spec",
         )
-
+class UpdateEmployeeSpecSeriazlier(serializers.ModelSerializer):
+    class Meta:
+        model = Employee
+        fields = (
+            "id",
+            "spec",
+        )
 class DistinctServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service

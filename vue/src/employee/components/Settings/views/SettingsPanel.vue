@@ -65,7 +65,7 @@
                     :value="'tab-1'"
                     style="height:100%"
                 >
-                    <UserInfo />
+                    <EmployeeInfo />
                 </v-tab-item>
 
                 <v-tab-item
@@ -81,13 +81,13 @@
 
 <script>
     import { AUTH_API } from "../../../authorization/AuthAPI"
-    import UserInfo from "../components/UserInfo.vue"
+    import EmployeeInfo from "../components/EmployeeInfo.vue"
     import PasswordChange from "../components/PasswordChange.vue"
     
     export default {
         name: "",
         components: {
-            UserInfo,
+            EmployeeInfo,
             PasswordChange
         },
         props: {
