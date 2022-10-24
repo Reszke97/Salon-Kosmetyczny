@@ -113,12 +113,19 @@ class EmployeeServiceConfigurationSerializer(serializers.ModelSerializer):
             'service_id',
         )
 
-class EmployeeAvatarSerializer(serializers.ModelSerializer):
+class EmployeeAvatarUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployeeAvatar
         fields = (
             'content', 
             'id',
+            'employee',
+        )
+class EmployeeAvatarCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmployeeAvatar
+        fields = (
+            'content', 
             'employee',
         )
 class EmployeeImageSerializer(serializers.ModelSerializer):

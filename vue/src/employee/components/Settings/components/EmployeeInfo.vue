@@ -104,27 +104,10 @@
                     type="text"
                     dark
                 ></v-text-field>
-                <v-file-input
-                    v-model="newAvatar"
-                    accept=".png, .jpg"
-                    label="Avatar"
-                    placeholder="Dodaj zdjęcie"
-                    prepend-icon="mdi-paperclip"
-                    :show-size="1000"
-                    counter
-                    dark
-                    @change="changeAvatar"
-                >
-                    <template #selection="{ text }">
-                    <v-chip
-                        small
-                        label
-                        color="success"
-                    >
-                        {{ text }}
-                    </v-chip>
-                    </template>
-                </v-file-input>
+                <AvatarCropper
+                    :create-form-data="createFormData"
+                    :set-img-data-url="setImgDataUrl"
+                />
                 <v-btn
                     color="secondary"
                     @click="setDialog(true)"
@@ -152,11 +135,13 @@
 <script>
     import { AUTH_API } from "../../../authorization/AuthAPI";
     import { Dialog } from "../../../../utils";
+    import AvatarCropper from "./AvatarCropper.vue"
     
     export default {
         name: "",
         components: {
-            Dialog
+            Dialog,
+            AvatarCropper,
         },
         props: {
             
@@ -170,32 +155,43 @@
                 email: "",
                 employee_spec: "",
                 avatar: { file_type: "", image: "" },
+                showCropper: false,
             },
-            newAvatar: null,
+            openUploadDialog: false,
             isNewSpec: false,
             confirmDialog: false,
             existingSpecs: [],
+            formData: null,
         }),
         computed: {
             
+        },
+        async created() {
+            await this.getEmployeeInfo()
         },
         methods: {
             toggleSpecInput(){
                 this.isNewSpec = !this.isNewSpec;
                 this.employeeInfo.employee_spec = "";
             },
+            setImgDataUrl(imgDataUrl, file_type){
+                this.employeeInfo.avatar = { file_type: file_type, image: imgDataUrl }
+            },
+            createFormData(blob, fileName){
+                this.formData = new FormData();
+                this.formData.append('avatar', blob, `${fileName}`);
+            },
             async updateAvatar(){
-                const formData = new FormData();
-                formData.append('avatar', this.newAvatar);
                 const API = await AUTH_API();
-                await API.put('api/v1/employee/update-employee-avatar/', 
-                    formData,
+                await API.post('api/v1/employee/update-employee-avatar/', 
+                    this.formData,
                     {
                         headers: {
                             "content-type": "multipart/form-data",
                         },
                     }
                 )
+                .then(() => { this.formData = null; })
             },
             async updateEmployeeData(){
                 const requestData = {
@@ -208,10 +204,10 @@
                 await API.put("api/v1/employee/update-employee-info/", requestData)
             },
             async updateInfo(){
-                if(this.newAvatar) await this.updateAvatar();
+                if(this.formData) await this.updateAvatar();
                 await this.updateEmployeeData();
             },
-            async onConfirmAction(value){
+            async onConfirmAction(){
                 await this.updateInfo()
                 this.setDialog(false)
             },
@@ -255,9 +251,5 @@
                 this.isNewSpec = false;
             } 
         },
-
-        async created() {
-            await this.getEmployeeInfo()
-        }
     }
 </script>

@@ -102,22 +102,33 @@ class EmployeeAvatarApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
     parser_classes = (MultiPartParser, FormParser)
 
-    def put(self, request):
+    def create_or_update_avatar(self, request, employee, avatar = None):
+        newAvatar = request.FILES.get('avatar')
+        object = {
+            "content": newAvatar,
+            "employee": employee.pk,
+        }
+        if avatar != None:
+            return EmployeeAvatarUpdateSerializer(avatar, data=object)
+        else:
+            return EmployeeAvatarCreateSerializer(data=object)
+
+    def post(self, request):
         user = User.objects.get(pk = request.user.pk)
         try:
             employee = Employee.objects.get(user_id = user.pk)
         except Employee.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        avatar = EmployeeAvatar.objects.get(employee_id = employee.pk)
-        content = str(avatar.content).replace("/", "\\")
-        os.remove(os.path.join(settings.MEDIA_ROOT, content))
-        newAvatar = request.FILES.get('avatar')
-        object = {
-            "content": newAvatar,
-            "pk": avatar.pk,
-            "employee": employee.pk,
-        }
-        avatar_serializer = EmployeeAvatarSerializer(avatar, data=object)
+        try:
+            avatar = EmployeeAvatar.objects.get(employee_id = employee.pk)
+        except EmployeeAvatar.DoesNotExist:
+            avatar = None
+        if avatar != None:
+            content = str(avatar.content).replace("/", "\\")
+            os.remove(os.path.join(settings.MEDIA_ROOT, content))
+            avatar_serializer = self.create_or_update_avatar(request, employee, avatar )
+        else:
+            avatar_serializer = self.create_or_update_avatar(request, employee)
         if avatar_serializer.is_valid():
             avatar_serializer.save()
             return Response({ "status": status.HTTP_201_CREATED, "errors": "" })
