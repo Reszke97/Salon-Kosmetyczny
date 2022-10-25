@@ -71,56 +71,6 @@
                     md="8"
                     lg="6"
                 >
-                <div 
-                    id="image-set"
-                    style="display: flex; flex-direction: row"
-                >
-                    <div 
-                        style="display: flex; width:100%"
-                        v-for="(img, idx) of serviceInfo.employee_image"
-                        :key="idx"
-                    >
-                        <div style="display: flex; flex-direction: column">
-                            <img
-                                :src="img.image"
-                                style="width:100%;height: 100%"
-                            />
-                            <div style="display: flex; flex-direction: row; width:100%">
-                                <div style="width:100%">
-                                    <v-btn
-                                        @click="setShowImagePreview(idx)"
-                                    >
-                                        Podgląd
-                                    </v-btn>
-                                </div>
-                                <div style="width:100%">
-                                    <v-btn>
-                                        Usuń
-                                    </v-btn>
-                                </div>
-                            </div>
-                        </div>
-                        <v-dialog
-                            id="showImagePreview"
-                            v-model="showImagePreview"
-                            width="75vw"
-                            style="min-height:350px!important"
-                            v-if="showImagePreview"
-                        >
-                            <img
-                                :src="serviceInfo.employee_image[imagePreviewIdx].image"
-                                style="width:100%;height: 100%"
-                            />
-                            <v-btn
-                                dark
-                                @click="setShowImagePreview"
-                                class="mr-2"
-                            >
-                                Zamknij
-                            </v-btn>
-                        </v-dialog>
-                    </div>
-                </div>
                     <v-file-input
                         v-model="images"
                         accept=".png, .jpg"
@@ -131,7 +81,7 @@
                         :show-size="1000"
                         counter
                         dark
-                        @change="() => test()"
+                        @change="(event) => displayImages(event)"
                     >
                         <template #selection="{ text }">
                         <v-chip
@@ -143,6 +93,23 @@
                         </v-chip>
                         </template>
                     </v-file-input>
+                </v-col>
+            </v-row>
+            <v-row
+                align="center"
+                justify="center"
+            >
+                <v-col
+                    cols="11"
+                    sm="10"
+                    md="8"
+                    lg="6"
+                >
+                    <display-images
+                        v-if="imagesCount > 0"
+                        :images="serviceInfo.employee_image"
+                        :imagesCount="imagesCount"
+                    />
                 </v-col>
             </v-row>
             <v-row
@@ -169,10 +136,11 @@
 
 <script>
     import { AUTH_API } from "../../../authorization/AuthAPI";
+    import DisplayImages from "./DisplayImages.vue";
     export default {
         name: "",
         components: {
-            
+            DisplayImages
         },
         props: {
             minHeight: {
@@ -195,36 +163,46 @@
                     price: 0,
                     duration: "",
                 },
-                images: [],
+                employee_image: []
             },
-            imagePreviewIdx: null,
             images: [],
-            showImagePreview: false,
+            imagesCount: 0
         }),
         computed: {
             
         },
         created(){
             if(this.preview){
-                // console.log(this.serviceToEdit)
                 Object.keys(this.serviceToEdit).forEach(key => {
                     this.serviceInfo[key] = this.serviceToEdit[key];
                 })
             }
         },
-        // mounted(){
-        //     if(this.preview){
-        //         const items = document.querySelectorAll("#image-set div")
-        //         for(const item of items){
-        //             item.addEventListener("click", () => {
-
-        //             })
-        //         }
-        //     }
-        // },
         methods: {
-            test(){
-                console.log('sth')
+            async displayImages(event){
+                if(event.length){
+                    for(const image of this.images){
+                        const reader  = new FileReader();
+                        reader.onload = async (e) => { 
+                            e.persist = () => {}
+                            await this.handleChange(e)
+                        }
+                        await this.getDataUrl(reader, image)
+                        this.imagesCount = this.images.length
+                    }
+                } else {
+                    this.serviceInfo.employee_image = [];
+                    this.imagesCount = 0
+                }
+            },
+            async handleChange (e){
+                await new Promise((resolve) => {
+                    this.serviceInfo.employee_image.push({image:(e.target.result)})
+                    resolve()
+                })
+            },
+            async getDataUrl(reader, image){
+                await reader.readAsDataURL(image);
             },
             setShowImagePreview(idx = null){
                 this.showImagePreview = !this.showImagePreview;
@@ -236,10 +214,7 @@
                 const formData = new FormData();
                 for (let i = 0; i < this.images.length; i += 1) {
                     formData.append('files', this.images[i]);
-                    // formData.append("employee", 4);
                 }
-
-                console.log(...formData)
 
                 let actionType = "post";
                 if(this.preview){
