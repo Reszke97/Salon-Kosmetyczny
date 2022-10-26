@@ -183,7 +183,7 @@
             },
             async updateAvatar(){
                 const API = await AUTH_API();
-                await API.post('api/v1/employee/update-employee-avatar/', 
+                await API.post('api/v1/employee/employee-avatar/', 
                     this.formData,
                     {
                         headers: {
@@ -201,7 +201,7 @@
                         : { isNew: false, value: this.employeeInfo.employee_spec.id}
                 }
                 const API = await AUTH_API();
-                await API.put("api/v1/employee/update-employee-info/", requestData)
+                await API.put("api/v1/employee/employee-info/", requestData)
             },
             async updateInfo(){
                 if(this.formData) await this.updateAvatar();
@@ -240,7 +240,7 @@
             },
             async getEmployeeInfo(){
                 const API = await AUTH_API();
-                await API.get('api/v1/employee/get-employee-info/')
+                await API.get('api/v1/employee/employee-info/')
                     .then((res) => {
                         this.employeeInfo = res.data.employee_info;
                         this.existingSpecs = res.data.existing_specs;

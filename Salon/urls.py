@@ -31,12 +31,9 @@ urlpatterns = [
     
     path('api/v1/employee/token/', CustomTokenObtainPairViewEmployee.as_view(), name = 'token_obtain_pair_employee'),
     path('api/v1/employee/getmonth/', GetMonthDays.as_view(), name = 'get_month'),
-    path('api/v1/employee/postnewservice/', ServiceApi.as_view(), name = 'post_new_service'),
-    path('api/v1/employee/postnewimages/', ImagesApi.as_view(), name = 'post_new_images'),
-    path('api/v1/employee/get-images/', ImagesApi.as_view(), name = 'get_images'),
-    path('api/v1/employee/getemployeeservices/', ServiceApi.as_view(), name = 'gete_mployee_services'),
-    path('api/v1/employee/get-employee-info/', EmployeeApi.as_view(), name = 'get_employee_info'),
-    path('api/v1/employee/update-employee-info/', EmployeeApi.as_view(), name = 'update_employee_info'),
-    path('api/v1/employee/update-employee-avatar/', EmployeeAvatarApi.as_view(), name = 'update_employee_avatar'),
+    path('api/v1/employee/service/', ServiceApi.as_view(), name = 'service'),
+    path('api/v1/employee/images/', ImagesApi.as_view(), name = 'images'),
+    path('api/v1/employee/employee-info/', EmployeeApi.as_view(), name = 'employee_info'),
+    path('api/v1/employee/employee-avatar/', EmployeeAvatarApi.as_view(), name = 'employee_avatar'),
     # path('api/user/isauthenticated/', IsUserAuthenticated.as_view(), name = 'is_authenticated'),
 ]

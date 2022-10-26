@@ -28,6 +28,9 @@ class ImagesApi(APIView):
     def post(self, request):
         employee = Employee.objects.get(user = request.user.pk).pk
         response = { "status": status.HTTP_201_CREATED, "errors": "" }
+        print(request.data)
+        for a in request.data:
+            print({ a: request.data[a] })
         for key in request.FILES.getlist('files'):
             object = {
                 "content": key,

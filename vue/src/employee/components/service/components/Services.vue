@@ -109,4 +109,7 @@
         background-color: #0844a4!important;
         color: red;
     }
+    .v-window__container {
+        height: 100%!important;
+    }
 </style>

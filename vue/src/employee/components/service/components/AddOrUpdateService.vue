@@ -3,7 +3,7 @@
         class="pt-5"
         :style="{
             backgroundColor:'#3f51b5!important',
-            minHeight: minHeight
+            height: '100%',
         }"
     >
         <v-col>
@@ -36,9 +36,9 @@
                     lg="6"
                 >
                     <v-text-field
-                        v-model="serviceInfo.service.price"
-                        label="Cena [PLN]"
-                        placeholder="Podaj cenę"
+                        v-model="serviceInfo.category"
+                        label="Nazwa kategorii"
+                        placeholder="Podaj nazwę kategorii"
                         dark
                     ></v-text-field>
                 </v-col>
@@ -53,12 +53,24 @@
                     md="8"
                     lg="6"
                 >
-                    <v-text-field
-                        v-model="serviceInfo.service.duration"
-                        label="Czas trwania usługi"
-                        placeholder="Podaj czas trwania"
-                        dark
-                    ></v-text-field>
+                <v-row>
+                    <v-col cols=6>
+                        <v-text-field
+                            v-model="serviceInfo.service.price"
+                            label="Cena [PLN]"
+                            placeholder="Podaj cenę"
+                            dark
+                        ></v-text-field>
+                    </v-col>
+                    <v-col>
+                        <v-text-field
+                            v-model="serviceInfo.service.duration"
+                            label="Czas trwania"
+                            placeholder="Podaj czas"
+                            dark
+                        ></v-text-field>
+                    </v-col>
+                </v-row>
                 </v-col>
             </v-row>
             <v-row
@@ -78,19 +90,17 @@
                         placeholder="Dodaj zdjęcia"
                         multiple
                         prepend-icon="mdi-paperclip"
-                        :show-size="1000"
-                        counter
                         dark
                         @change="(event) => displayImages(event)"
                     >
                         <template #selection="{ text }">
-                        <v-chip
-                            small
-                            label
-                            color="success"
-                        >
-                            {{ text }}
-                        </v-chip>
+                            <v-chip
+                                small
+                                label
+                                color="success"
+                            >
+                                {{ text }}
+                            </v-chip>
                         </template>
                     </v-file-input>
                 </v-col>
@@ -125,7 +135,8 @@
                 <div class="d-flex justify-end">
                     <slot name="closeDialog" />
                     <v-btn
-                        @click="postImages"
+                        color="success"
+                        @click="postData"
                     >{{ preview ? "Zapisz zmiany" : "Dodaj usługę" }}</v-btn>
                 </div>
                 </v-col>
@@ -163,6 +174,7 @@
                     price: 0,
                     duration: "",
                 },
+                category: "",
                 employee_image: []
             },
             images: [],
@@ -208,20 +220,35 @@
                 this.showImagePreview = !this.showImagePreview;
                 this.imagePreviewIdx = idx;
             },
-            async postImages (){
-                const API = await AUTH_API();
+            buildFormData(formData, data, parentKey) {
+                if (data && typeof data === 'object' && !(data instanceof Date) && !(data instanceof File)) {
+                    Object.keys(data).forEach(key => {
+                        this.buildFormData(formData, data[key], parentKey ? `${parentKey}[${key}]` : key);
+                    });
+                } else {
+                    const value = data == null ? '' : data;
 
+                    formData.append(parentKey, value);
+                }
+            },
+            jsonToFormData(data) {
                 const formData = new FormData();
+                this.buildFormData(formData, data);
                 for (let i = 0; i < this.images.length; i += 1) {
                     formData.append('files', this.images[i]);
                 }
+                return formData;
+            },
+            async postImages (actionType){
+                const API = await AUTH_API();
+                const formData = new FormData();
+                Object.keys(this.serviceInfo).forEach(key => formData.append(key, this.serviceInfo[key]));
 
-                let actionType = "post";
-                if(this.preview){
-                    actionType = "put"
-                }
-                await API[actionType]("/api/v1/employee/postnewimages/",
-                    formData,
+                const someObject = {...this.serviceInfo}
+                delete someObject.employee_image
+                await API[actionType]("/api/v1/employee/images/",
+                    // formData,
+                    this.jsonToFormData(someObject),
                     {
                         headers: {
                             "content-type": "multipart/form-data",
@@ -235,19 +262,26 @@
                     console.log(err)
                 })
             },
-            async postService(){
+            async postService(actionType){
                 const API = await AUTH_API();
-                let actionType = "post";
-                if(this.preview){
-                    actionType = "put"
-                }
-                await API[actionType]("/api/v1/employee/postnewservice/", this.serviceInfo)
+                await API[actionType]("/api/v1/employee/service/", {
+                    srv: this.serviceInfo.service,
+                    category: this.serviceInfo.category,
+                })
                 .then(() => {
                     console.log("hurra!")
                 })
                 .catch((err) => {
                     console.log(err)
                 })
+            },
+            async postData(){
+                let actionType = "post";
+                if(this.preview){
+                    actionType = "put"
+                }
+                await this.postImages(actionType);
+                await this.postService(actionType);
             }
         }
     }

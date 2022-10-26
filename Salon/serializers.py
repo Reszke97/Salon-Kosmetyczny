@@ -87,12 +87,22 @@ class ServiceSerializer(serializers.ModelSerializer):
         model = Service
         fields = ('duration', 'name', 'price',)
 
+class ModifyServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Service
+        fields = ('duration', 'name', 'price', 'employee', 'service_category')
+
 class ServiceCategorySerializer(serializers.ModelSerializer):
     category_id = serializers.IntegerField(source="id")
     category_display_order = serializers.IntegerField(source="display_order")
     class Meta:
         model = ServiceCategory
         fields = ('category_id', 'name', 'styles', 'category_display_order')
+
+class ModifyCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceCategory
+        fields = ('name', 'display_order')
 
 class ExistingServiceSerializer(serializers.ModelSerializer):
     service_id = serializers.IntegerField(source="id")

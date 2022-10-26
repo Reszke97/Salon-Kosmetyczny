@@ -1,4 +1,7 @@
 import base64
+from django.db import connection
+from ..models import Service
+from django.db.models import Max
 from rest_framework.permissions import (
     IsAuthenticated,  
 )
@@ -13,12 +16,20 @@ class ServiceApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
 
     def add_service(self, service):
-        service_serializer = ServiceSerializer(data=service)
+        service_serializer = ModifyServiceSerializer(data=service)
         if service_serializer.is_valid():
             service_serializer.save()
             return Response(status=status.HTTP_201_CREATED)
         else:
             return Response(service_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def add_category(self, category):
+        category_serializer = ModifyCategorySerializer(data=category)
+        if category_serializer.is_valid():
+            cat_id = category_serializer.save().pk
+            return { "status": 201, "data": cat_id}
+        else:
+            return { "status": 400, "errors": category_serializer.errors}
 
     def append_images(self, employee_config):
         for config in employee_config:
@@ -43,27 +54,39 @@ class ServiceApi(APIView):
             return encoded_image
 
     def post(self, request):
-        employee = Employee.objects.get(user = request.user.pk).pk
-        request.data["employee"] = employee
-        return self.add_service(request.data)
+        employee_id = Employee.objects.get(user = request.user.pk).pk
+        cursor = connection.cursor()
+        cursor.execute("""SELECT 
+                max(my_tab.display_order) from (
+                    select ssc.display_order, ssc.name ssc from salon_employeeserviceconfiguration sesc
+                    left join salon_service ss on ss.id = sesc.service_id
+                    left join salon_servicecategory ssc on ssc.id = ss.service_category_id
+                    where sesc.employee_id = %s
+                ) my_tab
+            """, [employee_id]
+        )
+        res = cursor.fetchone()
+        print(res)
+        cat_res = self.add_category(
+            {
+                "name": request.data["category"],
+                "display_order": res[0] + 1
+            }
+        )
+        if cat_res["status"] == 400:
+            return Response(cat_res["errors"], status=status.HTTP_400_BAD_REQUEST)
+        request.data["srv"]["employee"] = employee_id
+        request.data["srv"]["service_category"] = cat_res["data"]
+        return self.add_service(request.data["srv"])
         
-
-    # def put(self, request):
-    #     request.data["employee"] = Employee.objects.get(user = request.user.pk).pk
-    #     serializer = ServiceSerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    # def put(self, request):
-    #     request.data["employee"] = Employee.objects.get(user = request.user.pk).pk
-    #     data = request.data
-    #     serializer = GetUserInfoSerializer(data, data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(status=status.HTTP_200_OK)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def put(self, request):
+        request.data["employee"] = Employee.objects.get(user = request.user.pk).pk
+        data = request.data
+        serializer = ServiceSerializer(data, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
         employee = Employee.objects.get(user_id = request.user.pk)

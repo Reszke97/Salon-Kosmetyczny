@@ -141,7 +141,7 @@ class Service(models.Model):
     name = models.CharField(max_length=255)
     price = models.FloatField()
     # display_order -> nr kolejności w jakiej usługa będzie wyświetlona
-    display_order = models.IntegerField()
+    display_order = models.IntegerField(blank=True, null=True)
     service_category = models.ForeignKey(ServiceCategory, on_delete=models.CASCADE, null=True)
     styles = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

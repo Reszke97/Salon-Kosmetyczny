@@ -182,13 +182,11 @@
             },
             async getServices(){
                 const API = await AUTH_API();
-                let employeeConfig = {};
-                await API.get(`/api/v1/employee/getemployeeservices/?preview=${this.previewAllServices}`)
+                await API.get(`/api/v1/employee/service/?preview=${this.previewAllServices}`)
                     .then(res => {
                         res.data.service_info = res.data.service_info.map(el => {
                             return { ...el, id: el.service.service_display_order }
                         })
-                        employeeConfig = { ...res.data };
                         this.services = {... res.data };
                     })
                 this.mapImagesType(this.services);
