@@ -1,7 +1,7 @@
 import base64
+import stat
 from django.db import connection
-from ..models import Service
-from django.db.models import Max
+from ..models import EmployeeImageSet
 from rest_framework.permissions import (
     IsAuthenticated,  
 )
@@ -11,9 +11,31 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from ..serializers import *
+from rest_framework.parsers import MultiPartParser, FormParser
 
 class ServiceApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
+    parser_classes = (MultiPartParser, FormParser)
+
+    def create_image(self, images):
+        images_serializer = EmployeeImageSerializer(data=images)
+        if images_serializer.is_valid():
+            images_serializer.save()
+            return { "status": status.HTTP_201_CREATED, "errors": "" }
+        else:
+            return { "status": status.HTTP_400_BAD_REQUEST, "errors": images_serializer.errors }
+
+    def prepare_and_create_images(self, files, employee):
+        img_set = EmployeeImageSet.objects.create()
+        for key in files:
+            object = {
+                "content": key,
+                "employee": employee,
+                "image_set": img_set.id
+            }
+            response = self.create_image(object)
+            response["image_set"] = img_set.id
+        return response
 
     def add_service(self, service):
         service_serializer = ModifyServiceSerializer(data=service)
@@ -53,8 +75,7 @@ class ServiceApi(APIView):
                 image_list.append(encoded_image)
             return encoded_image
 
-    def post(self, request):
-        employee_id = Employee.objects.get(user = request.user.pk).pk
+    def find_biggest_display_order(self, employee_id):
         cursor = connection.cursor()
         cursor.execute("""SELECT 
                 max(my_tab.display_order) from (
@@ -66,18 +87,39 @@ class ServiceApi(APIView):
             """, [employee_id]
         )
         res = cursor.fetchone()
-        print(res)
-        cat_res = self.add_category(
-            {
-                "name": request.data["category"],
-                "display_order": res[0] + 1
-            }
-        )
-        if cat_res["status"] == 400:
-            return Response(cat_res["errors"], status=status.HTTP_400_BAD_REQUEST)
-        request.data["srv"]["employee"] = employee_id
-        request.data["srv"]["service_category"] = cat_res["data"]
-        return self.add_service(request.data["srv"])
+        return res
+
+    def post(self, request):
+        employee_id = Employee.objects.get(user = request.user.pk).pk
+        category = { "is_new": False, "category": "" }
+        service = { "name": "", "price": 0, "duration": 0 }
+        files = request.FILES.getlist('files')
+        for key in request.data:
+            if key.find("service") != -1:
+                service[key[(key.find('[')) + 1:-1]] = request.data[key]
+            elif key.find("category") != -1:
+                category[key[(key.find('[')) + 1:-1]] = request.data[key]
+        # return Response(status = self.prepare_and_create_images(files, employee_id)["status"])
+        img_response = self.prepare_and_create_images(files, employee_id)
+        if img_response["status"] == 201:
+            print('a')
+            print(img_response["image_set"])
+        else:
+            return Response(img_response["errors"], status=[img_response["status"]])
+        biggest_display_order_number = self.find_biggest_display_order(employee_id)
+        
+        # print(res)
+        # cat_res = self.add_category(
+        #     {
+        #         "name": request.data["category"],
+        #         "display_order": res[0] + 1
+        #     }
+        # )
+        # if cat_res["status"] == 400:
+        #     return Response(cat_res["errors"], status=status.HTTP_400_BAD_REQUEST)
+        # request.data["srv"]["employee"] = employee_id
+        # request.data["srv"]["service_category"] = cat_res["data"]
+        # return self.add_service(request.data["srv"])
         
     def put(self, request):
         request.data["employee"] = Employee.objects.get(user = request.user.pk).pk

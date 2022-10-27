@@ -36,7 +36,7 @@
                     lg="6"
                 >
                     <v-text-field
-                        v-model="serviceInfo.category"
+                        v-model="serviceInfo.category.category"
                         label="Nazwa kategorii"
                         placeholder="Podaj nazwę kategorii"
                         dark
@@ -136,7 +136,7 @@
                     <slot name="closeDialog" />
                     <v-btn
                         color="success"
-                        @click="postData"
+                        @click="prepareAndPostRequest"
                     >{{ preview ? "Zapisz zmiany" : "Dodaj usługę" }}</v-btn>
                 </div>
                 </v-col>
@@ -174,7 +174,10 @@
                     price: 0,
                     duration: "",
                 },
-                category: "",
+                category: {
+                    isNew: true,
+                    category: "",
+                },
                 employee_image: []
             },
             images: [],
@@ -239,16 +242,14 @@
                 }
                 return formData;
             },
-            async postImages (actionType){
+            async postData (actionType){
                 const API = await AUTH_API();
                 const formData = new FormData();
                 Object.keys(this.serviceInfo).forEach(key => formData.append(key, this.serviceInfo[key]));
-
-                const someObject = {...this.serviceInfo}
-                delete someObject.employee_image
-                await API[actionType]("/api/v1/employee/images/",
-                    // formData,
-                    this.jsonToFormData(someObject),
+                const _serviceInfo = {...this.serviceInfo}
+                delete _serviceInfo.employee_image
+                await API[actionType]("/api/v1/employee/service/",
+                    this.jsonToFormData(_serviceInfo),
                     {
                         headers: {
                             "content-type": "multipart/form-data",
@@ -262,26 +263,12 @@
                     console.log(err)
                 })
             },
-            async postService(actionType){
-                const API = await AUTH_API();
-                await API[actionType]("/api/v1/employee/service/", {
-                    srv: this.serviceInfo.service,
-                    category: this.serviceInfo.category,
-                })
-                .then(() => {
-                    console.log("hurra!")
-                })
-                .catch((err) => {
-                    console.log(err)
-                })
-            },
-            async postData(){
+            async prepareAndPostRequest(){
                 let actionType = "post";
                 if(this.preview){
                     actionType = "put"
                 }
-                await this.postImages(actionType);
-                await this.postService(actionType);
+                await this.postData(actionType);
             }
         }
     }
