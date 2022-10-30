@@ -40,10 +40,10 @@ class ServiceApi(APIView):
     def add_service(self, service):
         service_serializer = ModifyServiceSerializer(data=service)
         if service_serializer.is_valid():
-            service_serializer.save()
-            return Response(status=status.HTTP_201_CREATED)
+            service_id = service_serializer.save().pk
+            return { "status": status.HTTP_201_CREATED, "data": service_id }
         else:
-            return Response(service_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return { "status": status.HTTP_400_BAD_REQUEST, "errors": service_serializer.errors, }
 
     def add_category(self, category):
         category_serializer = ModifyCategorySerializer(data=category)
@@ -89,37 +89,55 @@ class ServiceApi(APIView):
         res = cursor.fetchone()
         return res
 
+    def create_emp_service_config(self, data):
+        emp_srv_conf_serializer = CreateEmployeeServiceConfigSerializer(data=data)
+        if emp_srv_conf_serializer.is_valid():
+            emp_srv_conf_serializer.save()
+            return Response(status=status.HTTP_201_CREATED)
+        else:
+            return Response(emp_srv_conf_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     def post(self, request):
         employee_id = Employee.objects.get(user = request.user.pk).pk
         category = { "is_new": False, "category": "" }
-        service = { "name": "", "price": 0, "duration": 0 }
+        service = { "name": "", "price": 0, "duration": 0, "employee": 0, "service_category": 0 }
         files = request.FILES.getlist('files')
+        img_response = { "data": None, "status": status.HTTP_201_CREATED }
         for key in request.data:
             if key.find("service") != -1:
                 service[key[(key.find('[')) + 1:-1]] = request.data[key]
             elif key.find("category") != -1:
                 category[key[(key.find('[')) + 1:-1]] = request.data[key]
-        # return Response(status = self.prepare_and_create_images(files, employee_id)["status"])
-        img_response = self.prepare_and_create_images(files, employee_id)
-        if img_response["status"] == 201:
-            print('a')
-            print(img_response["image_set"])
-        else:
+        if files:
+            img_response = self.prepare_and_create_images(files, employee_id)
+        if img_response["status"] == 400:
             return Response(img_response["errors"], status=[img_response["status"]])
-        biggest_display_order_number = self.find_biggest_display_order(employee_id)
+        cat_res = { "status": 201, "data": category["category"]}
+        if category["is_new"] == "true":
+            biggest_display_order_number = self.find_biggest_display_order(employee_id)
+            if len(biggest_display_order_number) > 1:
+                biggest_display_order_number = biggest_display_order_number[0] + 1
+            else:
+                biggest_display_order_number = 1
+            cat_res = self.add_category(
+                {
+                    "name": category["category"],
+                    "display_order": biggest_display_order_number
+                }
+            )
+        if cat_res["status"] == 400:
+            return Response(cat_res["errors"], status=status.HTTP_400_BAD_REQUEST)
+        service["employee"] = employee_id
+        service["service_category"] = cat_res["data"]
+        service_res = self.add_service(service)
+        if service_res["status"] == 400:
+            return Response(service_res["errors"], status=service_res["status"])
+        return self.create_emp_service_config({
+            "employee": employee_id,
+            "service": service_res["data"],
+            "image_set": img_response["image_set"]
+        })
         
-        # print(res)
-        # cat_res = self.add_category(
-        #     {
-        #         "name": request.data["category"],
-        #         "display_order": res[0] + 1
-        #     }
-        # )
-        # if cat_res["status"] == 400:
-        #     return Response(cat_res["errors"], status=status.HTTP_400_BAD_REQUEST)
-        # request.data["srv"]["employee"] = employee_id
-        # request.data["srv"]["service_category"] = cat_res["data"]
-        # return self.add_service(request.data["srv"])
         
     def put(self, request):
         request.data["employee"] = Employee.objects.get(user = request.user.pk).pk
@@ -134,11 +152,13 @@ class ServiceApi(APIView):
         employee = Employee.objects.get(user_id = request.user.pk)
         employee_service_configs = EmployeeServiceConfiguration.objects.filter(employee_id=employee)
         employee_service_configs_serialized = EmployeeServiceWithConfig(employee_service_configs, many=True)
-        preview_selected = True if request.query_params.get("preview") == "true" else False    
-        avatar = EmployeeAvatar.objects.get(employee = employee.pk)
-        avatar_encoded = self.map_images(avatar)
+        preview_selected = True if request.query_params.get("preview") == "true" else False  
+        try:  
+            avatar = EmployeeAvatar.objects.get(employee = employee.pk)
+            avatar_encoded = self.map_images(avatar)
+        except EmployeeAvatar.DoesNotExist:
+            avatar_encoded = None
         self.append_images(employee_service_configs_serialized.data)
-
         response = {
             "avatar": avatar_encoded if preview_selected else "",
             "service_info": employee_service_configs_serialized.data

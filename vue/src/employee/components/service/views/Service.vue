@@ -157,6 +157,10 @@
                 if(val === "tab-3"){
                     this.previewAllServices = true
                     await this.getServices();
+                }
+                else if(val === "tab-2"){
+                    this.previewAllServices = false
+                    await this.getServices();
                 } return
             },
             groupByCategory(employeeConfig){
@@ -185,7 +189,17 @@
                 await API.get(`/api/v1/employee/service/?preview=${this.previewAllServices}`)
                     .then(res => {
                         res.data.service_info = res.data.service_info.map(el => {
-                            return { ...el, id: el.service.service_display_order }
+                            const { service } = el
+                            const { service_category } = service
+                            delete service_category.name
+                            delete service.service_category
+                            return { 
+                                employee_image: el.employee_image,
+                                employee_service_config_id: el.employee_service_config_id,
+                                image_set_id: el.image_set_id,
+                                service: { ...service }, 
+                                category: { ...service_category, is_new: false, category: service_category.category_id }
+                            }
                         })
                         this.services = {... res.data };
                     })

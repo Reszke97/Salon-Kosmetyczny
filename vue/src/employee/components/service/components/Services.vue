@@ -13,7 +13,15 @@
                         <v-expansion-panel-content>
                             <p><b>Czas Trwania: </b>{{ service.service.duration }}</p>
                             <p><b>Cena: </b>{{ service.service.price }}</p>
+                            <v-btn
+                                color="red lighten-2"
+                                dark
+                                @click="OpenDialog"
+                            >
+                                Edytuj
+                            </v-btn>
                             <v-row
+                                v-if="openDialog"
                                 justify="end"
                             >
                                 <v-col cols=2>
@@ -24,22 +32,8 @@
                                         width="50vw"
                                         style="min-height:350px!important"
                                     >
-                                        <!-- <v-btn
-                                            @click="editService(service.id)"
-                                            class="w-100"
-                                            color="success" 
-                                        ><b>Edytuj</b></v-btn> -->
-                                        <template v-slot:activator="{ on, attrs }">
-                                            <v-btn
-                                                color="red lighten-2"
-                                                dark
-                                                v-bind="attrs"
-                                                v-on="on"
-                                            >
-                                                Edytuj
-                                            </v-btn>
-                                        </template>
                                         <add-or-update-service
+                                            ref="editDialog"
                                             min-height="400px"
                                             :preview="true"
                                             :service-to-edit="service"
@@ -92,13 +86,16 @@
         },
         
         methods: {
-            closeDialog(){
+            async closeDialog(){
                 this.openDialog = false;
-            }
-        },
-
-        async created(){
-            await this.getServices()
+                await this.getServices();
+            },
+            async OpenDialog(){
+                this.openDialog = true;
+                this.$nextTick( async () => {
+                    await this.$refs.editDialog[0].displayImages();
+                })
+            },
         },
     }
 </script>

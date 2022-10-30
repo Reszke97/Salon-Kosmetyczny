@@ -35,12 +35,49 @@
                     md="8"
                     lg="6"
                 >
+                    <v-autocomplete
+                        v-if="!serviceInfo.category.is_new"
+                        v-model="serviceInfo.category.category"
+                        :items="availableCategories"
+                        item-text="name"
+                        item-value="id"
+                        label="Nazwa kategorii"
+                        placeholder="Podaj nazwę kategorii"
+                        hint="Kliknij na ikonę aby dodać własną Kategorię."
+                        persistent-hint
+                        dark
+                    >
+                        <template #append-outer>
+                            <v-btn
+                                icon
+                                @click="setCategoryInput"
+                            >
+                                <v-icon>
+                                    mdi-swap-horizontal
+                                </v-icon>
+                            </v-btn>
+                        </template>
+                    </v-autocomplete>
                     <v-text-field
+                        v-if="serviceInfo.category.is_new"
                         v-model="serviceInfo.category.category"
                         label="Nazwa kategorii"
                         placeholder="Podaj nazwę kategorii"
+                        hint="Kliknij na ikonę aby wybrać specjalność z listy."
+                        persistent-hint
                         dark
-                    ></v-text-field>
+                    >
+                        <template #append-outer>
+                            <v-btn
+                                icon
+                                @click="setCategoryInput"
+                            >
+                                <v-icon>
+                                    mdi-keyboard-backspace 
+                                </v-icon>
+                            </v-btn>
+                        </template>
+                    </v-text-field>
                 </v-col>
             </v-row>
             <v-row
@@ -175,27 +212,35 @@
                     duration: "",
                 },
                 category: {
-                    isNew: true,
+                    is_new: true,
                     category: "",
                 },
                 employee_image: []
             },
+            availableCategories: [],
             images: [],
-            imagesCount: 0
         }),
         computed: {
-            
+            imagesCount(){
+                return this.serviceInfo.employee_image.length + this.images.length
+            }
         },
-        created(){
+        async created(){
             if(this.preview){
                 Object.keys(this.serviceToEdit).forEach(key => {
                     this.serviceInfo[key] = this.serviceToEdit[key];
                 })
             }
+            const API = await AUTH_API();
+            const res = await API.get("/api/v1/employee/employee-category/")
+            this.availableCategories = res.data
         },
         methods: {
-            async displayImages(event){
-                if(event.length){
+            setCategoryInput(){
+                this.serviceInfo.category.is_new = !this.serviceInfo.category.is_new
+            },
+            async displayImages(event = []){
+                if(event.length || this.preview){
                     for(const image of this.images){
                         const reader  = new FileReader();
                         reader.onload = async (e) => { 
@@ -203,11 +248,9 @@
                             await this.handleChange(e)
                         }
                         await this.getDataUrl(reader, image)
-                        this.imagesCount = this.images.length
                     }
                 } else {
                     this.serviceInfo.employee_image = [];
-                    this.imagesCount = 0
                 }
             },
             async handleChange (e){
@@ -244,8 +287,6 @@
             },
             async postData (actionType){
                 const API = await AUTH_API();
-                const formData = new FormData();
-                Object.keys(this.serviceInfo).forEach(key => formData.append(key, this.serviceInfo[key]));
                 const _serviceInfo = {...this.serviceInfo}
                 delete _serviceInfo.employee_image
                 await API[actionType]("/api/v1/employee/service/",

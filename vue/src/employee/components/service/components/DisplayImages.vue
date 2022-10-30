@@ -13,8 +13,12 @@
         >
             <div style="display: flex; flex-direction: column">
                 <div style="display: flex; flex-direction: row; width:100%">
-                    <div v-if="!creatingNewService" style="width:100%">
-                        <v-btn>
+                    <div v-if="img.isFromDB" style="width:100%" class="mb-2">
+                        <v-btn
+                            color="info"
+                            small
+                        >
+                            <v-icon>mdi-trash-can</v-icon>
                             Usuń
                         </v-btn>
                     </div>
@@ -22,7 +26,7 @@
                 <img
                     :id="`img-${idx}`"
                     :src="img.image"
-                    style=" width: 100%;height: auto; max-height:150px"
+                    style=" width: 100%;height: auto; max-height:150px; cursor: pointer;"
                 />
             </div>
             <v-dialog
@@ -74,8 +78,7 @@
         }),
         computed: {
             imgs(){
-                console.log(this.$refs)
-                if(this.imagesCount > 0 && this.imagesCount == this.images.length){
+                if(this.images.length){
                     this.$nextTick(() => {
                         this.images.forEach((el, idx) =>{
                             const img = document.getElementById(`img-${idx}`)

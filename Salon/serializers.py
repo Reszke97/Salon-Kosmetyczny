@@ -146,6 +146,15 @@ class EmployeeImageSerializer(serializers.ModelSerializer):
             'image_set',
         )
 
+class CreateEmployeeServiceConfigSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmployeeServiceConfiguration
+        fields = (
+            'image_set',
+            'service',
+            'employee'
+        )
+
 class EmployeeServiceWithConfig(serializers.ModelSerializer):
     service = ExistingServiceSerializer()
     employee_service_config_id = serializers.IntegerField(source="id")

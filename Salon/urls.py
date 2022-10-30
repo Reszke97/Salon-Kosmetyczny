@@ -8,6 +8,7 @@ from .auth import auth_backend
 from .employee.Calendar import *
 from .employee.Service import *
 from .employee.employee_info import *
+from .employee.service_category import *
 from .client.client_info import *
 from .client.business_activity_info import *
 
@@ -35,5 +36,6 @@ urlpatterns = [
     path('api/v1/employee/images/', ImagesApi.as_view(), name = 'images'),
     path('api/v1/employee/employee-info/', EmployeeApi.as_view(), name = 'employee_info'),
     path('api/v1/employee/employee-avatar/', EmployeeAvatarApi.as_view(), name = 'employee_avatar'),
+    path('api/v1/employee/employee-category/', ServiceCategoryApi.as_view(), name = 'employee_category'),
     # path('api/user/isauthenticated/', IsUserAuthenticated.as_view(), name = 'is_authenticated'),
 ]
