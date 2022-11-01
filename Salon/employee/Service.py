@@ -10,16 +10,31 @@ from rest_framework.views import APIView
 from ..serializers import *
 from rest_framework.parsers import MultiPartParser, FormParser
 from .utils.image_actions import map_images, append_images, prepare_and_create_images
+from ..models import Service
 
 class ServiceApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
     parser_classes = (MultiPartParser, FormParser)
+
+    def __init__(self):
+        self.employee_id = None
+        self.category = { "is_new": False, "category": "" }
+        self.service = { "name": "", "price": 0, "duration": 0, "employee": 0, "service_category": 0 }
 
     def add_service(self, service):
         service_serializer = ModifyServiceSerializer(data=service)
         if service_serializer.is_valid():
             service_id = service_serializer.save().pk
             return { "status": status.HTTP_201_CREATED, "data": service_id }
+        else:
+            return { "status": status.HTTP_400_BAD_REQUEST, "errors": service_serializer.errors, }
+
+    def update_service(self):
+        service = Service.objects.get(pk = self.service["service_id"], employee_id = self.employee_id)
+        service_serializer = ModifyServiceSerializer(service, data=self.service)
+        if service_serializer.is_valid():
+            service_serializer.save()
+            return { "status": status.HTTP_200_OK }
         else:
             return { "status": status.HTTP_400_BAD_REQUEST, "errors": service_serializer.errors, }
 
@@ -53,56 +68,82 @@ class ServiceApi(APIView):
         else:
             return Response(emp_srv_conf_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def map_request_data(self, data):
+        for key in data:
+            if key.find("service") != -1:
+                self.service[key[(key.find('[')) + 1:-1]] = data[key]
+            elif key.find("category") != -1:
+                self.category[key[(key.find('[')) + 1:-1]] = data[key]
+
     def post(self, request):
-        employee_id = Employee.objects.get(user = request.user.pk).pk
-        category = { "is_new": False, "category": "" }
-        service = { "name": "", "price": 0, "duration": 0, "employee": 0, "service_category": 0 }
+        self.employee_id = Employee.objects.get(user = request.user.pk).pk
+        self.map_request_data(request.data)
         files = request.FILES.getlist('files')
         img_response = { "data": None, "status": status.HTTP_201_CREATED }
-        for key in request.data:
-            if key.find("service") != -1:
-                service[key[(key.find('[')) + 1:-1]] = request.data[key]
-            elif key.find("category") != -1:
-                category[key[(key.find('[')) + 1:-1]] = request.data[key]
         if files:
-            img_response = prepare_and_create_images(files, employee_id)
+            img_response = prepare_and_create_images(files, self.employee_id)
         if img_response["status"] == 400:
             return Response(img_response["errors"], status=[img_response["status"]])
-        cat_res = { "status": 201, "data": category["category"]}
-        if category["is_new"] == "true":
-            biggest_display_order_number = self.find_biggest_display_order(employee_id)
-            if len(biggest_display_order_number) > 1:
+        cat_res = { "status": 201, "data": self.category["category"]}
+        if self.category["is_new"] == "true":
+            biggest_display_order_number = self.find_biggest_display_order(self.employee_id)
+            if len(biggest_display_order_number) >= 1  and biggest_display_order_number[0] != None:
                 biggest_display_order_number = biggest_display_order_number[0] + 1
             else:
                 biggest_display_order_number = 1
             cat_res = self.add_category(
                 {
-                    "name": category["category"],
+                    "name": self.category["category"],
                     "display_order": biggest_display_order_number
                 }
             )
-        if cat_res["status"] == 400:
-            return Response(cat_res["errors"], status=status.HTTP_400_BAD_REQUEST)
-        service["employee"] = employee_id
-        service["service_category"] = cat_res["data"]
-        service_res = self.add_service(service)
+            if cat_res["status"] == 400:
+                return Response(cat_res["errors"], status=status.HTTP_400_BAD_REQUEST)
+        else:
+            cat_res = { "data": self.category["category"] }
+        self.service["employee"] = self.employee_id
+        self.service["service_category"] = cat_res["data"]
+        service_res = self.add_service(self.service)
         if service_res["status"] == 400:
             return Response(service_res["errors"], status=service_res["status"])
         return self.create_emp_service_config({
-            "employee": employee_id,
+            "employee": self.employee_id,
             "service": service_res["data"],
             "image_set": img_response["image_set"]
         })
         
         
     def put(self, request):
-        request.data["employee"] = Employee.objects.get(user = request.user.pk).pk
-        data = request.data
-        serializer = ServiceSerializer(data, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        self.employee_id = Employee.objects.get(user = request.user.pk).pk
+        self.map_request_data(request.data)
+        files = None
+        if "files" in request.data:
+            files = request.FILES.getlist('files')
+            img_res = prepare_and_create_images(files, self.employee_id, request.data["image_set_id"])
+            if img_res["status"] == 400:
+                return Response(img_res["errors"], status=[img_res["status"]])
+        if self.category["is_new"] == "true":
+            biggest_display_order_number = self.find_biggest_display_order(self.employee_id)
+            if len(biggest_display_order_number) >= 1  and biggest_display_order_number[0] != None:
+                biggest_display_order_number = biggest_display_order_number[0] + 1
+            else:
+                biggest_display_order_number = 1
+            cat_res = self.add_category(
+                {
+                    "name": self.category["category"],
+                    "display_order": biggest_display_order_number
+                }
+            )
+            if cat_res["status"] == 400:
+                return Response(cat_res["errors"], status=status.HTTP_400_BAD_REQUEST)
+        else:
+            cat_res = { "data": self.category["category"] }
+        self.service["employee"] = self.employee_id
+        self.service["service_category"] = cat_res["data"]
+        service_res = self.update_service()
+        if service_res["status"] == 400:
+            return Response(service_res["errors"], status=service_res["status"])
+        return Response(status=service_res["status"])
 
     def get(self, request):
         employee = Employee.objects.get(user_id = request.user.pk)

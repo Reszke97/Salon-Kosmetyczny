@@ -7,6 +7,7 @@
           size="100"
         >
           <img
+            v-if="services.avatar"
             :src="services.avatar.image"
             style="width:100%;height: 100%"
           />
@@ -44,7 +45,7 @@
                 >
                   <img
                     :src="image.image"
-                    style="width:100%;height: 100%"
+                    style="width: 100%;height: auto; max-height:150px;"
                   />
                 </v-col>
               </v-row>

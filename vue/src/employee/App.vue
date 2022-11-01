@@ -3,6 +3,7 @@
     id="app"
   >
     <div 
+      id="custom-container"
       style="
         padding: 0px !important;
         height: 100vh;
@@ -12,7 +13,7 @@
       "
     >
       <nav-bar></nav-bar>
-      <v-container fill-height>
+      <v-container fill-height :style="containerStyles">
         <router-view></router-view>
       </v-container>
       <Footer></Footer>
@@ -30,6 +31,23 @@ export default {
   components: {
     NavBar,
     Footer
+  },
+
+  mounted(){
+    this.$nextTick(() => {
+      this.watchScreenResize()
+    })
+  },
+
+  data: () => ({
+    screenHeight: 0
+  }),
+
+  computed: {
+    containerStyles(){
+      if(this.screenHeight == 0) return "height:100%!important"
+      return `height:${this.screenHeight}px!important`
+    }
   },
 
   async created(){
@@ -86,6 +104,14 @@ export default {
       return
     }
   },
+  methods: {
+    watchScreenResize() {
+      const observer = new ResizeObserver((entries) => {
+        this.screenHeight = document.getElementById("custom-container").offsetHeight - entries[0].contentRect.height;
+      });
+      observer.observe(document.getElementById("custom-navbar"));
+    }
+  }
 }
 </script>
 

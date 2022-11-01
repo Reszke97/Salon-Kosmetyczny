@@ -169,12 +169,12 @@
                     categories: [],
                 }
                 const uniqueCategories = [
-                    ...new Map(employeeConfig.service_info.map(item =>[item.service.service_category.category_id, item.service.service_category])).values()
+                    ...new Map(employeeConfig.service_info.map(item =>[item.category.category_id, item.category])).values()
                 ];
 
                 let categoryIdx = 0;
                 for(const category of uniqueCategories){
-                    const items = employeeConfig.service_info.filter(el => el.service.service_category.category_id === category.category_id)
+                    const items = employeeConfig.service_info.filter(el => el.category.category_id === category.category_id)
                     groupedServices.categories.push({
                         name: category.name,
                         category_id: category.category_id,
@@ -191,14 +191,15 @@
                         res.data.service_info = res.data.service_info.map(el => {
                             const { service } = el
                             const { service_category } = service
-                            delete service_category.name
+                            // const { name } = service_category
+                            // delete service_category.name
                             delete service.service_category
                             return { 
                                 employee_image: el.employee_image,
                                 employee_service_config_id: el.employee_service_config_id,
                                 image_set_id: el.image_set_id,
                                 service: { ...service }, 
-                                category: { ...service_category, is_new: false, category: service_category.category_id }
+                                category: { ...service_category, is_new: false, category: service_category.category_id, }
                             }
                         })
                         this.services = {... res.data };
@@ -231,7 +232,7 @@
                         return this.appendMimeType(el)
                     });
                 })
-                if(this.previewAllServices) this.services.avatar = { ...this.appendMimeType(services.avatar) }
+                if(this.previewAllServices && this.services.avatar) this.services.avatar = { ...this.appendMimeType(services.avatar) }
             }
         },
     }

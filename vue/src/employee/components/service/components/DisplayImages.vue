@@ -27,7 +27,7 @@
                 <img
                     :id="`img-${idx}`"
                     :src="img.image"
-                    style=" width: 100%;height: auto; max-height:150px; cursor: pointer;"
+                    style="width: 100%;height: auto; max-height:150px; cursor: pointer;"
                 />
             </div>
             <v-dialog

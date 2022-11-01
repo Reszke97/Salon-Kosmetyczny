@@ -39,6 +39,7 @@
                         v-if="!serviceInfo.category.is_new"
                         v-model="serviceInfo.category.category"
                         :items="availableCategories"
+                        id="category-list"
                         item-text="name"
                         item-value="id"
                         label="Nazwa kategorii"
@@ -46,6 +47,7 @@
                         hint="Kliknij na ikonę aby dodać własną Kategorię."
                         persistent-hint
                         dark
+                        item-color="black"
                     >
                         <template #append-outer>
                             <v-btn
@@ -330,3 +332,9 @@
         }
     }
 </script>
+
+<style>
+    .v-list v-select-list v-sheet{
+        background-color: red!important;
+    }
+</style

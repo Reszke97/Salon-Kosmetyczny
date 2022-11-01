@@ -27,16 +27,17 @@ def create_image(images):
     else:
         return { "status": status.HTTP_400_BAD_REQUEST, "errors": images_serializer.errors }
 
-def prepare_and_create_images(files, employee):
-    img_set = EmployeeImageSet.objects.create()
+def prepare_and_create_images(files, employee, img_set = None):
+    if img_set == None:
+        img_set = EmployeeImageSet.objects.create().id
     for key in files:
         object = {
             "content": key,
             "employee": employee,
-            "image_set": img_set.id
+            "image_set": img_set
         }
         response = create_image(object)
-        response["image_set"] = img_set.id
+        response["image_set"] = img_set
     return response
 
 def append_images(employee_config):
