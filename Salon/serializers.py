@@ -1,4 +1,3 @@
-from pyexpat import model
 from rest_framework import serializers
 from . models import *
 from rest_framework_simplejwt.state import token_backend
@@ -7,8 +6,6 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.exceptions import TokenBackendError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.utils.translation import gettext as _
-from rest_framework.response import Response
-from rest_framework import status
 
 class CustomUserSerializer(serializers.ModelSerializer):
     """

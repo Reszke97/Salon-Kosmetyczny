@@ -37,6 +37,7 @@
                                             min-height="400px"
                                             :preview="true"
                                             :service-to-edit="service"
+                                            :get-services="getServices"
                                         >
                                             <template #closeDialog>
                                                 <v-btn

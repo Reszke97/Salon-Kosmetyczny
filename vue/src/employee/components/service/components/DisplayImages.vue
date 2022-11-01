@@ -17,6 +17,7 @@
                         <v-btn
                             color="info"
                             small
+                            @click="deleteImage(img)"
                         >
                             <v-icon>mdi-trash-can</v-icon>
                             Usuń
@@ -70,6 +71,10 @@
             imagesCount: {
                 type: Number,
                 required: true
+            },
+            deleteImage: {
+                type: Function,
+                default: () => {}
             }
         },
         data: () => ({

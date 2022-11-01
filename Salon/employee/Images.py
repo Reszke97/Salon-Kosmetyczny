@@ -1,14 +1,12 @@
 import base64
+from email.policy import HTTP
+import os
 from rest_framework.parsers import MultiPartParser, FormParser
-from pickle import TRUE
 from rest_framework.permissions import (
-    IsAuthenticated,  
-    BasePermission, 
-    AllowAny
+    IsAuthenticated,
 )
 from ..auth.auth_backend import CheckIfPasswordWasChanged
 from rest_framework.response import Response
-from django.http import HttpResponse
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -37,3 +35,12 @@ class ImagesApi(APIView):
             if response["status"] == 400:
                 return Response(response["errors"], status=response["status"])
         return Response(status=response["status"])
+
+    def delete(self, request):
+        employee = Employee.objects.get(user = request.user.pk)
+        img_id = request.query_params.get("image_id")
+        img = EmployeeImage.objects.get(pk = img_id, employee_id = employee.pk)
+        content = str(img.content).replace("/", "\\")
+        os.remove(os.path.join(settings.MEDIA_ROOT, content))
+        img.delete()
+        return Response(status=status.HTTP_200_OK)

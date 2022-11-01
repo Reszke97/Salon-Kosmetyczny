@@ -1,7 +1,4 @@
-import base64
-import stat
 from django.db import connection
-from ..models import EmployeeImageSet
 from rest_framework.permissions import (
     IsAuthenticated,  
 )
@@ -12,30 +9,11 @@ from rest_framework import status
 from rest_framework.views import APIView
 from ..serializers import *
 from rest_framework.parsers import MultiPartParser, FormParser
+from .utils.image_actions import map_images, append_images, prepare_and_create_images
 
 class ServiceApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
     parser_classes = (MultiPartParser, FormParser)
-
-    def create_image(self, images):
-        images_serializer = EmployeeImageSerializer(data=images)
-        if images_serializer.is_valid():
-            images_serializer.save()
-            return { "status": status.HTTP_201_CREATED, "errors": "" }
-        else:
-            return { "status": status.HTTP_400_BAD_REQUEST, "errors": images_serializer.errors }
-
-    def prepare_and_create_images(self, files, employee):
-        img_set = EmployeeImageSet.objects.create()
-        for key in files:
-            object = {
-                "content": key,
-                "employee": employee,
-                "image_set": img_set.id
-            }
-            response = self.create_image(object)
-            response["image_set"] = img_set.id
-        return response
 
     def add_service(self, service):
         service_serializer = ModifyServiceSerializer(data=service)
@@ -52,28 +30,6 @@ class ServiceApi(APIView):
             return { "status": 201, "data": cat_id}
         else:
             return { "status": 400, "errors": category_serializer.errors}
-
-    def append_images(self, employee_config):
-        for config in employee_config:
-            images = EmployeeImage.objects.filter(image_set = config["image_set_id"])
-            image_list = []
-            for image in images:
-                self.map_images(image, image_list)
-            config["employee_image"] = image_list
-
-    def map_images(self, image, image_list = None, ):
-        content = str(image.content).replace("/", "\\")
-        file_type = content[content.find('.') + 1::].upper()
-        # Note: The "rb" option stands for "read binary".
-        with open(settings.MEDIA_ROOT + "\\" + content, "rb") as image_file:
-            image_data = base64.b64encode(image_file.read()).decode('utf-8')
-            encoded_image = {
-                "image": image_data,
-                "file_type": file_type
-            }
-            if(image_list != None):
-                image_list.append(encoded_image)
-            return encoded_image
 
     def find_biggest_display_order(self, employee_id):
         cursor = connection.cursor()
@@ -109,7 +65,7 @@ class ServiceApi(APIView):
             elif key.find("category") != -1:
                 category[key[(key.find('[')) + 1:-1]] = request.data[key]
         if files:
-            img_response = self.prepare_and_create_images(files, employee_id)
+            img_response = prepare_and_create_images(files, employee_id)
         if img_response["status"] == 400:
             return Response(img_response["errors"], status=[img_response["status"]])
         cat_res = { "status": 201, "data": category["category"]}
@@ -155,10 +111,10 @@ class ServiceApi(APIView):
         preview_selected = True if request.query_params.get("preview") == "true" else False  
         try:  
             avatar = EmployeeAvatar.objects.get(employee = employee.pk)
-            avatar_encoded = self.map_images(avatar)
+            avatar_encoded = map_images(avatar)
         except EmployeeAvatar.DoesNotExist:
             avatar_encoded = None
-        self.append_images(employee_service_configs_serialized.data)
+        append_images(employee_service_configs_serialized.data)
         response = {
             "avatar": avatar_encoded if preview_selected else "",
             "service_info": employee_service_configs_serialized.data

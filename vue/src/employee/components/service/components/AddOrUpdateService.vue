@@ -155,7 +155,8 @@
                     <display-images
                         v-if="imagesCount > 0"
                         :images="serviceInfo.employee_image"
-                        :imagesCount="imagesCount"
+                        :images-count="imagesCount"
+                        :delete-image="deleteImage"
                     />
                 </v-col>
             </v-row>
@@ -202,6 +203,10 @@
             serviceToEdit: {
                 type: Object,
                 default: () => ({})
+            },
+            getServices: {
+                type: Function,
+                default: () => {}
             }
         },
         data: () => ({
@@ -226,16 +231,27 @@
             }
         },
         async created(){
-            if(this.preview){
-                Object.keys(this.serviceToEdit).forEach(key => {
-                    this.serviceInfo[key] = this.serviceToEdit[key];
-                })
-            }
+            this.assignServiceInfoData();
             const API = await AUTH_API();
             const res = await API.get("/api/v1/employee/employee-category/")
             this.availableCategories = res.data
         },
         methods: {
+            assignServiceInfoData(){
+                if(this.preview){
+                    Object.keys(this.serviceToEdit).forEach(key => {
+                        this.serviceInfo[key] = this.serviceToEdit[key];
+                    })
+                }
+            },
+            async deleteImage({ image_id }){
+                const API = await AUTH_API();
+                await API.delete(`/api/v1/employee/images/?image_id=${image_id}`)
+                    .then( async () => {
+                        await this.getServices();
+                        this.assignServiceInfoData();
+                    })
+            },
             setCategoryInput(){
                 this.serviceInfo.category.is_new = !this.serviceInfo.category.is_new
             },
