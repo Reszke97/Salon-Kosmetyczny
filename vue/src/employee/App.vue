@@ -16,7 +16,7 @@
       <v-container fill-height :style="containerStyles">
         <router-view></router-view>
       </v-container>
-      <Footer></Footer>
+      <Footer id="custom-footer"></Footer>
     </div >
   </v-app>
 </template>
@@ -35,14 +35,29 @@ export default {
 
   mounted(){
     this.$nextTick(() => {
-      this.watchScreenResize()
+      this.watchScreenHeightResize()
+      this.watchScreenWidthResize()
     })
   },
 
   data: () => ({
-    screenHeight: 0
+    screenHeight: 0,
+    screenWidth: 0,
   }),
-
+  provide(){
+    const screenSize = {};
+    Object.defineProperty(screenSize, "screenHeight", {
+      enumerable: true,
+      get: () => this.screenHeight
+    })
+     Object.defineProperty(screenSize, "screenWidth", {
+      enumerable: true,
+      get: () => this.screenWidth
+    })
+    return {
+      screenSize
+    }
+  },
   computed: {
     containerStyles(){
       if(this.screenHeight == 0) return "height:100%!important"
@@ -105,11 +120,19 @@ export default {
     }
   },
   methods: {
-    watchScreenResize() {
+    watchScreenHeightResize() {
       const observer = new ResizeObserver((entries) => {
-        this.screenHeight = document.getElementById("custom-container").offsetHeight - entries[0].contentRect.height;
+        this.screenHeight = 
+          document.getElementById("custom-container").offsetHeight 
+          - entries[0].contentRect.height - document.getElementById("custom-footer").offsetHeight;
       });
       observer.observe(document.getElementById("custom-navbar"));
+    },
+    watchScreenWidthResize() {
+      const observer = new ResizeObserver((entries) => {
+        this.screenWidth = document.querySelector("body").offsetWidth
+      });
+      observer.observe(document.querySelector("body"));
     }
   }
 }

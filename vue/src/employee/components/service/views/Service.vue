@@ -1,5 +1,6 @@
 <template>
     <v-row
+        id="services-main-container"
         style="
             height:100%
         "
@@ -8,7 +9,7 @@
     >
         <v-col
             cols="12"
-            sm="10"
+            sm="12"
             md="8"
             lg="6"
             style="
@@ -18,6 +19,7 @@
         >
             <div
                 v-if="previewAllServices"
+                class="mr-8"
                 style="
                     display: flex;
                     justify-content: end;
@@ -87,10 +89,10 @@
 
             <v-tabs-items 
                 v-model="tabs"
-                style="
-                    height: calc(100% - 112px);
+                :style="`
+                    height: ${tabs == 'tab-3' ? '100%' : 'calc(100% - 112px)'} ;
                     background-color:#3f51b5!important
-                "
+                `"
             >
                 <v-tab-item
                     :value="'tab-1'"
@@ -110,9 +112,11 @@
                 </v-tab-item>
                 <v-tab-item
                     :value="'tab-3'"
-                    style="height:100%"
+                    id="tab-3"
+                    style="height:100%;overflow:auto;"
                 >
                     <manage-services
+                        v-if="tabs == 'tab-3'"
                         :get-services="getServices"
                         :services="services"
                         :preview-all-services="previewAllServices"
@@ -238,14 +242,29 @@
     }
 </script>
 
-<style>
-    /* #my-tab .v-toolbar__extension .v-tabs .v-item-group .v-slide-group__prev{
-        display: none!important;
+<style type="text/css">
+    #tab-3::-webkit-scrollbar {
+        width: 14px;
+        height: 14px;
     }
-    #my-tab .v-toolbar__extension .v-tabs .v-item-group .v-slide-group__wrapper .v-slide-group__content{
-        flex: 0!important;
+    #tab-3::-webkit-scrollbar-button {
+        width: 0px;
+        height: 0px;
     }
-    #my-tab .v-toolbar__extension .v-tabs .v-item-group .v-slide-group__wrapper{
-        justify-content: center;
-    } */
+    #tab-3::-webkit-scrollbar-thumb {
+        background: royalblue;
+        border: 69px none #ffffff;
+        border-radius: 50px;
+    }
+    #tab-3::-webkit-scrollbar-thumb:hover {
+        background: #5b92ea;
+    }
+    #tab-3::-webkit-scrollbar-track {
+        background: #0844a4;
+        border: 43px none #621d1d;
+        border-radius: 50px;
+    }
+    #tab-3::-webkit-scrollbar-corner {
+        background: transparent;
+    }
 </style>
