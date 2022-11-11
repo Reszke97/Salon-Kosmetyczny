@@ -17,30 +17,8 @@
                 background-color:#3f51b5;
             "
         >
-            <div
-                v-if="previewAllServices"
-                class="mr-8"
-                style="
-                    display: flex;
-                    justify-content: end;
-                "
-            >
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-icon 
-                            style="position: absolute; z-index: 1"
-                            @click="closePreviewTab('tab-1')"
-                            v-bind="attrs"
-                            v-on="on"
-                        >
-                            mdi-keyboard-backspace 
-                        </v-icon>
-                    </template>
-                    <span>Powrót</span>
-                </v-tooltip>
-            </div>
             <v-toolbar 
-                v-else
+                v-if="!previewAllServices"
                 id="my-tab"
                 flat
                 style="
@@ -120,7 +98,50 @@
                         :get-services="getServices"
                         :services="services"
                         :preview-all-services="previewAllServices"
+                        :edit-mode="editMode"
                     >
+                        <template #header>
+                            <div
+                                v-if="previewAllServices"
+                                style="
+                                    display: flex;
+                                    justify-content: end;
+                                "
+                            >
+                                <div
+                                    class="mr-8"
+                                    :style="`
+                                        display: flex;
+                                        flex-direction: ${screenSize.screenWidth <= 400 ? 'column' : 'row'}
+                                    `"
+                                >
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on, attrs }">
+                                            <v-chip
+                                                style=" background: rgb(8, 68, 164)!important;"
+                                                class="ma-2"
+                                                color="primary"
+                                                @click="closePreviewTab('tab-1')"
+                                                v-bind="attrs"
+                                                v-on="on"
+                                            >
+                                                <v-icon left>
+                                                    mdi-keyboard-backspace 
+                                                </v-icon>
+                                                Powrót
+                                            </v-chip>
+                                        </template>
+                                        <span>Powrót</span>
+                                    </v-tooltip>
+                                    <v-checkbox
+                                        class="mt-2 ml-2"
+                                        v-model="editMode"
+                                        label="Tryb edycji"
+                                        dark
+                                    ></v-checkbox>
+                                </div>
+                            </div>
+                        </template>
                     </manage-services>
                 </v-tab-item>
             </v-tabs-items>
@@ -148,7 +169,9 @@
             tabs: null,
             services: { avatar: {}, service_info: [] },
             previewAllServices: false,
+            editMode: false,
         }),
+        inject: ["screenSize"],
         methods: {
             closePreviewTab(val){
                 this.setTabs(val);
@@ -243,28 +266,4 @@
 </script>
 
 <style type="text/css">
-    #tab-3::-webkit-scrollbar {
-        width: 14px;
-        height: 14px;
-    }
-    #tab-3::-webkit-scrollbar-button {
-        width: 0px;
-        height: 0px;
-    }
-    #tab-3::-webkit-scrollbar-thumb {
-        background: royalblue;
-        border: 69px none #ffffff;
-        border-radius: 50px;
-    }
-    #tab-3::-webkit-scrollbar-thumb:hover {
-        background: #5b92ea;
-    }
-    #tab-3::-webkit-scrollbar-track {
-        background: #0844a4;
-        border: 43px none #621d1d;
-        border-radius: 50px;
-    }
-    #tab-3::-webkit-scrollbar-corner {
-        background: transparent;
-    }
 </style>

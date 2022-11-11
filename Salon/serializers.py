@@ -108,6 +108,11 @@ class ExistingServiceSerializer(serializers.ModelSerializer):
         model = Service
         fields = ('duration', 'name', 'price', 'service_id', 'service_category')
 
+class ServiceCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceComment
+        fields = ("service", "text")
+
 
 class EmployeeServiceConfigurationSerializer(serializers.ModelSerializer):
     class Meta:

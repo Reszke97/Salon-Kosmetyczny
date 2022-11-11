@@ -5,3 +5,29 @@
 .v-dialog .row {
     margin: 0!important;
 }
+
+::-webkit-scrollbar {
+    width: 14px!important;
+    height: 14px!important;
+    cursor: pointer;
+}
+::-webkit-scrollbar-button {
+    width: 0px!important;
+    height: 0px!important;
+}
+::-webkit-scrollbar-thumb {
+    background: royalblue!important;
+    border: 69px none #ffffff!important;
+    border-radius: 50px!important;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #5b92ea!important;
+}
+::-webkit-scrollbar-track {
+    background: #0844a4!important;
+    border: 43px none #621d1d!important;
+    border-radius: 50px!important;
+}
+::-webkit-scrollbar-corner {
+    background: transparent!important;
+}

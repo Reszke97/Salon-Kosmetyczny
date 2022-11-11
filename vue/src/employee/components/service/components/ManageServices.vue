@@ -1,16 +1,21 @@
 <template>
   <div style="display: flex; flex-direction: column; width:100%">
-    <div class="mb-2">
-      <v-avatar 
-        color="#0844a4"
-        size="100"
-      >
-        <img
-          v-if="services.avatar"
-          :src="services.avatar.image"
-          style="width:100%;height: 100%"
-        />
-      </v-avatar>
+    <div class="mb-2" style="display: flex">
+      <div style="width:100px">
+        <v-avatar 
+          color="#0844a4"
+          size="100"
+        >
+          <img
+            v-if="services.avatar"
+            :src="services.avatar.image"
+            style="width:100%;height: 100%"
+          />
+        </v-avatar>
+      </div>
+      <div style="display: flex; justify-content: end; width: calc(100% - 100px)">
+        <slot name="header" />
+      </div>
     </div>
     <div v-if="screenSize.screenWidth >= 570" style="display: flex; flex-direction: column">
       <div
@@ -49,6 +54,22 @@
                   />
                 </div>
               </div>
+              <div 
+                v-if="editMode" 
+                style="display: flex;"
+                class="my-2"
+              >
+                <v-btn
+                  rounded
+                  color="success"
+                  @click="dialogAction(service.service.service_id)"
+                >
+                  <v-icon left>
+                    mdi-plus-circle-outline
+                  </v-icon>
+                  Dodaj Komentarz
+                </v-btn>
+              </div>
             </div>
           </div>
         </div>
@@ -83,28 +104,59 @@
               </div>
             </div>
           </div>
+          <div 
+            v-if="editMode" 
+            style="display: flex;"
+            class="my-2"
+          >
+            <v-btn
+              rounded
+              color="success"
+              small
+              @click="dialogAction(service.service.service_id)"
+            >
+              <v-icon left>
+                mdi-plus-circle-outline
+              </v-icon>
+              Dodaj Komentarz
+            </v-btn>
+          </div>
         </div>
       </div>
     </div>
+    <v-row>
+      <v-col>
+        <comment
+          v-if="dialog"
+          :dialog="dialog"
+          :service_id="selectedServiceId"
+          :dialog-action="dialogAction"
+        />
+      </v-col>
+    </v-row>
   </div>
 </template>
 
 <script>
   import { AUTH_API } from "../../../authorization/AuthAPI";
-  import draggable from 'vuedraggable'
+  import draggable from "vuedraggable";
+  import Comment from "./Comment.vue";
   export default {
     name: "",
     components: {
-      draggable
+      draggable, Comment
     },
     props: {
       getServices: { type: Function, required: true },
       services: { type: Object, required: true },
-      previewAllServices: { type: Boolean, required: true }
+      previewAllServices: { type: Boolean, required: true },
+      editMode: { type: Boolean, default: false },
     },
     data: () => ({
       draggingEnabled: true,
       draggingInProgress: false,
+      dialog: false,
+      selectedServiceId: null,
     }),
     inject: ["screenSize"],
     computed: {
@@ -138,6 +190,10 @@
     },
 
     methods: {
+      dialogAction(id = null){
+        this.dialog = !this.dialog;
+        this.selectedServiceId = id;
+      }
     }
   }
 </script>

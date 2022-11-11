@@ -149,6 +149,12 @@ class Service(models.Model):
     class Meta:
         ordering = ['display_order']
 
+class ServiceComment(models.Model):
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
 class EmployeeImageSet(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
