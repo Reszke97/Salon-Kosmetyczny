@@ -111,7 +111,7 @@ class ExistingServiceSerializer(serializers.ModelSerializer):
 class ServiceCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceComment
-        fields = ("service", "text")
+        fields = ("service", "text", "comment_set")
 
 
 class EmployeeServiceConfigurationSerializer(serializers.ModelSerializer):
@@ -167,7 +167,18 @@ class EmployeeServiceWithConfig(serializers.ModelSerializer):
             'employee_service_config_id',
             'styles',
             'image_set_id',
+            'comment_set_id',
             'service',
+        )
+
+class EmployeeCommentSerialier(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceComment
+        fields = (
+            'service',
+            'text',
+            'comment_set',
+            'id',
         )
 
 class GetUserInfoSerializer(serializers.ModelSerializer):

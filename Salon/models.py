@@ -149,13 +149,17 @@ class Service(models.Model):
     class Meta:
         ordering = ['display_order']
 
-class ServiceComment(models.Model):
-    service = models.ForeignKey(Service, on_delete=models.CASCADE)
-    text = models.TextField()
+class EmployeeImageSet(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+class EmployeeCommentSet(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-class EmployeeImageSet(models.Model):
+class ServiceComment(models.Model):
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    text = models.TextField()
+    comment_set = models.ForeignKey(EmployeeCommentSet, on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 class EmployeeImage(models.Model):
@@ -169,6 +173,7 @@ class EmployeeImage(models.Model):
 class EmployeeServiceConfiguration(models.Model):
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     image_set = models.ForeignKey(EmployeeImageSet, on_delete=models.CASCADE, null=True)
+    comment_set = models.ForeignKey(EmployeeCommentSet, on_delete=models.CASCADE, null=True)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     styles = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

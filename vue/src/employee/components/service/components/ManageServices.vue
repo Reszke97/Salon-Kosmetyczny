@@ -56,19 +56,59 @@
               </div>
               <div 
                 v-if="editMode" 
-                style="display: flex;"
+                style="display: flex; flex-direction: column"
                 class="my-2"
               >
-                <v-btn
-                  rounded
-                  color="success"
-                  @click="dialogAction(service.service.service_id)"
+                <template 
+                  v-for="comment of service.employee_comment"
                 >
-                  <v-icon left>
-                    mdi-plus-circle-outline
-                  </v-icon>
-                  Dodaj Komentarz
-                </v-btn>
+                  <div style="display:flex" class="pb-2" :key="`c-${comment.id}`">
+                    <h4 class="comment">
+                      {{ comment.text }}
+                      <v-tooltip top color="success">
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-icon
+                            dark
+                            right
+                            v-bind="attrs"
+                            v-on="on"
+                            @click="dialogAction(service.service.service_id, comment.id)"
+                          >
+                            mdi-pencil
+                          </v-icon>
+                        </template>
+                        <span>Edytuj</span>
+                      </v-tooltip>
+                      <v-tooltip top color="success">
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-icon
+                            color="red"
+                            right
+                            v-bind="attrs"
+                            v-on="on"
+                            @click="deleteComment(comment.id)"
+                          >
+                            mdi-delete 
+                          </v-icon>
+                        </template>
+                        <span>Usuń</span>
+                      </v-tooltip>
+                    </h4>
+                  </div>
+                </template>
+                <div>
+                  <v-btn
+                    class="m-0"
+                    rounded
+                    color="success"
+                    @click="dialogAction(service.service.service_id)"
+                  >
+                    <v-icon left>
+                      mdi-plus-circle-outline
+                    </v-icon>
+                    Dodaj Komentarz
+                  </v-btn>
+                </div>
               </div>
             </div>
           </div>
@@ -109,7 +149,50 @@
             style="display: flex;"
             class="my-2"
           >
+            <div 
+              v-for="comment of service.employee_comment"
+              :key="`c-${comment.id}`"
+            >
+              <template 
+                v-for="comment of service.employee_comment"
+              >
+                <div style="display:flex" class="pb-2" :key="`c-${comment.id}`">
+                  <h4 class="comment">
+                    {{ comment.text }}
+                    <v-tooltip top color="success">
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon
+                          dark
+                          right
+                          v-bind="attrs"
+                          v-on="on"
+                          @click="dialogAction(service.service.service_id, comment.id)"
+                        >
+                          mdi-pencil
+                        </v-icon>
+                      </template>
+                      <span>Edytuj</span>
+                    </v-tooltip>
+                    <v-tooltip top color="success">
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon
+                          color="red"
+                          right
+                          v-bind="attrs"
+                          v-on="on"
+                          @click="deleteComment(comment.id)"
+                        >
+                          mdi-delete 
+                        </v-icon>
+                      </template>
+                      <span>Usuń</span>
+                    </v-tooltip>
+                  </h4>
+                </div>
+              </template>
+            </div>
             <v-btn
+              class="m-0"
               rounded
               color="success"
               small
@@ -208,5 +291,8 @@
   } */
   #items-container {
     width: 100%;
+  }
+  .comment i:hover{
+    cursor: pointer;
   }
 </style>

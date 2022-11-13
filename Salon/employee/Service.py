@@ -12,6 +12,12 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .utils.image_actions import map_images, append_images, prepare_and_create_images
 from ..models import Service, ServiceComment
 
+def append_comments(employee_config):
+
+    for config in employee_config:
+        comments = ServiceComment.objects.filter(comment_set = config["comment_set_id"])
+        comments_serialized = EmployeeCommentSerialier(comments, many=True)
+        config["employee_comments"] = comments_serialized.data
 class ServiceApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
     parser_classes = (MultiPartParser, FormParser)
@@ -106,10 +112,12 @@ class ServiceApi(APIView):
         service_res = self.add_service(self.service)
         if service_res["status"] == 400:
             return Response(service_res["errors"], status=service_res["status"])
+        comment_set = EmployeeCommentSet.objects.create().id
         return self.create_emp_service_config({
             "employee": self.employee_id,
             "service": service_res["data"],
-            "image_set": img_response["image_set"]
+            "image_set": img_response["image_set"],
+            "comment_set": comment_set
         })
         
         
@@ -156,6 +164,7 @@ class ServiceApi(APIView):
         except EmployeeAvatar.DoesNotExist:
             avatar_encoded = None
         append_images(employee_service_configs_serialized.data)
+        append_comments(employee_service_configs_serialized.data)
         response = {
             "avatar": avatar_encoded if preview_selected else "",
             "service_info": employee_service_configs_serialized.data
@@ -166,12 +175,21 @@ class ServiceApi(APIView):
 class ServiceCommentApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
 
+    def get(self, request):
+        employee = Employee.objects.get(user_id = request.user.pk)
+        service = Service.objects.filter(pk = request.data["service_id"])
+        if service.employee_id == employee.pk:
+            srv_comment_serializer = ServiceCommentSerializer(service, many=True)
+            return Response(srv_comment_serializer.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
     def post(self, request):
         employee = Employee.objects.get(user_id = request.user.pk)
         service = Service.objects.get(pk = request.data["service_id"])
         if service.employee_id == employee.pk:
+            srv_comment_set_id = EmployeeCommentSet.objects.create().id
             srv_comment_serializer = ServiceCommentSerializer(data={
-                "service": service.pk, "text": request.data["text"]
+                "service": service.pk, "text": request.data["text"], "comment_set": srv_comment_set_id
             })
             if srv_comment_serializer.is_valid():
                 srv_comment_serializer.save()

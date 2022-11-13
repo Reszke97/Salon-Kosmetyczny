@@ -218,11 +218,10 @@
                         res.data.service_info = res.data.service_info.map(el => {
                             const { service } = el
                             const { service_category } = service
-                            // const { name } = service_category
-                            // delete service_category.name
                             delete service.service_category
                             return { 
                                 employee_image: el.employee_image,
+                                employee_comment: el.employee_comments,
                                 employee_service_config_id: el.employee_service_config_id,
                                 image_set_id: el.image_set_id,
                                 service: { ...service }, 
