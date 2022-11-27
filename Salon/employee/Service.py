@@ -187,9 +187,11 @@ class ServiceCommentApi(APIView):
         employee = Employee.objects.get(user_id = request.user.pk)
         service = Service.objects.get(pk = request.data["service_id"])
         if service.employee_id == employee.pk:
-            srv_comment_set_id = EmployeeCommentSet.objects.create().id
+            comment_set_id = EmployeeServiceConfiguration.objects.get(
+                employee_id=employee.pk, service_id = request.data["service_id"]
+            ).comment_set_id
             srv_comment_serializer = ServiceCommentSerializer(data={
-                "service": service.pk, "text": request.data["text"], "comment_set": srv_comment_set_id
+                "service": service.pk, "text": request.data["text"], "comment_set": comment_set_id
             })
             if srv_comment_serializer.is_valid():
                 srv_comment_serializer.save()
@@ -198,10 +200,12 @@ class ServiceCommentApi(APIView):
         return Response(status=status.HTTP_403_FORBIDDEN)
 
     def put(self, request):
-        employee = Employee.objects.get(user_id = request.data.pk)
-        if Service.objects.get(pk = request.data["service_id"]).employee == employee.pk:
-            service_comment = ServiceComment.objects.get(pk=request.data.srvCommentId)
-            srv_comment_serializer = ServiceCommentSerializer(service_comment, data=request.data)
+        employee = Employee.objects.get(user_id = request.user.pk)
+        if Service.objects.get(pk = request.data["service_id"]).employee_id == employee.pk:
+            service_comment = ServiceComment.objects.get(pk=request.data["srvCommentId"])
+            srv_comment_serializer = ServiceCommentSerializer(service_comment, data={
+                "service": request.data["service_id"], "text": request.data["text"], "comment_set": service_comment.comment_set_id
+            })
             if srv_comment_serializer.is_valid():
                 srv_comment_serializer.save()
                 return Response(status=status.HTTP_201_CREATED)
@@ -209,9 +213,12 @@ class ServiceCommentApi(APIView):
         return Response(status=status.HTTP_403_FORBIDDEN)
 
     def delete(self, request):
-        employee = Employee.objects.get(user_id = request.data.pk)
-        if Service.objects.get(pk = request.data["service_id"]).employee == employee.pk:
-            ServiceComment.objects.delete(pk=request.data.srvCommentId)
+        employee = Employee.objects.get(user_id = request.user.pk)
+        comment_id = request.query_params.get("comment_id")
+        service_id = request.query_params.get("service_id")
+        if Service.objects.get(pk = service_id).employee_id == employee.pk:
+            service_comment_set = ServiceComment.objects.get(pk=comment_id)
+            service_comment_set.delete()
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_403_FORBIDDEN)
 

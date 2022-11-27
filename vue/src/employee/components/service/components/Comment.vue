@@ -13,11 +13,10 @@
                 style="display: flex; flex-direction: column"
             >
                 <div class="px-2">
-                    <h3>Dodawanie komentarza</h3>
+                    <h3 style="color:white;">{{ header }}</h3>
                 </div>
                 <div id="comment-field" class="mx-2">
                     <v-textarea
-                        label="Dodaj komentarz"
                         dark
                         v-model="comment"
                     >
@@ -27,7 +26,7 @@
                     <v-btn 
                         class="my-2 mx-2"
                         color="success"
-                        @click="saveComment"
+                        @click="postComment"
                     >
                         Zapisz
                     </v-btn>
@@ -56,21 +55,37 @@
         props: {
             dialog: { type: Boolean, default: false },
             service_id: { type: Number, default: null },
-            dialogAction: { type: Function, default: () => {} }
+            dialogAction: { type: Function, default: () => {} },
+            selectedComment: { type: Object, default: null }
         },
         data: () => ({
             comment: "",
+            header: "Dodawanie komentarza",
         }),
         inject: ["screenSize"],
-        computed: {
-            
+        computed: {},
+        created(){
+            if(this.selectedComment) {
+                this.header = "Edycja komentarza"
+                this.comment = this.selectedComment.text
+            }
         },
         methods: {
-            async saveComment(){
-                const API = await AUTH_API();
-                await API.post("/api/v1/employee/comment/", {
+            async postComment(){
+                let action = "post";
+                self = this;
+                let object = {
                     text: this.comment,
                     service_id: this.service_id
+                };
+                if(this.selectedComment) {
+                    action = "put";
+                    object = {...object, srvCommentId: this.selectedComment.id}
+                }
+                const API = await AUTH_API();
+                await API[action]("/api/v1/employee/comment/", object)
+                .then(() => {
+                    self.$emit("commentActionSuccess");
                 })
             }
         }

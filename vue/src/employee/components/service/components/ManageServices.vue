@@ -72,7 +72,7 @@
                             right
                             v-bind="attrs"
                             v-on="on"
-                            @click="dialogAction(service.service.service_id, comment.id)"
+                            @click="dialogAction(service.service.service_id, comment)"
                           >
                             mdi-pencil
                           </v-icon>
@@ -86,7 +86,7 @@
                             right
                             v-bind="attrs"
                             v-on="on"
-                            @click="deleteComment(comment.id)"
+                            @click="deleteComment(service.service.service_id, comment.id)"
                           >
                             mdi-delete 
                           </v-icon>
@@ -166,7 +166,7 @@
                           right
                           v-bind="attrs"
                           v-on="on"
-                          @click="dialogAction(service.service.service_id, comment.id)"
+                          @click="dialogAction(service.service.service_id, comment)"
                         >
                           mdi-pencil
                         </v-icon>
@@ -180,7 +180,7 @@
                           right
                           v-bind="attrs"
                           v-on="on"
-                          @click="deleteComment(comment.id)"
+                          @click="deleteComment(service.service.service_id, comment.id)"
                         >
                           mdi-delete 
                         </v-icon>
@@ -214,6 +214,8 @@
           :dialog="dialog"
           :service_id="selectedServiceId"
           :dialog-action="dialogAction"
+          :selected-comment="selectedComment"
+          @commentActionSuccess="closeComment"
         />
       </v-col>
     </v-row>
@@ -240,8 +242,9 @@
       draggingInProgress: false,
       dialog: false,
       selectedServiceId: null,
+      selectedComment: null,
     }),
-    inject: ["screenSize"],
+    inject: ["screenSize", "getServices"],
     computed: {
       openDialog(){
         if(this.previewAllServices) return true
@@ -273,7 +276,22 @@
     },
 
     methods: {
-      dialogAction(id = null){
+      async deleteComment(service_id, comment_id){
+        const API = await AUTH_API();
+        await API.delete(`/api/v1/employee/comment/?service_id=${service_id}&comment_id=${comment_id}`)
+        .then( async () => {
+          await this.closeComment()
+        })
+      },
+      async closeComment(){
+        this.dialog = false;
+        await this.getServices()
+      },
+      setSelectedComment(comment){
+        this.selectedComment = comment;
+      },
+      dialogAction(id = null, comment = null){
+        this.setSelectedComment(comment);
         this.dialog = !this.dialog;
         this.selectedServiceId = id;
       }

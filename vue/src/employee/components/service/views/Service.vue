@@ -171,6 +171,11 @@
             previewAllServices: false,
             editMode: false,
         }),
+        provide(){
+            return {
+                getServices: this.getServices
+            }
+        },
         inject: ["screenSize"],
         methods: {
             closePreviewTab(val){
