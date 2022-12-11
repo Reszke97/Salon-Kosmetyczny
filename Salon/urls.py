@@ -9,6 +9,7 @@ from .employee.Calendar import *
 from .employee.Service import ServiceApi, ServiceCommentApi
 from .employee.employee_info import *
 from .employee.service_category import *
+from .employee.business_activity import *
 from .client.client_info import *
 from .client.business_activity_info import *
 

@@ -1,16 +1,17 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
+import Vue from 'vue';
+import VueRouter from 'vue-router';
 
-import Register from '../components/registration/Register.vue'
-import Login from '../components/authentication/Login.vue'
-import Logout from '../components/authentication/Logout.vue'
-import PasswordChange from '../components/authentication/PasswordChange.vue'
-import ResetPassword from '../components/authentication/ResetPassword.vue'
-import PasswordResetEmail from '../components/authentication/ResetPasswordEmail.vue'
-import Home from '../components/home/Home.vue'
-import Calendar from '../components/employee/views/Calendar.vue'
-import Service from "../components/service/views/Service.vue"
-import SettingsPanel from '../components/Settings/views/SettingsPanel.vue'
+import Register from '../components/registration/Register.vue';
+import Login from '../components/authentication/Login.vue';
+import Logout from '../components/authentication/Logout.vue';
+import PasswordChange from '../components/authentication/PasswordChange.vue';
+import ResetPassword from '../components/authentication/ResetPassword.vue';
+import PasswordResetEmail from '../components/authentication/ResetPasswordEmail.vue';
+import Home from '../components/home/Home.vue';
+import Calendar from '../components/employee/views/Calendar.vue';
+import Service from "../components/service/views/Service.vue";
+import SettingsPanel from '../components/Settings/views/SettingsPanel.vue';
+import BusinessActivity from "../components/BusinessActivity/views/BusinessActivity.vue";
 
 Vue.use(VueRouter)
 
@@ -61,7 +62,6 @@ const routes = [
     component: SettingsPanel
   },
 
-
   {
     path: '/passwordchangeaccepted/:uidb64/:token',
     redirect: to =>{
@@ -88,6 +88,15 @@ const routes = [
     component: PasswordChange
   },
 
+
+  {
+    path: '/business-activity/manage',
+    name: 'BusinessActivity',
+    component: BusinessActivity,
+  },
+
+
+  // Calendar Start
   {
     path: '/calendar/monthly',
     name: 'CalendarMonthly',
@@ -112,14 +121,16 @@ const routes = [
       calendarType: "daily"
     },
   },
+
+  //Calendar End
+
+  //Service Start
   {
     path: "/defineservice",
     name: "Service",
     component: Service,
-    // props: {
-    //   calendarType: "daily"
-    // },
   },
+  //Service End
 
 ]
 

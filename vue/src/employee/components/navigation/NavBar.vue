@@ -61,7 +61,6 @@
           loaded: false,
           menuItems: [
             { title: "login", path: "login", icon: "mdi-login" },
-            { title: "Usługi", path: "/defineservice", icon: "mdi-plus" },
           ],
         }
       },
@@ -71,31 +70,27 @@
           isAuthenticated: (state) => state.isAuthenticated,
           role: (state) => state.role
         }),
-        menuItemsLoaded(){
-          if(this.role && this.isAuthenticated){
-            let menuItems = []
-            menuItems = [
-              this.auth,
-              { title: "Usługi", path: "/defineservice", icon: "mdi-plus" },
-              { title: "Ustawienia", path: "/settings", icon: "mdi-cog-outline" },
-            ]
-            return menuItems
-          }
-          return this.menuItems 
-        },
         auth(){
           return this.isAuthenticated
           ? { title: 'wyloguj', path: '/logout', icon: 'mdi-logout' }
           : { title: 'login', path: '/login', icon: 'mdi-login' }
         },
 
-        // rights(){
-        //   return this.role === 'client'
-        //   ?{ title: 'panel klienta', path: '/logout', icon: 'mdi-account'}
-        //   : this.role === 'pracownik'
-        //     ?{ title: 'panel pracownika', path: '/logout', icon: 'mdi-account'}
-        //     : null
-        // }
+        menuItemsLoaded(){
+          let menuItems = [...this.menuItems];
+          if(this.role && this.isAuthenticated){
+            menuItems = [
+              ...menuItems,
+              { title: "Usługi", path: "/defineservice", icon: "mdi-plus" },
+              { title: "Ustawienia", path: "/settings", icon: "mdi-cog-outline" },
+            ]
+            if(this.role == "owner"){
+              menuItems.splice(2,0, 
+                { title: "Moja firma", path: "/business-activity/manage", icon: "mdi-office-building-cog" }
+              )
+            }
+          } return menuItems
+        }
       },
 
     }
