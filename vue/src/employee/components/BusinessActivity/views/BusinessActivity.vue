@@ -73,6 +73,10 @@
                     :value="'tab-1'"
                     style="height:100%"
                 >
+                    <edit
+                        :get-business-activity-data="getBusinessActivityData"
+                    >
+                    </edit>
                 </v-tab-item>
 
                 <v-tab-item
@@ -93,22 +97,31 @@
 </template>
 
 <script>
+    import Edit from "../components/Edit.vue";
+    import { AUTH_API } from "../../../authorization/AuthAPI";
     export default {
         name: "BusinessActivity",
         props: {
 
         },
         components: {
-
+            Edit
         },
         data: () => ({
-           tabs: null, 
+           tabs: null,
+           businessActivity: {},
         }),
         provide(){
         },
         inject: ["screenSize"],
         methods: {
-           
+            async getBusinessActivityData(resolve){
+                const API = await AUTH_API();
+                await API.get("api/v1/employee/business-activity/")
+                    .then(res => {
+                        resolve(res.data)
+                    })
+           }
         },
     }
 </script>

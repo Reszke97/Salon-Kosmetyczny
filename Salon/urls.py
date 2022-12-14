@@ -39,5 +39,6 @@ urlpatterns = [
     path('api/v1/employee/employee-avatar/', EmployeeAvatarApi.as_view(), name = 'employee_avatar'),
     path('api/v1/employee/employee-category/', ServiceCategoryApi.as_view(), name = 'employee_category'),
     path('api/v1/employee/comment/', ServiceCommentApi.as_view(), name = 'service_comment'),
+    path('api/v1/employee/business-activity/', BusinessActivityApi.as_view(), name = 'business_activity'),
     # path('api/user/isauthenticated/', IsUserAuthenticated.as_view(), name = 'is_authenticated'),
 ]

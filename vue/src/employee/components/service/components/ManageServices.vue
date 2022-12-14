@@ -37,7 +37,7 @@
               <h3> Usługa - {{ service.service.name }} </h3>
               <p> Cena - {{ service.service.price }} PLN</p>
               <p> Czas trwania - {{ service.service.duration }} </p>
-              <div style="display: flex;">
+              <div style="display: flex; width:50%">
                 <div
                   style="width:100%"
                   class="mx-2"

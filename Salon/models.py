@@ -107,6 +107,11 @@ class BusinessActivity(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+class BusinessActivityImage(models.Model):
+    content = models.ImageField(blank=True, null=True, upload_to=upload_path)
+    business_activity = models.ForeignKey(BusinessActivity, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 class EmployeeSpecialization(models.Model):
     name = models.CharField(blank=False, max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
