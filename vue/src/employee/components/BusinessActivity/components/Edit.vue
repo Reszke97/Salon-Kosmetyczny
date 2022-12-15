@@ -165,6 +165,7 @@
                 <div class="d-flex justify-end">
                     <slot name="closeDialog" />
                     <v-btn
+                        @click="updateBusinessInfo"
                         color="success"
                     >Zapisz zmiany</v-btn>
                 </div>
@@ -176,6 +177,8 @@
 
 <script>
     import { appendMimeType } from "../../../utils/appendMimeType";
+    import { jsonToFormData } from "../../../utils/jsonToFormData";
+    import { AUTH_API } from "../../../authorization/AuthAPI";
     export default {
         name: "Edit",
         props: {
@@ -196,7 +199,7 @@
                 delete res.image;
                 this.businessActivity = res;
                 if(image){
-                    this.businessActivity.image = appendMimeType(image)
+                    this.businessActivity.image = appendMimeType(image).image
                 } else this.businessActivity.image = null;
             })
         },
@@ -222,6 +225,37 @@
             async getDataUrl(reader, image){
                 await reader.readAsDataURL(image);
             },
+
+            async updateBusinessInfo(){
+                const API = await AUTH_API();
+                await API.put("api/v1/employee/business-activity/",
+                    jsonToFormData({
+                        data: {
+                            apartment_number: this.businessActivity.apartment_number,
+                            city: this.businessActivity.city,
+                            contact_phone: this.businessActivity.contact_phone,
+                            house_number: this.businessActivity.house_number,
+                            id: this.businessActivity.id,
+                            name: this.businessActivity.name,
+                            post_code: this.businessActivity.post_code,
+                            street: this.businessActivity.street,
+                        },
+                        images: this.uploadImg,
+                        arrayOfImages: false,
+                    }),
+                    {
+                        headers: {
+                            "content-type": "multipart/form-data",
+                        },
+                    }
+                )
+                .then(() => {
+                    console.log("hurra!")
+                })
+                .catch((err) => {
+                    console.log(err)
+                })
+            }
         }
     }
 </script>

@@ -71,7 +71,7 @@
             >
                 <v-tab-item
                     :value="'tab-1'"
-                    style="height:100%"
+                    style="height:100%;overflow-y:auto;overflow-x:hidden"
                 >
                     <edit
                         :get-business-activity-data="getBusinessActivityData"

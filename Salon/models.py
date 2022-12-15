@@ -85,7 +85,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         return True
 
 def upload_path(instance, filename):
-    return '/'.join(["images", "employee_" + str(instance.employee.pk),filename])
+    try:
+        name = "employee_" + str(instance.employee.pk)
+    except:
+        name = "business_activity_" + str(str(instance.business_activity.pk))
+    return '/'.join(["images", name,filename])
 class Appointment(models.Model):
     date = models.CharField(max_length=100)
     time_start = models.CharField(max_length=100)

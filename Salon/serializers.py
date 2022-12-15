@@ -139,6 +139,25 @@ class EmployeeAvatarCreateSerializer(serializers.ModelSerializer):
             'content', 
             'employee',
         )
+
+
+
+class BusinessActivityImageCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessActivityImage
+        fields = (
+            'content',
+            'business_activity'
+        )
+class BusinessActivityImageUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BusinessActivityImage
+        fields = (
+            'id',
+            'content',
+            'business_activity'
+        )
+    
 class EmployeeImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployeeImage
