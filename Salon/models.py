@@ -108,6 +108,7 @@ class BusinessActivity(models.Model):
     house_number = models.CharField(blank=False, max_length=45)
     contact_phone = models.CharField(blank=False, max_length=45)
     city = models.CharField(blank=False, max_length=200)
+    about = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

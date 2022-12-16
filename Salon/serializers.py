@@ -244,7 +244,8 @@ class BusinessActivitySerializer(serializers.ModelSerializer):
             "street",
             "apartment_number",
             "house_number",
-            "contact_phone"
+            "contact_phone",
+            "about",
         )
 
 class EmployeeSpecializationSerializer(serializers.ModelSerializer):

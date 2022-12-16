@@ -18,6 +18,7 @@
             "
         >
             <v-toolbar
+                v-if="toolbarVisible"
                 id="my-tab"
                 flat
                 style="
@@ -32,6 +33,7 @@
                         v-model="tabs"
                         centered
                         icons-and-text
+                        @change="(val) => setView(val)"
                     >
                         <v-tabs-slider ></v-tabs-slider>
                         <v-tab
@@ -65,7 +67,7 @@
             <v-tabs-items 
                 v-model="tabs"
                 :style="`
-                    height: ${tabs == 'tab-3' ? '100%' : 'calc(100% - 112px)'} ;
+                    height: ${tabs == 'tab-2' ? '100%' : 'calc(100% - 112px)'} ;
                     background-color:#3f51b5!important
                 `"
             >
@@ -81,15 +83,21 @@
 
                 <v-tab-item
                     :value="'tab-2'"
-                    style="height:100%"
+                    style="height:100%;overflow-y:auto;overflow-x:hidden"
                 >
+                    <preview
+                        :get-business-activity-data="getBusinessActivityData"
+                        :set-tab="setTab"
+                    >
+                    </preview>
                 </v-tab-item>
                 <v-tab-item
                     :value="'tab-3'"
                     id="tab-3"
-                    style="height:100%;overflow:auto;"
+                    style="height:100%;overflow-y:auto;overflow-x:hidden"
                 >
-                    
+                    <add-employee
+                    />
                 </v-tab-item>
             </v-tabs-items>
         </v-col>
@@ -98,18 +106,25 @@
 
 <script>
     import Edit from "../components/Edit.vue";
+    import Preview from "../components/Preview.vue";
+    import AddEmployee from "../../registration/AddEmployee.vue";
     import { AUTH_API } from "../../../authorization/AuthAPI";
+    
     export default {
         name: "BusinessActivity",
         props: {
 
         },
         components: {
-            Edit
+            Edit,
+            Preview,
+            AddEmployee,
+                AddEmployee,
         },
         data: () => ({
            tabs: null,
            businessActivity: {},
+           toolbarVisible: true,
         }),
         provide(){
         },
@@ -121,7 +136,21 @@
                     .then(res => {
                         resolve(res.data)
                     })
-           }
+            },
+
+            setTab(val){
+                this.toolbarVisible = true;
+                this.tabs = val;
+            },
+
+            setView(val){
+                if(val === "tab-2"){
+                    this.toolbarVisible = false;
+                }
+                else{
+                    this.toolbarVisible = true;
+                }
+            },
         },
     }
 </script>

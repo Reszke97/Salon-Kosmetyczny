@@ -10,6 +10,7 @@ from .employee.Service import ServiceApi, ServiceCommentApi
 from .employee.employee_info import *
 from .employee.service_category import *
 from .employee.business_activity import *
+from .employee.all_specs import *
 from .client.client_info import *
 from .client.business_activity_info import *
 
@@ -40,5 +41,6 @@ urlpatterns = [
     path('api/v1/employee/employee-category/', ServiceCategoryApi.as_view(), name = 'employee_category'),
     path('api/v1/employee/comment/', ServiceCommentApi.as_view(), name = 'service_comment'),
     path('api/v1/employee/business-activity/', BusinessActivityApi.as_view(), name = 'business_activity'),
+    path('api/v1/employee/all-specs/', EmployeeSpecsApi.as_view(), name = 'all_specs'),
     # path('api/user/isauthenticated/', IsUserAuthenticated.as_view(), name = 'is_authenticated'),
 ]

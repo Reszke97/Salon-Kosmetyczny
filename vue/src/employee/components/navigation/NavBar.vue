@@ -77,10 +77,10 @@
         },
 
         menuItemsLoaded(){
-          let menuItems = [...this.menuItems];
+          let menuItems = [];
           if(this.role && this.isAuthenticated){
             menuItems = [
-              ...menuItems,
+              this.auth,
               { title: "Usługi", path: "/defineservice", icon: "mdi-plus" },
               { title: "Ustawienia", path: "/settings", icon: "mdi-cog-outline" },
             ]
