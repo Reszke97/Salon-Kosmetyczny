@@ -37,6 +37,16 @@ class CustomUserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+class EmployeeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Employee
+        fields = (
+            'is_owner',
+            'user',
+            'business_activity',
+            'spec'
+        )
+
 class UserRoleSerializer(serializers.Serializer):
     model = User
     fields = ('role')

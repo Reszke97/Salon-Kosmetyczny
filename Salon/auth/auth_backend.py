@@ -25,6 +25,8 @@ from rest_framework_simplejwt.exceptions import TokenError
 # Sending E-Mail
 from django.core.mail import EmailMultiAlternatives
 import threading
+import string
+import random
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.contrib.sites.shortcuts import get_current_site
@@ -82,6 +84,21 @@ class EmailThread(threading.Thread):
 
     def run(self):
         self.email.send()
+
+
+def send_activation_email_for_employee(user, request):
+    current_site = get_current_site(request)
+    subject = 'Aktywuj swoje konto'
+    email_body = render_to_string('authentication/employee_credentials.html', {
+        'user': user.user_name,
+        'domain': current_site,
+        'password': request.data["password"],
+    })
+    from_email = settings.EMAIL_FROM_USER
+    email = EmailMultiAlternatives( subject, email_body, from_email, to=[user.email] )
+    email.mixed_subtype = 'related'
+    email.attach_alternative(email_body, "text/html")
+    EmailThread(email).start()
 
 
 def send_activation_email(user, request):
@@ -172,6 +189,58 @@ class CustomUserCreate(APIView):
                 messages.add_message(request, messages.SUCCESS, 'Activation link was sent to given email.')
                 return Response(status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CreateEmployee(APIView):
+    permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
+
+    def pass_generator(self, size=8, chars=string.ascii_uppercase + string.digits):
+        return ''.join(random.choice(chars) for _ in range(size))
+
+    def post(self, request):
+        user = User.objects.get(pk = request.user.pk)
+        try:
+            employee = Employee.objects.get(user_id = user.pk)
+        except Employee.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if employee.is_owner:
+            formatted_email = request.data["email"].lower()
+            request.data["email"] = formatted_email
+            request.data["password"] = self.pass_generator()
+            user_serializer = CustomUserSerializer(data={
+                'email': request.data["email"],
+                'user_name': request.data["userName"],
+                'password': request.data["password"],
+                'first_name': request.data["name"],
+                'last_name': request.data["lastName"],
+                'phone_number': request.data["phoneNumber"],
+            })
+            if user_serializer.is_valid():
+                user = user_serializer.save()
+                user = User.objects.get(pk=user.pk)
+                user.is_active = 1
+                user.save()
+                if user:
+                    if request.data["isNewSpec"]:
+                        emp_spec_serializer = NewEmployeeSpecializationSerializer(data={ "name": request.data["employee_spec"] })
+                        if emp_spec_serializer.is_valid():
+                            spec = emp_spec_serializer.save()
+                            request.data["employee_spec"] = spec.pk
+                    employee_serializer = EmployeeSerializer(data={
+                        "is_owner": 0,
+                        "user": user.pk,
+                        "business_activity": employee.business_activity_id,
+                        "spec": request.data["employee_spec"]
+                    })
+                    if employee_serializer.is_valid():
+                        employee_serializer.save()
+                        send_activation_email_for_employee(user, request)
+                        messages.add_message(request, messages.SUCCESS, 'Login and password were sent.')
+                        return Response(status=status.HTTP_201_CREATED)
+                    return Response(employee_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
 
 class GetUserRole(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]

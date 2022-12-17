@@ -21,7 +21,6 @@
                         v-model="employeeInfo.name"
                         :rules="nameRules"
                         label="Imię"
-                        :counter="50"
                         required
                         dark
                     ></v-text-field>
@@ -30,17 +29,16 @@
                         v-model="employeeInfo.lastName"
                         :rules="lastNameRules"
                         label="Nazwisko"
-                        :counter="50"
                         required
                         dark
                     ></v-text-field>
 
                     <v-autocomplete
-                        v-if="!isNewSpec"
-                        v-model="employeeInfo.selectedSpec"
+                        v-if="!employeeInfo.isNewSpec"
+                        v-model="employeeInfo.employee_spec"
                         :items="defaultSpecializations"
-                        item-text="label"
-                        item-value="value"
+                        item-text="name"
+                        item-value="id"
                         label="Specjalność"
                         placeholder="Wybierz specjalność"
                         hint="Kliknij na ikonę aby dodać własną specjalność."
@@ -58,10 +56,9 @@
                             </v-btn>
                         </template>
                     </v-autocomplete>
-
                     <v-text-field
-                        v-if="isNewSpec"
-                        v-model="employeeInfo.selectedSpec"
+                        v-if="employeeInfo.isNewSpec"
+                        v-model="employeeInfo.employee_spec"
                         label="Specjalność"
                         placeholder="Podaj specjalność"
                         hint="Kliknij na ikonę aby wybrać specjalność z listy."
@@ -91,33 +88,12 @@
                     <v-text-field
                         v-model="employeeInfo.userName"
                         :rules="userNameRules"
-                        :counter="10"
                         label="Nazwa użytkownika"
                         required
                         dark
                     ></v-text-field>
 
-                    <v-text-field
-                        v-model="employeeInfo.password1"
-                        :rules="password1Rules"
-                        label="Hasło"
-                        required
-                        type="password"
-                        dark
-                    ></v-text-field>
-
-                    <v-text-field
-                        v-model="employeeInfo.password2"
-                        :rules="password2Rules"
-                        label="Potwierdź hasło"
-                        required
-                        type="password"
-                        dark
-                    ></v-text-field>
-
-                    <v-row
-                        
-                    >
+                    <v-row>
                         <v-col
                             cols="6"
                             sm="4"
@@ -128,19 +104,7 @@
                                 @click="submit"
                                 style="width:100%!important"
                             >
-                                Validate
-                            </v-btn>
-                        </v-col>
-                        <v-col
-                            cols="6"
-                            sm="4"
-                        >
-                            <v-btn
-                                color="error"
-                                style="width:100%!important"
-                                @click="reset"
-                            >
-                                Reset Form
+                                Zapisz
                             </v-btn>
                         </v-col>
                     </v-row>
@@ -169,14 +133,12 @@
                 selectedSpec: "",
                 email: "",
                 userName: "",
-                password: "",
-                password1: "",
+                phoneNumber: "",
+                isNewSpec: false,
             },
             valid: true,
             activation: false,
-            // defaultSpecializations: employeeSpecs(),
-            // specs => api/v1/employee/all-specs/
-            isNewSpec: false,
+            defaultSpecializations: [],
 
             emailRules: [
                 v => !!v || 'E-mail jest wymagany',
@@ -185,34 +147,49 @@
 
             userNameRules: [
                 v => !!v || 'Nazwa użytkownika jest wymagana',
-                // v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
-            ],
-
-            password1Rules: [
-                v => !!v || 'Hasło jest wymagane',
-                // v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
-            ],
-
-            password2Rules: [
-                v => !!v || 'Potwierdzenie Hasła jest wymagane',
-                // v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
             ],
             
             nameRules: [
                 v => !!v || 'Name is required',
-                v => (v && v.length <= 10) || 'Name must be less than 10 characters',
             ],
             
             lastNameRules: [
                 v => !!v || 'Nazwisko jest wymagane',
-                // v => (v && v.length <= 10) || 'Name must be less than 10 characters',
             ],
         }),
+        async created(){
+            await this.getAllSpecs();
+        },
         computed: {
             
         },
         methods: {
-            
+            async getAllSpecs(){
+                const API = await AUTH_API();
+                await API.get("api/v1/employee/all-specs/")
+                .then(res => {
+                    this.defaultSpecializations = res.data
+                })
+            },
+            async submit () {
+                const IS_VALID = this.$refs.form.validate()
+                if(IS_VALID){
+                   await this.sendForm()
+                }
+            },
+            async sendForm(){
+                const API = await AUTH_API();
+                await API.post('api/v1/employee/create-employee/', this.employeeInfo)
+                .then(response => {
+                })
+                .catch(error => {
+                    alert(error)
+                })
+            },
+            toggleSpecInput(){
+                this.employeeInfo.isNewSpec = !this.employeeInfo.isNewSpec;
+                this.employeeInfo.employee_spec = "";
+            },
         }
     }
 </script>
