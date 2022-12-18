@@ -91,38 +91,121 @@
                         class="ml-2"
                         style="
                             display: flex;
-                            justify-content: end;
+                            flex-direction: column;
                             width: 100%;
                             min-height: 300px;
                             border: 1px solid rgb(8, 68, 164);
                             border-radius: 1rem;
                             background-color: rgb(8, 68, 164);
+                            padding: 0.75rem;
                         "
                     >
-                        employees
+                        <div style="color: white;">
+                            <h4> Pracownicy </h4>
+                        </div>
+                        <div 
+                            v-for="employee of employees"
+                            :key="employee.user.id"
+                            style="
+                                display: flex; 
+                                color: white;
+                                margin-top: 0.5rem;
+                                margin-bottom: 0.5rem;
+                            "
+                        >
+                            <div 
+                                style="
+                                    display: flex;
+                                    margin: 0px 1rem 0rem 0rem;
+                                "
+                            >
+                                <v-avatar 
+                                    color="#0844a4"
+                                    size="40"
+                                >
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on, attrs }">
+                                            <v-icon
+                                                style="font-size:40px"
+                                                v-if="!employee.avatar.image"
+                                                @click="previewEmployee"
+                                                dark
+                                                v-bind="attrs"
+                                                v-on="on"
+                                            >
+                                                mdi-account-circle
+                                            </v-icon>
+                                            <img
+                                                class="avatar"
+                                                v-else
+                                                :src="employee.avatar.image"
+                                                style="width:100%;height: 100%;"
+                                                v-bind="attrs"
+                                                @click="previewEmployee"
+                                                v-on="on"
+                                            />
+                                        </template>
+                                        <span>Podgląd</span>
+                                    </v-tooltip>
+                                </v-avatar>
+                            </div>
+                            <div 
+                                style="
+                                    display: flex;
+                                    flex-direction:column;
+                                "
+                            >
+                                <div>
+                                    <span>
+                                        {{ `${employee.user.first_name} ${employee.user.last_name}` }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span>
+                                        {{ `${employee.spec.name}` }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </v-col>
         </v-row>
+        <v-dialog
+            class="serviceDialog"
+            id="serviceDialog"
+            v-model="employeeViewDialog"
+            width="50vw"
+            style="min-height:350px!important"
+        >
+            <manage-services
+                :get-services="getServices"
+                :services="services"
+            >
+            </manage-services>
+        </v-dialog>
     </div>
 </template>
 
 <script>
     import { AUTH_API } from "../../../authorization/AuthAPI";
     import { appendMimeType } from "../../../utils/appendMimeType";
-    import { jsonToFormData } from "../../../utils/jsonToFormData";
+    import ManageServices from "../../service/components/ManageServices.vue"
     
     export default {
         name: "",
         components: {
-            
+            ManageServices
         },
         props: {
             setTab: { type: Function, required: true },
+            getServices: { type: Function, required: true },
             getBusinessActivityData: { type: Function, required: true },
         },
         data: () => ({
             businessActivity: {},
+            employees: [],
+            employeeViewDialog: false,
         }),
         inject: ["screenSize"],
         computed: {
@@ -140,9 +223,43 @@
                     this.businessActivity.image = appendMimeType(image).image
                 } else this.businessActivity.image = null;
             })
+            .then( async () => {
+                await this.getEmployees()
+            })
+            .then(() => {
+                this.getServices()
+            })
         },
         methods: {
-            
+            async getEmployees(){
+                const API = await AUTH_API();
+                await API.get("api/v1/employee/business-activity-employees/")
+                .then(res => {
+                    this.employees = res.data.map(el => {
+                        return {
+                            ...el,
+                            avatar: appendMimeType(el.avatar)
+                        }
+                    })
+                })
+            },
+            previewEmployee(){
+                alert('a')
+            },
+
+            openEmployeeViewDialog(){
+                this.employeeViewDialog = true;
+            },
+
+            closeEmployeeViewDialog(){
+                this.employeeViewDialog = false;
+            },
         }
     }
 </script>
+
+<style>
+    .avatar {
+        cursor: pointer;
+    }
+</style>

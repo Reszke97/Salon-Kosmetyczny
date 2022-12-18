@@ -272,6 +272,7 @@ class NewEmployeeSpecializationSerializer(serializers.ModelSerializer):
         fields = (
             "name",
         )
+
 class EmployeeFullInfoSerializer(serializers.ModelSerializer):
     user = GetUserInfoSerializer()
     spec = EmployeeSpecializationSerializer()

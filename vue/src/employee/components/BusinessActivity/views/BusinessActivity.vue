@@ -88,6 +88,7 @@
                     <preview
                         :get-business-activity-data="getBusinessActivityData"
                         :set-tab="setTab"
+                        :get-services="getServices"
                     >
                     </preview>
                 </v-tab-item>
@@ -150,6 +151,78 @@
                 else{
                     this.toolbarVisible = true;
                 }
+            },
+
+            appendMimeType(image){
+                let type;
+                switch (image.file_type) {
+                    case "PNG":
+                        type = "data:image/png;base64,";
+                    break;
+                    case "JPG":
+                        type = "data:image/jpg;base64,";
+                    break;
+                    case "JPEG":
+                        type = "data:image/jpeg;base64,";
+                    break;
+                    default:
+                        type = "";
+                }
+                return { ...image, image: type + image.image, isFromDB: true };
+            },
+
+            mapImagesType(services){
+                services.service_info.forEach((service, idx) => {
+                    this.services.service_info[idx].employee_image = service.employee_image.map((el) => {
+                        return this.appendMimeType(el)
+                    });
+                })
+            },
+
+            groupByCategory(employeeConfig){
+                let groupedServices = {
+                    avatar: employeeConfig.avatar,
+                    categories: [],
+                }
+                const uniqueCategories = [
+                    ...new Map(employeeConfig.service_info.map(item =>[item.category.category_id, item.category])).values()
+                ];
+
+                let categoryIdx = 0;
+                for(const category of uniqueCategories){
+                    const items = employeeConfig.service_info.filter(el => el.category.category_id === category.category_id)
+                    groupedServices.categories.push({
+                        name: category.name,
+                        category_id: category.category_id,
+                        id: category.category_display_order,
+                        services: [...items]
+                    });
+                    categoryIdx += 1;
+                } return groupedServices
+            },
+
+            async getServices(){
+                const API = await AUTH_API();
+                await API.get("/api/v1/employee/service/?preview=4")
+                    .then(res => {
+                        console.log(res.data)
+                        // res.data.service_info = res.data.service_info.map(el => {
+                        //     const { service } = el
+                        //     const { service_category } = service
+                        //     delete service.service_category
+                        //     return { 
+                        //         employee_image: el.employee_image,
+                        //         employee_comment: el.employee_comments,
+                        //         employee_service_config_id: el.employee_service_config_id,
+                        //         image_set_id: el.image_set_id,
+                        //         service: { ...service }, 
+                        //         category: { ...service_category, is_new: false, category: service_category.category_id, }
+                        //     }
+                        // })
+                        // this.services = {... res.data };
+                    })
+                // this.mapImagesType(this.services);
+                // this.services = { ...this.groupByCategory(this.services) }
             },
         },
     }

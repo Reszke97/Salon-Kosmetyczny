@@ -234,7 +234,6 @@
     props: {
       getServices: { type: Function, required: true },
       services: { type: Object, required: true },
-      previewAllServices: { type: Boolean, required: true },
       editMode: { type: Boolean, default: false },
     },
     data: () => ({
@@ -244,12 +243,8 @@
       selectedServiceId: null,
       selectedComment: null,
     }),
-    inject: ["screenSize", "getServices"],
+    inject: ["screenSize"],
     computed: {
-      openDialog(){
-        if(this.previewAllServices) return true
-        return false
-      },
       draggingInfo() {
         return this.dragging ? "under drag" : "";
       },

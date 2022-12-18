@@ -154,10 +154,23 @@ class ServiceApi(APIView):
         return Response(status=service_res["status"])
 
     def get(self, request):
-        employee = Employee.objects.get(user_id = request.user.pk)
+        emp_id = None
+        if request.query_params.get("preview") == "true":
+            preview_selected = True
+        elif request.query_params.get("preview") != "true" and request.query_params.get("preview") != "false":
+            preview_selected = True
+            emp_id = int(request.query_params.get("preview"))
+        else:
+            preview_selected = False
+
+        if emp_id is not None:
+            employee = Employee.objects.get(pk = emp_id)
+        else:
+            employee = Employee.objects.get(user_id = request.user.pk)
+            
+
         employee_service_configs = EmployeeServiceConfiguration.objects.filter(employee_id=employee)
         employee_service_configs_serialized = EmployeeServiceWithConfig(employee_service_configs, many=True)
-        preview_selected = True if request.query_params.get("preview") == "true" else False  
         try:  
             avatar = EmployeeAvatar.objects.get(employee = employee.pk)
             avatar_encoded = map_images(avatar)
