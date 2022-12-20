@@ -1,5 +1,22 @@
 <template>
-  <div style="display: flex; flex-direction: column; width:100%">
+  <div 
+    :style="
+      isInDialog ? {
+        display: 'flex', 
+        flexDirection: 'column',
+        width: '100%', 
+        backgroundColor: '#3f51b5',
+        padding: '1rem',
+      }
+      :
+      {
+        display: 'flex', 
+        flexDirection: 'column',
+        width: '100%', 
+        backgroundColor: '#3f51b5'
+      }
+    "
+  >
     <div class="mb-2" style="display: flex">
       <div style="width:100px">
         <v-avatar 
@@ -11,6 +28,13 @@
             :src="services.avatar.image"
             style="width:100%;height: 100%"
           />
+          <v-icon
+            v-else
+            style="font-size:100px"
+            dark
+          >
+            mdi-account-circle
+          </v-icon>
         </v-avatar>
       </div>
       <div style="display: flex; justify-content: end; width: calc(100% - 100px)">
@@ -235,6 +259,7 @@
       getServices: { type: Function, required: true },
       services: { type: Object, required: true },
       editMode: { type: Boolean, default: false },
+      isInDialog: { type: Boolean, default: false },
     },
     data: () => ({
       draggingEnabled: true,

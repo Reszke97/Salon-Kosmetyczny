@@ -126,12 +126,11 @@
                                     <v-tooltip bottom>
                                         <template v-slot:activator="{ on, attrs }">
                                             <v-icon
+                                                :id="`employee-${employee.id}`"
                                                 style="font-size:40px"
                                                 v-if="!employee.avatar.image"
-                                                @click="previewEmployee"
+                                                @click="() => previewEmployee(employee.id)"
                                                 dark
-                                                v-bind="attrs"
-                                                v-on="on"
                                             >
                                                 mdi-account-circle
                                             </v-icon>
@@ -141,7 +140,7 @@
                                                 :src="employee.avatar.image"
                                                 style="width:100%;height: 100%;"
                                                 v-bind="attrs"
-                                                @click="previewEmployee"
+                                                @click="() => previewEmployee(employee.id)"
                                                 v-on="on"
                                             />
                                         </template>
@@ -175,13 +174,36 @@
             class="serviceDialog"
             id="serviceDialog"
             v-model="employeeViewDialog"
-            width="50vw"
-            style="min-height:350px!important"
         >
             <manage-services
                 :get-services="getServices"
                 :services="services"
+                :isInDialog="true"
             >
+                <template #header>
+                    <div
+                        style="
+                            display: flex;
+                            justify-content: end;
+                        "
+                    >
+                        <div
+                            class="mr-8"
+                            :style="`
+                                display: flex;
+                            `"
+                        >
+                            <v-btn
+                                style=" background: rgb(8, 68, 164)!important;"
+                                class="mr-0"
+                                color="primary"
+                                @click="closeEmployeeViewDialog"
+                            >
+                                Zamknij
+                            </v-btn>
+                        </div>
+                    </div>
+                </template>
             </manage-services>
         </v-dialog>
     </div>
@@ -201,6 +223,7 @@
             setTab: { type: Function, required: true },
             getServices: { type: Function, required: true },
             getBusinessActivityData: { type: Function, required: true },
+            services: { type: Object, default: () => {{}} },
         },
         data: () => ({
             businessActivity: {},
@@ -226,9 +249,6 @@
             .then( async () => {
                 await this.getEmployees()
             })
-            .then(() => {
-                this.getServices()
-            })
         },
         methods: {
             async getEmployees(){
@@ -243,8 +263,9 @@
                     })
                 })
             },
-            previewEmployee(){
-                alert('a')
+            async previewEmployee(employeeId){
+                await this.getServices(employeeId);
+                this.openEmployeeViewDialog();
             },
 
             openEmployeeViewDialog(){

@@ -89,6 +89,7 @@
                         :get-business-activity-data="getBusinessActivityData"
                         :set-tab="setTab"
                         :get-services="getServices"
+                        :services="employeeServices"
                     >
                     </preview>
                 </v-tab-item>
@@ -120,12 +121,12 @@
             Edit,
             Preview,
             AddEmployee,
-                AddEmployee,
         },
         data: () => ({
            tabs: null,
            businessActivity: {},
            toolbarVisible: true,
+           employeeServices: {},
         }),
         provide(){
         },
@@ -173,10 +174,11 @@
 
             mapImagesType(services){
                 services.service_info.forEach((service, idx) => {
-                    this.services.service_info[idx].employee_image = service.employee_image.map((el) => {
+                    this.employeeServices.service_info[idx].employee_image = service.employee_image.map((el) => {
                         return this.appendMimeType(el)
                     });
                 })
+                if(this.employeeServices.avatar) this.employeeServices.avatar = { ...this.appendMimeType(services.avatar) }
             },
 
             groupByCategory(employeeConfig){
@@ -201,28 +203,27 @@
                 } return groupedServices
             },
 
-            async getServices(){
+            async getServices(employeeId){
                 const API = await AUTH_API();
-                await API.get("/api/v1/employee/service/?preview=4")
+                await API.get(`/api/v1/employee/service/?preview=${employeeId}`)
                     .then(res => {
-                        console.log(res.data)
-                        // res.data.service_info = res.data.service_info.map(el => {
-                        //     const { service } = el
-                        //     const { service_category } = service
-                        //     delete service.service_category
-                        //     return { 
-                        //         employee_image: el.employee_image,
-                        //         employee_comment: el.employee_comments,
-                        //         employee_service_config_id: el.employee_service_config_id,
-                        //         image_set_id: el.image_set_id,
-                        //         service: { ...service }, 
-                        //         category: { ...service_category, is_new: false, category: service_category.category_id, }
-                        //     }
-                        // })
-                        // this.services = {... res.data };
+                        res.data.service_info = res.data.service_info.map(el => {
+                            const { service } = el
+                            const { service_category } = service
+                            delete service.service_category
+                            return { 
+                                employee_image: el.employee_image,
+                                employee_comment: el.employee_comments,
+                                employee_service_config_id: el.employee_service_config_id,
+                                image_set_id: el.image_set_id,
+                                service: { ...service }, 
+                                category: { ...service_category, is_new: false, category: service_category.category_id, }
+                            }
+                        })
+                        this.employeeServices = {... res.data };
                     })
-                // this.mapImagesType(this.services);
-                // this.services = { ...this.groupByCategory(this.services) }
+                this.mapImagesType(this.employeeServices);
+                this.employeeServices = { ...this.groupByCategory(this.employeeServices) }
             },
         },
     }
