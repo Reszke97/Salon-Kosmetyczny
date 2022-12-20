@@ -18,12 +18,9 @@ class ServiceCategoryApi(APIView):
         employee = Employee.objects.get(user_id = user.pk)
 
         cursor = connection.cursor()
-        cursor.execute("""SELECT ssc.name, ssc.id from salon_servicecategory ssc 
-                where ssc.id in (
-                    SELECT ss.service_category_id from salon_service ss
-                    where ss.employee_id = %s
-                )
-            """, [employee.pk]
+        cursor.execute("""SELECT 
+                ssc.name, ssc.id from salon_servicecategory ssc 
+            """
         )
         res = cursor_to_array_of_dicts(cursor)
         return Response(res, status=status.HTTP_200_OK)

@@ -88,6 +88,8 @@ class ServiceApi(APIView):
         img_response = { "data": None, "status": status.HTTP_201_CREATED }
         if files:
             img_response = prepare_and_create_images(files, self.employee_id)
+        else:
+            img_response["image_set"] = EmployeeImageSet.objects.create().id
         if img_response["status"] == 400:
             return Response(img_response["errors"], status=[img_response["status"]])
         cat_res = { "status": 201, "data": self.category["category"]}

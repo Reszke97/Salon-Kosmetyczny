@@ -44,5 +44,6 @@ urlpatterns = [
     path('api/v1/employee/all-specs/', EmployeeSpecsApi.as_view(), name = 'all_specs'),
     path('api/v1/employee/create-employee/', CreateEmployee.as_view(), name = 'create_employee'),
     path('api/v1/employee/business-activity-employees/', BusinessActivityEmployeesApi.as_view(), name = 'business_activity_employees'),
+    path('api/v1/employee/business-activity-services/', BusinessActivityServices.as_view(), name = 'business_activity_services'),
     # path('api/user/isauthenticated/', IsUserAuthenticated.as_view(), name = 'is_authenticated'),
 ]

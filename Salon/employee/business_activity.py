@@ -13,6 +13,8 @@ from ..serializers import *
 from ..models import BusinessActivity, Employee, BusinessActivityImage, EmployeeAvatar
 from rest_framework.parsers import MultiPartParser, FormParser
 from collections import OrderedDict
+from django.db import connection
+from .utils.cursor_to_array_of_dicts import cursor_to_array_of_dicts
 
 class BusinessActivityApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
@@ -129,32 +131,25 @@ class BusinessActivityEmployeesApi(APIView):
         return Response(b_activity_employees.data, status=status.HTTP_200_OK)
 
 
+class BusinessActivityServices(APIView):
+    permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
 
-    # OrderedDict(
-    #     [
-    #         ('id', 3), 
-    #         ('is_owner', False), 
-    #         ('user', 
-    #             OrderedDict(
-    #                 [
-    #                     ('first_name', 'Marcin'), 
-    #                     ('last_name', 'Feszke'), 
-    #                     ('phone_number', '+48 987654321'), 
-    #                     ('user_name', 'Rezer'), 
-    #                     ('email', 'bromex3126@gmail.com'), 
-    #                     ('id', 4)
-    #                 ]
-    #             )
-    #         ), 
-    #         ('business_activity_id', 1), 
-    #         (
-    #             'spec', 
-    #             OrderedDict(
-    #                 [
-    #                     ('id', 3), 
-    #                     ('name', 'Wizażystka / stylistka')
-    #                 ]
-    #             )
-    #         )
-    #     ]
-    # )  
+    def get(self, request):
+        user = request.user
+        employee = Employee.objects.get(user_id = user.pk)
+
+        cursor = connection.cursor()
+        cursor.execute("""SELECT 
+                ss.id as 'service_id', ssc.id as 'category_id', se.id as 'employee_id', su.first_name, su.last_name, su.phone_number, su.email, 
+                ses.name as 'spec_name', ss.name as 'service_name', 'ss.duration', 'ss.price', ssc.name as 'category_name'
+                from salon_user su
+                join salon_employee se on se.user_id = su.id
+                join salon_employeeserviceconfiguration sesc on sesc.employee_id = se.id
+                join salon_employeespecialization ses on ses.id = se.spec_id
+                left join salon_service ss on ss.id = sesc.service_id
+                left join salon_servicecategory ssc on ssc.id = ss.service_category_id
+                where se.business_activity_id = %s
+            """, [employee.business_activity_id]
+        )
+        res = cursor_to_array_of_dicts(cursor)
+        return Response(res, status=status.HTTP_200_OK)
