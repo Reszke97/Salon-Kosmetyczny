@@ -26,7 +26,7 @@
                 </v-tooltip>
             </div>
             <business-activity-services
-
+                :employees="employees"
             >
 
             </business-activity-services>
