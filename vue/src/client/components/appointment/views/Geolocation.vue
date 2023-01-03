@@ -67,6 +67,39 @@
                     
                 </v-col>
             </v-row>
+            <v-row>
+                <v-col :cols="12">
+                    <p>
+                        map longititude - {{ mapCoordinates.lng }}
+                    </p>
+                    <p>
+                        map latitude - {{ mapCoordinates.lat }}
+                    </p>
+                    <p>
+                    my longititude - {{ coordinates.lng }}
+                    </p>
+                    <p>
+                        my latitude - {{ coordinates.lat }}
+                    </p>
+                    <v-btn
+                        @click="geocode"
+                    >
+                        Click
+                    </v-btn>
+                    <GmapMap
+                        :center="coordinates"
+                        :zoom="7"
+                        style="height:360px"
+                        ref="gMap"
+                    >
+                        <GmapMarker
+                            :position="coordinates"
+                            :clickable="true"
+                            @click="center=m.position"
+                        />
+                    </GmapMap>
+                </v-col>
+            </v-row>
             <!-- <v-row style="height:calc(100% - 240px)">
                 <v-col :cols="12" >
 
@@ -105,6 +138,7 @@
     import { AUTH_API } from "../../../authorization/AuthAPI";
     import { filters } from "../utils"
     import { About } from "../components"
+    import { gmapApi } from 'vue2-google-maps'
     
     export default {
         name: "Appointment",
@@ -120,6 +154,12 @@
             selectedFilters: filters(),
             selectedEmployee: "",
             filters: filters(),
+            map: null,
+            geoCoded: null,
+            coordinates: {
+                lat: 57.9023,
+                lng: 98.9122,
+            }
         }),
         computed: {
             filteredItems(){
@@ -135,15 +175,53 @@
             ){
                 this.$store.dispatch('getBusinessActivitesAndServices')
             }
+            // await this.getUserLocation();
         },
         
         mounted(){
+            this.$nextTick(() => {
+                this.$refs.gMap.$mapPromise.then(map => this.map = map);
+            })
         },
 
         computed: {
+            mapCoordinates(){
+                if(!this.map){
+                    return {
+                        lat: 0,
+                        lng: 0,
+                    }
+                }
+                return {
+                    lat: this.map.getCenter().lat().toFixed(4),
+                    lng:this.map.getCenter().lng().toFixed(4),
+                }
+            },
+            google: gmapApi
         },
 
         methods: {
+            async getUserLocation(){
+                this.$getLocation({})
+                .then(coordinates => {
+                    this.coordinates = coordinates;
+                })
+                .catch(() => {
+                    alert("no access to localization")
+                });
+            },
+            async geocode(){
+                const self = this;
+                const geocoder = new this.google.maps.Geocoder();
+                geocoder.geocode( { 'address': "Wejherowo"}, function(results, status) {
+                    if (status == 'OK') {
+                        self.coordinates.lat = results[0].geometry.location.lat()
+                        self.coordinates.lng = results[0].geometry.location.lng()
+                    } else {
+                        alert('Geocode was not successful for the following reason: ' + status);
+                    }
+                });
+            }
         }
     }
 </script>
