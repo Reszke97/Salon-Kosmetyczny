@@ -14,8 +14,10 @@
     "core-js": "^3.6.5",
     "vue": "^2.6.11",
     "vue-advanced-cropper": "^1.11.5",
+    "vue-browser-geolocation": "^1.8.0",
     "vue-image-crop-upload": "^3.0.3",
     "vue-router": "^3.5.3",
+    "vue2-google-maps": "^0.10.7",
     "vuedraggable": "^2.24.3",
     "vuetify": "^2.6.0",
     "vuex": "^3.6.2"
