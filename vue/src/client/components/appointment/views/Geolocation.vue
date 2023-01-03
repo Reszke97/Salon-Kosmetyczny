@@ -180,6 +180,7 @@
         
         mounted(){
             this.$nextTick(() => {
+                //Wywołuje watcher, który nasłuchuje zmiany współrzędnych przy wykorzystaniu computed: mapCoordinates
                 this.$refs.gMap.$mapPromise.then(map => this.map = map);
             })
         },
