@@ -27,8 +27,16 @@
             </div>
             <business-activity-services
                 :employees="employees"
+                :preview-employee="previewEmployee"
             >
-
+            <template #employeePreviewDialog>
+                <manage-services-dialog
+                    :employee-view-dialog="employeeViewDialog"
+                    :get-services="getServices"
+                    :services="services"
+                    :closeEmployeeViewDialog="closeEmployeeViewDialog"
+                />
+            </template>
             </business-activity-services>
         </template>
         <template v-else-if="businessInfoView">
@@ -171,42 +179,12 @@
                         </div>
                     </v-col>
                 </v-row>
-                <v-dialog
-                    class="serviceDialog"
-                    id="serviceDialog"
-                    v-model="employeeViewDialog"
-                >
-                    <manage-services
-                        :get-services="getServices"
-                        :services="services"
-                        :isInDialog="true"
-                    >
-                        <template #header>
-                            <div
-                                style="
-                                    display: flex;
-                                    justify-content: end;
-                                "
-                            >
-                                <div
-                                    class="mr-8"
-                                    :style="`
-                                        display: flex;
-                                    `"
-                                >
-                                    <v-btn
-                                        style=" background: rgb(8, 68, 164)!important;"
-                                        class="mr-0"
-                                        color="primary"
-                                        @click="closeEmployeeViewDialog"
-                                    >
-                                        Zamknij
-                                    </v-btn>
-                                </div>
-                            </div>
-                        </template>
-                    </manage-services>
-                </v-dialog>
+                <manage-services-dialog
+                    :employee-view-dialog="employeeViewDialog"
+                    :get-services="getServices"
+                    :services="services"
+                    :closeEmployeeViewDialog="closeEmployeeViewDialog"
+                />
             </div>
             <div>
                 <v-tooltip bottom>
@@ -232,22 +210,22 @@
 <script>
     import { AUTH_API } from "../../../authorization/AuthAPI";
     import { appendMimeType } from "../../../utils/appendMimeType";
-    import ManageServices from "../../service/components/ManageServices.vue";
+    import ManageServicesDialog from "./ManageServicesDialog.vue";
     import BusinessActivityServices from "./BusinessActivityServices.vue";
     import BackToFirstTab from "./BackToFirstTab.vue";
     
     export default {
         name: "",
         components: {
-            ManageServices,
             BusinessActivityServices,
             BackToFirstTab,
+            ManageServicesDialog,
         },
         props: {
             setTab: { type: Function, required: true },
             getServices: { type: Function, required: true },
-            getBusinessActivityData: { type: Function, required: true },
             services: { type: Object, default: () => {{}} },
+            getBusinessActivityData: { type: Function, required: true },
         },
         data: () => ({
             businessActivity: {},

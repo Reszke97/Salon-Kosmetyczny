@@ -141,7 +141,7 @@ class BusinessActivityServices(APIView):
         cursor = connection.cursor()
         cursor.execute("""SELECT 
                 ss.id as 'service_id', ssc.id as 'category_id', se.id as 'employee_id', su.first_name, su.last_name, su.phone_number, su.email, 
-                ses.name as 'spec_name', ss.name as 'service_name', 'ss.duration', 'ss.price', ssc.name as 'category_name'
+                ses.name as 'spec_name', ss.name as 'service_name', ss.duration, ss.price, ssc.name as 'category_name'
                 from salon_user su
                 join salon_employee se on se.user_id = su.id
                 join salon_employeeserviceconfiguration sesc on sesc.employee_id = se.id
