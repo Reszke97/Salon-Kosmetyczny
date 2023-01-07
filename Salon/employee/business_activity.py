@@ -153,3 +153,113 @@ class BusinessActivityServices(APIView):
         )
         res = cursor_to_array_of_dicts(cursor)
         return Response(res, status=status.HTTP_200_OK)
+
+class BusinessActivities(APIView):
+
+    def all_business_info_query(self):
+        return  """SELECT 
+            ss.id as 'service_id', ssc.id as 'category_id', se.id as 'employee_id', su.first_name, su.last_name, su.phone_number, su.email, 
+            ses.name as 'spec_name', ss.name as 'service_name', ss.duration, ss.price, ssc.name as 'category_name',
+            sba.id as 'b_activity_id', sba.name as 'b_activity_name', sba.post_code, sba.street, sba.apartment_number, sba.house_number,
+            sba.contact_phone, sba.city, sba.about
+            from salon_user su
+            join salon_employee se on se.user_id = su.id
+            join salon_businessactivity sba on sba.id = se.business_activity_id
+            join salon_employeeserviceconfiguration sesc on sesc.employee_id = se.id
+            join salon_employeespecialization ses on ses.id = se.spec_id
+            left join salon_service ss on ss.id = sesc.service_id
+            left join salon_servicecategory ssc on ssc.id = ss.service_category_id
+        """
+
+    def group_business_activity_services(self, all_businesses_info):
+        # iterate over a set
+        return_list = {}
+        unique_sets = set(b_info['b_activity_id'] for b_info in all_businesses_info)
+
+        for b_activity_id in unique_sets:
+            items_for_b_activity = list(filter(lambda x: (x["b_activity_id"] == b_activity_id),all_businesses_info))
+            business_name = items_for_b_activity[0]["b_activity_name"]
+            return_list[business_name] = {
+                "id": items_for_b_activity[0]["b_activity_id"],
+                "name": items_for_b_activity[0]["b_activity_name"],
+                "post_code": items_for_b_activity[0]["post_code"],
+                "street": items_for_b_activity[0]["street"],
+                "apartment_number": items_for_b_activity[0]["apartment_number"],
+                "house_number": items_for_b_activity[0]["house_number"],
+                "contact_phone": items_for_b_activity[0]["contact_phone"],
+                "city": items_for_b_activity[0]["city"],
+                "about": items_for_b_activity[0]["about"],
+                "categories": {}
+            }
+            unique_categories = set(b_info['category_id'] for b_info in items_for_b_activity)
+            for unique_category in unique_categories:
+                services = list(filter(lambda x: (x["category_id"] == unique_category),items_for_b_activity))
+                unique_services = set(b_info['service_id'] for b_info in services)
+                category_name = services[0]["category_name"]
+                i = 0
+                return_list[business_name]["categories"][services[0]["category_name"]] = [{
+                    "category_id": services[0]["category_id"],
+                    "category_name": services[0]["category_name"],
+                }]
+                for unique_service in unique_services:
+                    service = list(filter(lambda x: (x["service_id"] == unique_service),services))
+                    if i == 0:
+                        return_list[business_name]["categories"][category_name][i]["service_id"] = service[0]["service_id"]
+                        return_list[business_name]["categories"][category_name][i]["service_name"] = service[0]["service_name"]
+                        return_list[business_name]["categories"][category_name][i]["duration"] = service[0]["duration"]
+                        return_list[business_name]["categories"][category_name][i]["price"] = service[0]["price"]
+                        return_list[business_name]["categories"][category_name][i]["employees"] = [{
+                            "id": service[0]["employee_id"],
+                        }]
+                        # return_list[business_name]["categories"][category_name][i]["employees"] = [{
+                        #     "avatar": {
+                        #         "file_type": "",
+                        #         "image": "",
+                        #     },
+                        #     "business_activity_id": return_list[business_name]["id"],
+                        #     "id": service[0]["employee_id"],
+                        #     "is_owner": service[0]["is_owner"],
+                        #     "spec": {
+                        #         "id": "",
+                        #         "name": "",
+                        #     },
+                        #     "user": {
+                        #         "email": "",
+                        #         "first_name": "",
+                        #         "id": "",
+                        #         "last_name": "",
+                        #         "phone_number": "",
+                        #         "user_name": "",
+                        #     }
+                        # }]
+                    else:
+                        found_idx = next(
+                            (
+                                index for (index, d) in enumerate(
+                                    return_list[business_name]["categories"][category_name]
+                                ) if d["service_name"] == service[0]["service_name"]
+                            )
+                            , None
+                        )
+                        if found_idx is not None:
+                            return_list[business_name]["categories"][category_name][found_idx]["employees"].append({ "id": service[0]["employee_id"], })
+                        else:
+                            return_list[business_name]["categories"][category_name].append({
+                                "category_id": return_list[business_name]["categories"][category_name][0]["category_id"],
+                                "category_name": return_list[business_name]["categories"][category_name][0]["category_name"],
+                                "service_id": service[0]["service_id"],
+                                "service_name": service[0]["service_name"],
+                                "duration": service[0]["duration"],
+                                "price": service[0]["price"],
+                                "employees": [{ "id": service[0]["employee_id"], }],
+                            })
+                    i += 1
+        return return_list
+
+    def get(self, request):
+        cursor = connection.cursor()
+        cursor.execute(self.all_business_info_query())
+        all_businesses_info = cursor_to_array_of_dicts(cursor)
+        all_businesses_info = self.group_business_activity_services(all_businesses_info)
+
+        return Response(all_businesses_info, status=status.HTTP_200_OK)

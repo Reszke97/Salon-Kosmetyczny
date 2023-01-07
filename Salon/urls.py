@@ -21,7 +21,7 @@ urlpatterns = [
 
     path('api/v1/client/token/', CustomTokenObtainPairViewClient.as_view(), name = 'token_obtain_pair_client'),
     path('api/v1/client/info/', ClientApi.as_view(), name = 'client_api'),
-    path('api/v1/client/businessactivities/', BusinessActivityInfo.as_view(), name = 'business_activities'),
+    path('api/v1/client/business-activities/', BusinessActivities.as_view(), name = 'business_activities'),
 
     path('api/v1/user/register/', CustomUserCreate.as_view(), name = "register"),
     path('api/v1/user/passwordchange/', ChangePasswordView.as_view(), name = "changepass"),
