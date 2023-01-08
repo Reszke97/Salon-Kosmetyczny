@@ -2,6 +2,7 @@
   <v-container
     fluid
     style="padding:0"
+    id="custom-navbar"
   >
     <v-app-bar class="indigo white--text">
       <v-toolbar-title>

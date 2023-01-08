@@ -2,7 +2,8 @@
   <v-app 
     id="app"
   >
-    <div 
+    <div
+      id="custom-container"
       style="
         padding: 0px !important;
         height: 100vh;
@@ -12,10 +13,10 @@
       "
     >
       <nav-bar></nav-bar>
-      <v-container fill-height>
+      <v-container fill-height :style="containerStyles">
         <router-view></router-view>
       </v-container>
-      <Footer></Footer>
+      <Footer id="custom-footer"></Footer>
     </div >
   </v-app>
 </template>
@@ -31,6 +32,39 @@ export default {
     NavBar,
     Footer
   },
+  data: () => ({
+    screenHeight: 0,
+    screenWidth: 0,
+  }),
+  provide(){
+    const screenSize = {};
+    Object.defineProperty(screenSize, "screenHeight", {
+      enumerable: true,
+      get: () => this.screenHeight
+    })
+     Object.defineProperty(screenSize, "screenWidth", {
+      enumerable: true,
+      get: () => this.screenWidth
+    })
+    return {
+      screenSize
+    }
+  },
+
+  mounted(){
+    this.$nextTick(() => {
+      this.watchScreenHeightResize()
+      this.watchScreenWidthResize()
+    })
+  },
+
+  computed: {
+    containerStyles(){
+      if(this.screenHeight == 0) return "height:100%!important"
+      return `height:${this.screenHeight}px!important`
+    }
+  },
+
   created(){
     // sprawdzenie czy refresh token istnieje
     if(localStorage.getItem('clientRefreshToken')){
@@ -82,5 +116,21 @@ export default {
       return
     }
   },
+  methods: {
+    watchScreenHeightResize() {
+      const observer = new ResizeObserver((entries) => {
+        this.screenHeight = 
+          document.getElementById("custom-container").offsetHeight 
+          - entries[0].contentRect.height - document.getElementById("custom-footer").offsetHeight;
+      });
+      observer.observe(document.getElementById("custom-navbar"));
+    },
+    watchScreenWidthResize() {
+      const observer = new ResizeObserver((entries) => {
+        this.screenWidth = document.querySelector("body").offsetWidth
+      });
+      observer.observe(document.querySelector("body"));
+    }
+  }
 }
 </script>

@@ -2,9 +2,11 @@
     <div>
         <v-row class="my-2">
             <v-col cols="12">
-                <v-expansion-panels dark class="accordion-wrapper">
+                <v-expansion-panels dark class="accordion-wrapper"
+                    v-model="panel"
+                >
                     <v-expansion-panel
-                        v-for="service of services"
+                        v-for="(service, panelIdx) of services"
                         :key="service.service.id"
                     >
                         <v-expansion-panel-header>
@@ -21,7 +23,7 @@
                                 Edytuj
                             </v-btn>
                             <v-row
-                                v-if="openDialog"
+                                v-if="openDialog && panel == panelIdx"
                                 justify="end"
                             >
                                 <v-col cols=2>
@@ -33,6 +35,7 @@
                                         style="min-height:350px!important"
                                     >
                                         <add-or-update-service
+                                            v-if="openDialog && panel == panelIdx"
                                             ref="editDialog"
                                             min-height="400px"
                                             :preview="true"
@@ -80,7 +83,8 @@
             },
         },
         data: () => ({
-            openDialog: false
+            openDialog: false,
+            panel: [],
         }),
         computed: {
             
@@ -88,7 +92,9 @@
         
         methods: {
             async closeDialog(){
-                this.openDialog = false;
+                this.$nextTick( async () => {
+                    this.openDialog = false;
+                })
                 await this.getServices();
             },
             async OpenDialog(){

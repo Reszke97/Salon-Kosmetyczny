@@ -1,6 +1,10 @@
 <template>
     <v-row
-        style="height:100%"
+        :style="{
+            height: screenSize.screenHeight + 'px',
+            paddingTop: '8px',
+            paddingBottom: '8px',
+        }"
         justify="center"
     >
         <v-col 
@@ -9,7 +13,10 @@
             sm="9"
             md="6"
             lg="5" 
-            style="background-color:#3f51b5;"
+            :style="{
+                backgroundColor:'#3f51b5',
+                height: '100%'
+            }"
         >
             <v-row 
                 v-if="!started"
@@ -41,6 +48,7 @@
                     v-model="panel"
                     dark 
                     class="accordion-wrapper"
+                    id="filters"
                 >
                     <v-expansion-panel
                         style="background-color:#3f51b5;"
@@ -138,6 +146,7 @@
                 <!-- here -->
                 <display-business-activities
                     :items="items"
+                    :businessesHeight="businessesHeight"
                 />
             </template>
         </v-col>
@@ -160,7 +169,7 @@
     import { ChooseLocalization, DisplayBusinessActivities } from "../components"
     
     export default {
-        name: "SearchForService",
+        name: "AllBusinesses",
         components: {
             ChooseLocalization,
             DisplayBusinessActivities,
@@ -179,10 +188,12 @@
             },
             containerHeight: 0,
             containerWidth: 0,
+            businessesHeight: 0,
             chooseLocalizationDialogOpen: false,
             started: false,
             panel: 0
         }),
+        inject: ["screenSize"],
         computed: {
             filteredItems(){
 
@@ -207,6 +218,9 @@
             watchScreenHeightResize() {
                 const observer = new ResizeObserver((entries) => {
                     this.containerHeight = document.getElementById("appointment").offsetHeight;
+                    if(this.started){
+                        this.businessesHeight = this.screenSize.screenHeight - document.getElementById("filters").offsetHeight - 40;
+                    } else this.businessesHeight = this.screenSize.screenHeight;
                 });
                 observer.observe(document.getElementById("appointment"));
             },
@@ -227,6 +241,11 @@
             },
             setStarted(){
                 this.started = !this.started;
+                this.$nextTick(() => {
+                    if(this.started){
+                        this.businessesHeight = this.screenSize.screenHeight - document.getElementById("filters").offsetHeight - 40;
+                    }
+                })
             },
             async getBusinessActivities(){
                 await axios.get('http://127.0.0.1:8000/api/v1/client/business-activities/')
