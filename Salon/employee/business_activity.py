@@ -156,10 +156,34 @@ class BusinessActivityServices(APIView):
 
 class BusinessActivities(APIView):
 
+    def map_images(self, image ):
+        content = str(image.content).replace("/", "\\")
+        file_type = content[content.find('.') + 1::].upper()
+        # Note: The "rb" option stands for "read binary".
+        with open(settings.MEDIA_ROOT + "\\" + content, "rb") as image_file:
+            image_data = base64.b64encode(image_file.read()).decode('utf-8')
+            encoded_image = {
+                "image": image_data,
+                "file_type": file_type
+            }
+            return encoded_image
+
+    def map_image(self, image ):
+        content = str(image.content).replace("/", "\\")
+        file_type = content[content.find('.') + 1::].upper()
+        # Note: The "rb" option stands for "read binary".
+        with open(settings.MEDIA_ROOT + "\\" + content, "rb") as image_file:
+            image_data = base64.b64encode(image_file.read()).decode('utf-8')
+            encoded_image = {
+                "image": image_data,
+                "file_type": file_type
+            }
+            return encoded_image
+
     def all_business_info_query(self):
         return  """SELECT 
-            ss.id as 'service_id', ssc.id as 'category_id', se.id as 'employee_id', su.first_name, su.last_name, su.phone_number, su.email, 
-            ses.name as 'spec_name', ss.name as 'service_name', ss.duration, ss.price, ssc.name as 'category_name',
+            ss.id as 'service_id', ssc.id as 'category_id', se.id as 'employee_id', se.is_owner, su.first_name, su.last_name, su.phone_number, su.email, 
+            ses.name as 'spec_name', ses.id as 'spec_id', ss.name as 'service_name', ss.duration, ss.price, ssc.name as 'category_name',
             sba.id as 'b_activity_id', sba.name as 'b_activity_name', sba.post_code, sba.street, sba.apartment_number, sba.house_number,
             sba.contact_phone, sba.city, sba.about
             from salon_user su
@@ -171,14 +195,47 @@ class BusinessActivities(APIView):
             left join salon_servicecategory ssc on ssc.id = ss.service_category_id
         """
 
+    def all_employees_query(self):
+        return  """SELECT se.id as 'employee_id'
+            from salon_employee se
+        """
+
+    def get_employees_with_avatar(self):
+        cursor = connection.cursor()
+        cursor.execute(self.all_employees_query())
+        all_employees = cursor_to_array_of_dicts(cursor)
+        idx = 0
+
+        for employee in all_employees:
+            avatar_encoded = {
+                "image": "",
+                "file_type": ""
+            }
+            try:
+                avatar = EmployeeAvatar.objects.get(employee_id = employee['employee_id'])
+                avatar_encoded = self.map_images(avatar)
+                all_employees[idx]["avatar"] = avatar_encoded
+            except EmployeeAvatar.DoesNotExist:
+                all_employees[idx]["avatar"] = avatar_encoded
+            idx += 1
+        return all_employees
+
     def group_business_activity_services(self, all_businesses_info):
-        # iterate over a set
+        employees = self.get_employees_with_avatar()
         return_list = {}
         unique_sets = set(b_info['b_activity_id'] for b_info in all_businesses_info)
 
         for b_activity_id in unique_sets:
             items_for_b_activity = list(filter(lambda x: (x["b_activity_id"] == b_activity_id),all_businesses_info))
             business_name = items_for_b_activity[0]["b_activity_name"]
+
+            b_image_encoded = None
+            try:
+                image = BusinessActivityImage.objects.get(business_activity_id=items_for_b_activity[0]["b_activity_id"])
+                b_image_encoded = self.map_image(image)
+            except BusinessActivityImage.DoesNotExist:
+                pass
+
             return_list[business_name] = {
                 "id": items_for_b_activity[0]["b_activity_id"],
                 "name": items_for_b_activity[0]["b_activity_name"],
@@ -189,6 +246,7 @@ class BusinessActivities(APIView):
                 "contact_phone": items_for_b_activity[0]["contact_phone"],
                 "city": items_for_b_activity[0]["city"],
                 "about": items_for_b_activity[0]["about"],
+                "image": b_image_encoded,
                 "categories": {}
             }
             unique_categories = set(b_info['category_id'] for b_info in items_for_b_activity)
@@ -203,35 +261,28 @@ class BusinessActivities(APIView):
                 }]
                 for unique_service in unique_services:
                     service = list(filter(lambda x: (x["service_id"] == unique_service),services))
+                    employee_avatar = list(filter(lambda x: (x["employee_id"] == service[0]["employee_id"]),employees))
                     if i == 0:
                         return_list[business_name]["categories"][category_name][i]["service_id"] = service[0]["service_id"]
                         return_list[business_name]["categories"][category_name][i]["service_name"] = service[0]["service_name"]
                         return_list[business_name]["categories"][category_name][i]["duration"] = service[0]["duration"]
                         return_list[business_name]["categories"][category_name][i]["price"] = service[0]["price"]
                         return_list[business_name]["categories"][category_name][i]["employees"] = [{
+                            "avatar": employee_avatar[0]["avatar"],
+                            "business_activity_id": return_list[business_name]["id"],
                             "id": service[0]["employee_id"],
+                            "is_owner": service[0]["is_owner"],
+                            "spec": {
+                                "id": service[0]["spec_id"],
+                                "name": service[0]["spec_name"],
+                            },
+                            "user": {
+                                "email": service[0]["email"],
+                                "first_name": service[0]["first_name"], 
+                                "last_name": service[0]["last_name"],
+                                "phone_number": service[0]["phone_number"],
+                            }
                         }]
-                        # return_list[business_name]["categories"][category_name][i]["employees"] = [{
-                        #     "avatar": {
-                        #         "file_type": "",
-                        #         "image": "",
-                        #     },
-                        #     "business_activity_id": return_list[business_name]["id"],
-                        #     "id": service[0]["employee_id"],
-                        #     "is_owner": service[0]["is_owner"],
-                        #     "spec": {
-                        #         "id": "",
-                        #         "name": "",
-                        #     },
-                        #     "user": {
-                        #         "email": "",
-                        #         "first_name": "",
-                        #         "id": "",
-                        #         "last_name": "",
-                        #         "phone_number": "",
-                        #         "user_name": "",
-                        #     }
-                        # }]
                     else:
                         found_idx = next(
                             (
@@ -242,7 +293,24 @@ class BusinessActivities(APIView):
                             , None
                         )
                         if found_idx is not None:
-                            return_list[business_name]["categories"][category_name][found_idx]["employees"].append({ "id": service[0]["employee_id"], })
+                            return_list[business_name]["categories"][category_name][found_idx]["employees"].append(
+                                {
+                                    "avatar": employee_avatar[0]["avatar"],
+                                    "business_activity_id": return_list[business_name]["id"],
+                                    "id": service[0]["employee_id"],
+                                    "is_owner": service[0]["is_owner"],
+                                    "spec": {
+                                        "id": service[0]["spec_id"],
+                                        "name": service[0]["spec_name"],
+                                    },
+                                    "user": {
+                                        "email": service[0]["email"],
+                                        "first_name": service[0]["first_name"], 
+                                        "last_name": service[0]["last_name"],
+                                        "phone_number": service[0]["phone_number"],
+                                    }
+                                }
+                            )
                         else:
                             return_list[business_name]["categories"][category_name].append({
                                 "category_id": return_list[business_name]["categories"][category_name][0]["category_id"],
@@ -251,7 +319,22 @@ class BusinessActivities(APIView):
                                 "service_name": service[0]["service_name"],
                                 "duration": service[0]["duration"],
                                 "price": service[0]["price"],
-                                "employees": [{ "id": service[0]["employee_id"], }],
+                                "employees": [{
+                                    "avatar": employee_avatar[0]["avatar"],
+                                    "business_activity_id": return_list[business_name]["id"],
+                                    "id": service[0]["employee_id"],
+                                    "is_owner": service[0]["is_owner"],
+                                    "spec": {
+                                        "id": service[0]["spec_id"],
+                                        "name": service[0]["spec_name"],
+                                    },
+                                    "user": {
+                                        "email": service[0]["email"],
+                                        "first_name": service[0]["first_name"], 
+                                        "last_name": service[0]["last_name"],
+                                        "phone_number": service[0]["phone_number"],
+                                    }
+                                }]
                             })
                     i += 1
         return return_list

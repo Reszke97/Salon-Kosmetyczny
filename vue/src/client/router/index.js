@@ -8,7 +8,8 @@ import Logout from '../components/authentication/Logout.vue'
 import PasswordChange from '../components/Settings/components/PasswordChange.vue'
 import ResetPassword from '../components/authentication/ResetPassword.vue'
 import PasswordResetEmail from '../components/authentication/ResetPasswordEmail.vue'
-import SearchForService from '../components/appointment/views/SearchForService.vue'
+// import SearchForService from '../components/appointment/views/SearchForService.vue'
+import AllBusinesses from '../components/SearchForService/views/AllBusinesses.vue'
 import SettingsPanel from '../components/Settings/views/SettingsPanel.vue'
 // import Calendar from '../components/employee/views/Calendar.vue'
 // import Service from "../components/service/views/Service.vue"
@@ -19,7 +20,7 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: SearchForService
+    component: AllBusinesses
   },
   {
     path: '/logout',
