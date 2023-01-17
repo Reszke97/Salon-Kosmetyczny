@@ -203,6 +203,13 @@
         async created(){
 
         },
+
+        watch: {
+            panel (val) {
+                console.log(val)
+                this.businessesHeight = this.screenSize.screenHeight - document.getElementById("filters").offsetHeight - 40;
+            },
+        },
         
         mounted(){
             this.$nextTick(() => {
