@@ -143,10 +143,11 @@
                         </v-expansion-panel-content>
                     </v-expansion-panel>
                 </v-expansion-panels>
-                <!-- here -->
                 <display-business-activities
                     :items="items"
                     :businessesHeight="businessesHeight"
+                    :sign-for-visit="signForVisit"
+                    :preview-business-activity="previewBusinessActivity"
                 />
             </template>
         </v-col>
@@ -160,19 +161,26 @@
             :set-started="setStarted"
             :get-business-activities="getBusinessActivities"
         />
+        <!-- <BusinessActivityPreview
+            :business-activity-preview="businessActivityPreview"
+            :business-activity-preview-data="businessActivityPreviewData"
+            :close-preview="closePreview"
+        /> -->
     </v-row>
 </template>
 
 <script>
-    import axios from "axios"
-    import { appendMimeType } from "../../../utils"
-    import { ChooseLocalization, DisplayBusinessActivities } from "../components"
+    import axios from "axios";
+    import { appendMimeType } from "../../../utils";
+    import { ChooseLocalization, DisplayBusinessActivities } from "../components";
+    // import BusinessActivityPreview from "./BusinessActivityPreview.vue";
     
     export default {
         name: "AllBusinesses",
         components: {
             ChooseLocalization,
             DisplayBusinessActivities,
+            // BusinessActivityPreview,
         },
         props: {
             
@@ -186,12 +194,15 @@
                 selectedCity: "",
                 selectedPostCode: "",
             },
+            servicesBoxWatcherSet: false,
             containerHeight: 0,
             containerWidth: 0,
             businessesHeight: 0,
             chooseLocalizationDialogOpen: false,
             started: false,
-            panel: 0
+            panel: 0,
+            businessActivityPreview: false,
+            businessActivityPreviewData: {},
         }),
         inject: ["screenSize"],
         computed: {
@@ -202,13 +213,6 @@
 
         async created(){
 
-        },
-
-        watch: {
-            panel (val) {
-                console.log(val)
-                this.businessesHeight = this.screenSize.screenHeight - document.getElementById("filters").offsetHeight - 40;
-            },
         },
         
         mounted(){
@@ -222,6 +226,18 @@
         },
 
         methods: {
+            signForVisit(){
+
+            },
+            previewBusinessActivity(){
+
+            },
+            openPreview(){
+                this.businessActivityPreview = true;
+            },
+            closePreview(){
+                this.businessActivityPreview = false;
+            },
             watchScreenHeightResize() {
                 const observer = new ResizeObserver((entries) => {
                     this.containerHeight = document.getElementById("appointment").offsetHeight;
@@ -249,8 +265,11 @@
             setStarted(){
                 this.started = !this.started;
                 this.$nextTick(() => {
-                    if(this.started){
-                        this.businessesHeight = this.screenSize.screenHeight - document.getElementById("filters").offsetHeight - 40;
+                    if(this.started && !this.servicesBoxWatcherSet){
+                        const observer = new ResizeObserver((entries) => {
+                            this.businessesHeight = this.screenSize.screenHeight - document.getElementById("filters").offsetHeight - 40;
+                        });
+                        observer.observe(document.getElementById("filters"));
                     }
                 })
             },

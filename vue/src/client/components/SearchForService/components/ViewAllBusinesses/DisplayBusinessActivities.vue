@@ -11,15 +11,39 @@
             v-for="(item, key) in items"
             :key="key"
             :cols="6"
+            class="px-2"
         >
             <div
                 style="
                     display: flex;
                     flex-direction: column;
+                    border: solid;
+                    border-radius: 10px;
+                    border-color: rgb(8, 68, 164);
+                    border-width: 3px;
+                    padding: 10px;
                 "
             >
-                <div>
-                    <h3>{{ key }}</h3>
+                <div style="display: flex; flex-direction: row">
+                    <div style="display: flex; width:100%">
+                        <h3>{{ key }}</h3>
+                    </div>
+                    <div style="display: flex; width:100%; justify-content: end;">
+                        <v-tooltip top color="success">
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-icon
+                                    dark
+                                    right
+                                    v-bind="attrs"
+                                    v-on="on"
+                                    @click="signForVisit"
+                                >
+                                    mdi-information 
+                                </v-icon>
+                            </template>
+                            <span>Szczegóły firmy</span>
+                        </v-tooltip>
+                    </div>
                 </div>
                 <div style="display: flex">
                     <div style="display: flex">
@@ -67,12 +91,20 @@
                                         Umów wizytę
                                     </div>
                                     <div style="display: flex; width:100%; justify-content: end;">
-                                        <v-icon
-                                            dark
-                                            right
-                                        >
-                                            mdi-plus
-                                        </v-icon>
+                                        <v-tooltip top color="success">
+                                            <template v-slot:activator="{ on, attrs }">
+                                                <v-icon
+                                                    dark
+                                                    right
+                                                    v-bind="attrs"
+                                                    v-on="on"
+                                                    @click="signForVisit"
+                                                >
+                                                    mdi-plus
+                                                </v-icon>
+                                            </template>
+                                            <span>Umów wizytę</span>
+                                        </v-tooltip>
                                     </div>
                                 </div>
                                 <v-divider dark class="my-2" />
@@ -86,7 +118,6 @@
 </template>
 
 <script>
-    import { AUTH_API } from "../../../authorization/AuthAPI";
     
     export default {
         name: "",
@@ -96,6 +127,8 @@
         props: {
             items: { type: Object, required: true },
             businessesHeight: { type: Number, default: 0 },
+            signForVisit: { type: Function, default: () => {} },
+            previewBusinessActivity: { type: Function, default: () => {} },
         },
         data: () => ({
             

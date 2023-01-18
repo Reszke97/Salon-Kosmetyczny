@@ -83,7 +83,6 @@
 </template>
 
 <script>
-    import { AUTH_API } from "../../../authorization/AuthAPI";
     
     export default {
         name: "",
