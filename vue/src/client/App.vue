@@ -35,19 +35,33 @@ export default {
   data: () => ({
     screenHeight: 0,
     screenWidth: 0,
+    navBarHeight: 0,
+    footerHeight: 0,
   }),
   provide(){
     const screenSize = {};
+    const navBarSize = {};
+    const footerSize = {};
     Object.defineProperty(screenSize, "screenHeight", {
       enumerable: true,
       get: () => this.screenHeight
     })
-     Object.defineProperty(screenSize, "screenWidth", {
+    Object.defineProperty(screenSize, "screenWidth", {
       enumerable: true,
       get: () => this.screenWidth
     })
+    Object.defineProperty(navBarSize, "navBarHeight", {
+      enumerable: true,
+      get: () => this.navBarHeight
+    })
+    Object.defineProperty(footerSize, "footerHeight", {
+      enumerable: true,
+      get: () => this.footerHeight
+    })
     return {
-      screenSize
+      screenSize,
+      navBarSize,
+      footerSize,
     }
   },
 
@@ -122,6 +136,8 @@ export default {
         this.screenHeight = 
           document.getElementById("custom-container").offsetHeight 
           - entries[0].contentRect.height - document.getElementById("custom-footer").offsetHeight;
+        this.navBarHeight = entries[0].contentRect.height;
+        this.footerHeight = document.getElementById("custom-footer").offsetHeight;
       });
       observer.observe(document.getElementById("custom-navbar"));
     },

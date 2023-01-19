@@ -247,7 +247,7 @@
 </template>
 
 <script>
-  import { AUTH_API } from "../../../authorization/AuthAPI";
+  // import { AUTH_API } from "../../../authorization/AuthAPI";
   import draggable from "vuedraggable";
   import Comment from "./Comment.vue";
   export default {

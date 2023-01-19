@@ -161,11 +161,11 @@
             :set-started="setStarted"
             :get-business-activities="getBusinessActivities"
         />
-        <!-- <BusinessActivityPreview
+        <BusinessActivityPreview
             :business-activity-preview="businessActivityPreview"
             :business-activity-preview-data="businessActivityPreviewData"
             :close-preview="closePreview"
-        /> -->
+        />
     </v-row>
 </template>
 
@@ -173,14 +173,14 @@
     import axios from "axios";
     import { appendMimeType } from "../../../utils";
     import { ChooseLocalization, DisplayBusinessActivities } from "../components";
-    // import BusinessActivityPreview from "./BusinessActivityPreview.vue";
+    import BusinessActivityPreview from "./BusinessActivityPreview.vue";
     
     export default {
         name: "AllBusinesses",
         components: {
             ChooseLocalization,
             DisplayBusinessActivities,
-            // BusinessActivityPreview,
+            BusinessActivityPreview,
         },
         props: {
             
@@ -229,14 +229,15 @@
             signForVisit(){
 
             },
-            previewBusinessActivity(){
-
-            },
             openPreview(){
                 this.businessActivityPreview = true;
             },
             closePreview(){
                 this.businessActivityPreview = false;
+            },
+            previewBusinessActivity(businessInfo){
+                this.businessActivityPreviewData = { ...businessInfo };
+                this.openPreview();
             },
             watchScreenHeightResize() {
                 const observer = new ResizeObserver((entries) => {

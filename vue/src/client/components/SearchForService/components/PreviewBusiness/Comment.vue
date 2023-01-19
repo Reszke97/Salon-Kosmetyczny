@@ -45,7 +45,7 @@
 </template>
 
 <script>
-    import { AUTH_API } from "../../../authorization/AuthAPI";
+    // import { AUTH_API } from "../../../authorization/AuthAPI";
     
     export default {
         name: "",

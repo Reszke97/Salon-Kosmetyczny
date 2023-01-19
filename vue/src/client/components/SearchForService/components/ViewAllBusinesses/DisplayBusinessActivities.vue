@@ -36,7 +36,7 @@
                                     right
                                     v-bind="attrs"
                                     v-on="on"
-                                    @click="signForVisit"
+                                    @click="previewBusinessActivity(item)"
                                 >
                                     mdi-information 
                                 </v-icon>
@@ -133,6 +133,7 @@
         data: () => ({
             
         }),
+        inject: ["screenSize"],
         computed: {
             
         },
