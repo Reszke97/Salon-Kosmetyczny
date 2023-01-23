@@ -196,13 +196,17 @@ class BusinessActivities(APIView):
         """
 
     def all_employees_query(self):
-        return  """SELECT se.id as 'employee_id'
+        return  """SELECT se.id as 'employee_id', su.id as 'user_id',
+                su.first_name, su.last_name,  ses.name as 'spec_name'
             from salon_employee se
+            join salon_user su on su.id = se.user_id
+            join salon_employeespecialization ses on ses.id = se.spec_id
+            where se.business_activity_id = %s
         """
 
-    def get_employees_with_avatar(self):
+    def get_employees_with_avatar(self, b_activity_id):
         cursor = connection.cursor()
-        cursor.execute(self.all_employees_query())
+        cursor.execute(self.all_employees_query(), [b_activity_id])
         all_employees = cursor_to_array_of_dicts(cursor)
         idx = 0
 
@@ -221,11 +225,11 @@ class BusinessActivities(APIView):
         return all_employees
 
     def group_business_activity_services(self, all_businesses_info):
-        employees = self.get_employees_with_avatar()
         return_list = {}
         unique_sets = set(b_info['b_activity_id'] for b_info in all_businesses_info)
 
         for b_activity_id in unique_sets:
+            employees = self.get_employees_with_avatar(b_activity_id)
             items_for_b_activity = list(filter(lambda x: (x["b_activity_id"] == b_activity_id),all_businesses_info))
             business_name = items_for_b_activity[0]["b_activity_name"]
 
@@ -247,7 +251,8 @@ class BusinessActivities(APIView):
                 "city": items_for_b_activity[0]["city"],
                 "about": items_for_b_activity[0]["about"],
                 "image": b_image_encoded,
-                "categories": {}
+                "categories": {},
+                "employees": employees,
             }
             unique_categories = set(b_info['category_id'] for b_info in items_for_b_activity)
             for unique_category in unique_categories:

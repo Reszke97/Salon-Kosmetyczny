@@ -291,6 +291,12 @@
                                         })
                                     })
                                 })
+                            } else if(el == "employees"){
+                                res.data[bActivity][el].forEach((img, idx) => {
+                                    res.data[bActivity][el][idx]["avatar"] = appendMimeType(
+                                        img.avatar
+                                    )
+                                })
                             }
                         })
                     })
