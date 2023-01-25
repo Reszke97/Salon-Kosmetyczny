@@ -247,7 +247,6 @@
 </template>
 
 <script>
-  // import { AUTH_API } from "../../../authorization/AuthAPI";
   import draggable from "vuedraggable";
   import Comment from "./Comment.vue";
   export default {
@@ -256,7 +255,6 @@
       draggable, Comment
     },
     props: {
-      getServices: { type: Function, required: true },
       services: { type: Object, required: true },
       editMode: { type: Boolean, default: false },
       isInDialog: { type: Boolean, default: false },
@@ -305,7 +303,6 @@
       },
       async closeComment(){
         this.dialog = false;
-        await this.getServices()
       },
       setSelectedComment(comment){
         this.selectedComment = comment;

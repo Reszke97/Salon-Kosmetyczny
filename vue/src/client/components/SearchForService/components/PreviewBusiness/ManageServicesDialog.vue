@@ -5,7 +5,6 @@
         v-model="employeeViewDialog"
     >
         <manage-services
-            :get-services="getServices"
             :services="services"
             :isInDialog="true"
         >
@@ -38,15 +37,14 @@
 </template>
 
 <script>
-    // import ManageServices from "../../service/components/ManageServices.vue";
+    import ManageServices from "./ManageServices.vue";
     export default {
         name: "",
         components: {
-            // ManageServices,
+            ManageServices,
         },
         props: {
             employeeViewDialog: { type: Boolean, default: false },
-            getServices: { type: Function, required: true },
             closeEmployeeViewDialog: { type: Function, required: true },
             services: { type: Object, default: () => {{}} },
         },

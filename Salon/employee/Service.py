@@ -1,6 +1,6 @@
 from django.db import connection
 from rest_framework.permissions import (
-    IsAuthenticated,  
+    IsAuthenticated, AllowAny
 )
 from ..auth.auth_backend import CheckIfPasswordWasChanged
 from rest_framework.response import Response
@@ -242,3 +242,26 @@ class ManageServiceApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
 
     # def get(self, request):
+
+
+class ServiceApiClient(APIView):
+    permission_classes = [AllowAny,]
+    parser_classes = (MultiPartParser, FormParser)
+
+    def get(self, request):
+        emp_id = request.query_params.get("empId")
+        employee = Employee.objects.get(pk = emp_id)
+        employee_service_configs = EmployeeServiceConfiguration.objects.filter(employee_id=employee)
+        employee_service_configs_serialized = EmployeeServiceWithConfig(employee_service_configs, many=True)
+        try:  
+            avatar = EmployeeAvatar.objects.get(employee = employee.pk)
+            avatar_encoded = map_images(avatar)
+        except EmployeeAvatar.DoesNotExist:
+            avatar_encoded = None
+        append_images(employee_service_configs_serialized.data)
+        append_comments(employee_service_configs_serialized.data)
+        response = {
+            "avatar": avatar_encoded,
+            "service_info": employee_service_configs_serialized.data
+        }
+        return Response(response, status=status.HTTP_200_OK)

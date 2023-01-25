@@ -115,55 +115,22 @@
             
         },
         props: {
+            businessActivityCategories: { type: Object, required: true },
             employees: { type: Array, required: true },
             previewEmployee: { type: Function, required: true },
         },
         data: () => ({
-            businessActivityCategories: {},
         }),
         computed: {
             
         },
-        async created(){
-            await this.getbusinessActivityCategories();
-        },
         methods: {
-            getEmployeeAvatar(empId){
-                const avatar = this.employees.find(el => el.id == empId)
-                return avatar
-            },
-
-            async getbusinessActivityCategories(){
-                const API = await AUTH_API();
-                await API.get("api/v1/employee/business-activity-services/")
-                .then(res => {
-                    const uniqueCategories = [...new Set(res.data.map((el) => el.category_name))];
-                    for(const category of uniqueCategories){
-                        const servicesOfCategory = res.data.filter(el => el.category_name == category)
-                        for(const serviceOfCategory of servicesOfCategory){
-                            if(this.businessActivityCategories.hasOwnProperty(category)){
-                                const serviceIdx = this.businessActivityCategories[category].findIndex(el => el.service_name == serviceOfCategory.service_name)
-                                if(serviceIdx != -1){
-                                    this.businessActivityCategories[category][serviceIdx].employees.push(this.getEmployeeAvatar(serviceOfCategory.employee_id));
-                                } else {
-                                    this.businessActivityCategories[category].push({ 
-                                        ...serviceOfCategory, 
-                                        employees: [this.getEmployeeAvatar(serviceOfCategory.employee_id)]
-                                    })
-                                }
-                            } else {
-                                this.businessActivityCategories[category] = [
-                                    { 
-                                        ...serviceOfCategory,
-                                        employees: [this.getEmployeeAvatar(serviceOfCategory.employee_id)]
-                                    }
-                                ];
-                            }
-                        }
-                    }
-                    this.businessActivityCategories = {...this.businessActivityCategories}
-                })
-            }
         }
     }
 </script>
+
+<style>
+    .accordion-wrapper .v-expansion-panel {
+        background-color: #0844a4!important;
+    }
+</style>

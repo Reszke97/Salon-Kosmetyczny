@@ -6,7 +6,7 @@ from Salon.employee.Images import ImagesApi
 from .auth.auth_backend import *
 from .auth import auth_backend
 from .employee.Calendar import *
-from .employee.Service import ServiceApi, ServiceCommentApi
+from .employee.Service import ServiceApi, ServiceCommentApi, ServiceApiClient
 from .employee.employee_info import *
 from .employee.service_category import *
 from .employee.business_activity import *
@@ -22,6 +22,7 @@ urlpatterns = [
     path('api/v1/client/token/', CustomTokenObtainPairViewClient.as_view(), name = 'token_obtain_pair_client'),
     path('api/v1/client/info/', ClientApi.as_view(), name = 'client_api'),
     path('api/v1/client/business-activities/', BusinessActivities.as_view(), name = 'business_activities'),
+    path('api/v1/client/employee-preview/', ServiceApiClient.as_view(), name = 'services_clients'),
 
     path('api/v1/user/register/', CustomUserCreate.as_view(), name = "register"),
     path('api/v1/user/passwordchange/', ChangePasswordView.as_view(), name = "changepass"),

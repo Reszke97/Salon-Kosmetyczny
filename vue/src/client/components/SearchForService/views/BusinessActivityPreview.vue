@@ -10,6 +10,7 @@
         <v-card
             style="
                 background-color: #0844a4;
+                overflow: hidden;
             "
         >
             <v-toolbar
@@ -41,7 +42,8 @@
                     lg="5" 
                     :style="{
                         backgroundColor:'#3f51b5',
-                        height: '100%'
+                        height: '100%',
+                        overflow: 'auto'
                     }"
                 >
                     <div style="display: flex; flex-direction: row">
@@ -65,16 +67,17 @@
                                     </v-tooltip>
                                 </div>
                                 <business-activity-services
-                                    :employees="employees"
+                                    :employees="businessActivityPreviewData.employees"
+                                    :business-activity-categories="businessActivityPreviewData.categories"
                                     :preview-employee="previewEmployee"
                                 >
                                 <template #employeePreviewDialog>
-                                    <manage-services-dialog
+                                    <!-- <manage-services-dialog
                                         :employee-view-dialog="employeeViewDialog"
                                         :get-services="getServices"
                                         :services="services"
                                         :closeEmployeeViewDialog="closeEmployeeViewDialog"
-                                    />
+                                    /> -->
                                 </template>
                                 </business-activity-services>
                             </template>
@@ -176,7 +179,7 @@
                                                                             :id="`employee-${employee.id}`"
                                                                             style="font-size:40px"
                                                                             v-if="!employee.avatar.image"
-                                                                            @click="() => previewEmployee(employee.id)"
+                                                                            @click="() => previewEmployee(employee)"
                                                                             dark
                                                                         >
                                                                             mdi-account-circle
@@ -187,7 +190,7 @@
                                                                             :src="employee.avatar.image"
                                                                             style="width:100%;height: 100%;"
                                                                             v-bind="attrs"
-                                                                            @click="() => previewEmployee(employee.id)"
+                                                                            @click="() => previewEmployee(employee)"
                                                                             v-on="on"
                                                                         />
                                                                     </template>
@@ -219,32 +222,28 @@
                                     </v-row>
                                     <manage-services-dialog
                                         :employee-view-dialog="employeeViewDialog"
-                                        :get-services="getServices"
                                         :services="services"
                                         :closeEmployeeViewDialog="closeEmployeeViewDialog"
                                     />
                                 </div>
-
-                                
-
+                                <div style="display: flex; align-items: center;">
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on, attrs }">
+                                            <v-btn
+                                                fab
+                                                small
+                                                dark
+                                                v-bind="attrs"
+                                                v-on="on"
+                                                @click="selectView({ businessViewSelected: false })"
+                                            >
+                                                <v-icon>mdi-arrow-right-bold</v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <span>Usługi</span>
+                                    </v-tooltip>
+                                </div>
                             </template>
-                        </div>
-                        <div style="display: flex; align-items: center;">
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn
-                                        fab
-                                        small
-                                        dark
-                                        v-bind="attrs"
-                                        v-on="on"
-                                        @click="selectView({ businessViewSelected: false })"
-                                    >
-                                        <v-icon>mdi-arrow-right-bold</v-icon>
-                                    </v-btn>
-                                </template>
-                                <span>Usługi</span>
-                            </v-tooltip>
                         </div>
                     </div>
                 </v-col>
@@ -254,6 +253,7 @@
 </template>
 
 <script>
+    import axios from "axios";
     import { ManageServicesDialog, BusinessActivityServices } from "../components"
     export default {
         name: "",
@@ -262,9 +262,6 @@
             ManageServicesDialog,
         },
         props: {
-            getServices: { type: Function, default: () => { } },
-            services: { type: Object, default: () => {{}} },
-
             //here
             closePreview: { type: Function, default: () => {} },
             businessActivityPreview: { type: Boolean, default: () => false },
@@ -273,12 +270,80 @@
         data: () => ({
             employeeViewDialog: false,
             businessInfoView: true,
+            services: {},
         }),
         inject: ["screenSize", "navBarSize", "footerSize"],
         computed: {
             
         },
         methods: {
+            appendMimeType(image){
+                let type;
+                switch (image.file_type) {
+                    case "PNG":
+                        type = "data:image/png;base64,";
+                    break;
+                    case "JPG":
+                        type = "data:image/jpg;base64,";
+                    break;
+                    case "JPEG":
+                        type = "data:image/jpeg;base64,";
+                    break;
+                    default:
+                        type = "";
+                }
+                return { ...image, image: type + image.image, isFromDB: true };
+            },
+            mapImagesType(services){
+                services.service_info.forEach((service, idx) => {
+                    this.services.service_info[idx].employee_image = service.employee_image.map((el) => {
+                        return this.appendMimeType(el)
+                    });
+                })
+                if(services.avatar) this.services.avatar = { ...this.appendMimeType(services.avatar) }
+            },
+            groupByCategory(employeeConfig){
+                let groupedServices = {
+                    avatar: employeeConfig.avatar,
+                    categories: [],
+                }
+                const uniqueCategories = [
+                    ...new Map(employeeConfig.service_info.map(item =>[item.category.category_id, item.category])).values()
+                ];
+
+                let categoryIdx = 0;
+                for(const category of uniqueCategories){
+                    const items = employeeConfig.service_info.filter(el => el.category.category_id === category.category_id)
+                    groupedServices.categories.push({
+                        name: category.name,
+                        category_id: category.category_id,
+                        id: category.category_display_order,
+                        services: [...items]
+                    });
+                    categoryIdx += 1;
+                } return groupedServices
+            },
+            async getServices(employee){
+                await axios.get(`http://127.0.0.1:8000/api/v1/client/employee-preview/?empId=${employee.employee_id}`)
+                    .then(res => {
+                        res.data.service_info = res.data.service_info.map(el => {
+                            const { service } = el
+                            const { service_category } = service
+                            delete service.service_category
+                            return { 
+                                employee_image: el.employee_image,
+                                employee_comment: el.employee_comments,
+                                employee_service_config_id: el.employee_service_config_id,
+                                image_set_id: el.image_set_id,
+                                service: { ...service }, 
+                                category: { ...service_category, is_new: false, category: service_category.category_id, }
+                            }
+                        })
+                        this.services = {... res.data };
+                    })
+                this.mapImagesType(this.services);
+                this.services = { ...this.groupByCategory(this.services) }
+            },
             async getEmployees(){
                 const API = await AUTH_API();
                 await API.get("api/v1/employee/business-activity-employees/")
@@ -291,8 +356,8 @@
                     })
                 })
             },
-            async previewEmployee(employeeId){
-                await this.getServices(employeeId);
+            async previewEmployee(employee){
+                await this.getServices(employee);
                 this.openEmployeeViewDialog();
             },
 
