@@ -1,6 +1,10 @@
 <template>
     <v-row class="fill-height">
         <v-col>
+            <availability-dialog
+                @closeAvailabilityDialog="closeAvailabilityDialog"
+                :availability-dialog="availabilityDialog"
+            />
             <v-sheet height="64">
                 <v-toolbar
                     flat
@@ -54,6 +58,12 @@
                                 <v-icon right>
                                     mdi-menu-down
                                 </v-icon>
+                            </v-btn>
+                            <v-btn 
+                                class="mx-2" color="success"
+                                @click="openAvailabilityDialog"
+                            >
+                                Dyspozycyjność
                             </v-btn>
                         </template>
                         <v-list>
@@ -136,10 +146,12 @@
 <script>
     import { AUTH_API } from '../../../authorization/AuthAPI'
     import { weekdays } from '../../../../utils'
+    import AvailabilityDialog from '../components/AvailabilityDialog.vue'
     // const API = await AUTH_API();
 
     export default {
         components: {
+            AvailabilityDialog
         },
         mixins: [
         ],
@@ -151,6 +163,7 @@
         },
         data: () => ({
             weekdays: weekdays,
+            availabilityDialog: false,
             focus: '',
             type: 'month',
             typeToLabel: {
@@ -175,6 +188,12 @@
         computed: {
         },
         methods: {
+            openAvailabilityDialog(){
+                this.availabilityDialog = true;
+            },
+            closeAvailabilityDialog(){
+                this.availabilityDialog = false;
+            },
             viewDay ({ date }) {
                 this.focus = date
                 this.type = 'day'
