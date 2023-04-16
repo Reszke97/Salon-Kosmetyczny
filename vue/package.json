@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "serve": "set NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
@@ -12,6 +12,7 @@
     "axios": "^0.24.0",
     "babel-polyfill": "^6.26.0",
     "core-js": "^3.6.5",
+    "cross-env": "^7.0.3",
     "vue": "^2.6.11",
     "vue-advanced-cropper": "^1.11.5",
     "vue-browser-geolocation": "^1.8.0",

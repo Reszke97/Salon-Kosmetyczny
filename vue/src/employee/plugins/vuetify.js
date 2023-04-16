@@ -6,7 +6,11 @@ import light from "./theme"
 Vue.use(Vuetify);
 export default new Vuetify(
   {
-    icons: {iconfont:'mdi'},
+    lang: {
+      locales: { pl: require('vuetify/lib/locale/pl') },
+      current: 'pl',
+    },
+    icons: { iconfont:'mdi' },
     theme: { 
       themes: {
         light

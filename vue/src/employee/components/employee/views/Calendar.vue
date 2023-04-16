@@ -1,91 +1,147 @@
 <template>
-    <v-container fluid>
-        <calendar-header 
-            :choose-and-get-calendar-data="chooseAndGetCalendarData"
-            :calendar-header="calendarHeader"
-            :set-pick-date="setPickDate"
-            :pick-date="pickDate"
-            :calendar-type="calendarType"
-            :full-date="fullDate"
-            :set-day-of-month="setDayOfMonth"
-            :set-date="setDate"
-            :days-data="daysData"
-        />
-        <div 
-            id="calendar-wrapper"
-            style="
-                display:flex;
-                flex-direction:row;
-                background-color:#0892d0;
-                width:100%;
-            "
-        >
-            <div 
-                id="prev-month"
-                style="
-                    display:flex;
-                    align-items:center;
-                    width:2.5%;
-                "
-            >
-                <v-btn
-                    style="width:100%"
-                    icon
-                    @click="chooseAndGetCalendarData(false, true, true, calendarType)"
+    <v-row class="fill-height">
+        <v-col>
+            <v-sheet height="64">
+                <v-toolbar
+                    flat
                 >
-                    <v-icon large>
-                        mdi-chevron-left
-                    </v-icon>
-                </v-btn>
-            </div>
-            <monthly-weekly-calendar
-                style="
-                    display:flex;
-                    width:95%;
-                "
-                :days-data="daysData"
-                :today="today"
-            />
-            <div 
-                id="next-month"
-                style="
-                    display:flex;
-                    align-items:center;
-                    width:2.5%;
-                "
-            >
-                <v-btn
-                    style="width:100%" 
-                    icon
-                    @click="chooseAndGetCalendarData(true, false, true, calendarType)"
+                    <v-btn
+                        outlined
+                        class="mr-4"
+                        color="grey darken-2"
+                        @click="setToday"
+                    >
+                        Dzisiaj
+                    </v-btn>
+                    <v-btn
+                        fab
+                        text
+                        small
+                        color="grey darken-2"
+                        @click="prev"
+                    >
+                        <v-icon small>
+                            mdi-chevron-left
+                        </v-icon>
+                    </v-btn>
+                    <v-btn
+                        fab
+                        text
+                        small
+                        color="grey darken-2"
+                        @click="next"
+                    >
+                        <v-icon small>
+                            mdi-chevron-right
+                        </v-icon>
+                    </v-btn>
+                    <v-toolbar-title v-if="$refs.calendar">
+                        {{ $refs.calendar.title }}
+                    </v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-menu
+                        bottom
+                        right
+                    >
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn
+                                outlined
+                                color="grey darken-2"
+                                v-bind="attrs"
+                                v-on="on"
+                            >
+                                <span>{{ typeToLabel[type] }}</span>
+                                <v-icon right>
+                                    mdi-menu-down
+                                </v-icon>
+                            </v-btn>
+                        </template>
+                        <v-list>
+                            <v-list-item @click="type = 'day'">
+                                <v-list-item-title>Dzień</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item @click="type = 'week'">
+                                <v-list-item-title>Tydzień</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item @click="type = 'month'">
+                                <v-list-item-title>Miesiąc</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item @click="type = '4day'">
+                                <v-list-item-title>4 dni</v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+                </v-toolbar>
+            </v-sheet>
+            <v-sheet :height="screenSize.screenHeight - 112">
+                <v-calendar
+                    ref="calendar"
+                    v-model="focus"
+                    color="dark"
+                    :weekdays="weekdays"
+                    :events="events"
+                    :event-color="getEventColor"
+                    :type="type"
+                    @click:event="showEvent"
+                    @click:more="viewDay"
+                    @click:date="viewDay"
+                    @change="updateRange"
+                ></v-calendar>
+                <!-- <v-menu
+                    v-model="selectedOpen"
+                    :close-on-content-click="false"
+                    :activator="selectedElement"
+                    offset-x
                 >
-                    <v-icon large>
-                        mdi-chevron-right
-                    </v-icon>
-                </v-btn>
-            </div>
-        </div>
-    </v-container>
+                    <v-card
+                        color="grey lighten-4"
+                        min-width="350px"
+                        flat
+                    >
+                        <v-toolbar
+                            :color="selectedEvent.color"
+                            dark
+                        >
+                            <v-btn icon>
+                                <v-icon>mdi-pencil</v-icon>
+                            </v-btn>
+                            <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
+                            <v-spacer></v-spacer>
+                            <v-btn icon>
+                                <v-icon>mdi-heart</v-icon>
+                            </v-btn>
+                            <v-btn icon>
+                                <v-icon>mdi-dots-vertical</v-icon>
+                            </v-btn>
+                        </v-toolbar>
+                        <v-card-text>
+                            <span v-html="selectedEvent.details"></span>
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-btn
+                                text
+                                color="secondary"
+                                @click="selectedOpen = false"
+                            >
+                                Cancel
+                            </v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-menu> -->
+            </v-sheet>
+        </v-col>
+    </v-row>
 </template>
 
 <script>
     import { AUTH_API } from '../../../authorization/AuthAPI'
-    import axios from 'axios'
-    import getMonthName from "../utils/getMonthName"
-    import MonthlyWeeklyCalendar from "../components/MonthlyWeeklyCalendar.vue"
-    import getNextDayOrWeek from "../utils/getNextDayOrWeek"
-    import getPrevDayOrWeek from "../utils/getPrevDayOrWeek"
-    import calendarHeader from "../components/CalendarHeader.vue"
+    import { weekdays } from '../../../../utils'
+    // const API = await AUTH_API();
 
     export default {
         components: {
-            MonthlyWeeklyCalendar,
-            calendarHeader
         },
         mixins: [
-            getMonthName,
-            getNextDayOrWeek,
-            getPrevDayOrWeek
         ],
         props: {
             calendarType: {
@@ -94,178 +150,90 @@
             },
         },
         data: () => ({
-            daysData: {
-                "days": {
-                    "Poniedziałek": [],
-                    "Wtorek": [],
-                    "Środa": [],
-                    "Czwartek": [],
-                    "Piątek": [],
-                    "Sobota": [],
-                    "Niedziela": []
-                },
-                "month": {
-                    "number": 0,
-                    "name": ""
-                },
-                "day_count": 0,
-                "week": 1,
-                "year": 0,
-                "dayOfMonth": 1,
-                "current_month_days": 0,
-                "last_month_days": 0,
-                "next_month_days": 0,
+            weekdays: weekdays,
+            focus: '',
+            type: 'month',
+            typeToLabel: {
+                "month": 'Miesiąc',
+                "week": 'Tydzień',
+                "day": 'Dzień',
+                "4day": "4 Dni",
             },
-            activePicker: null,
-            pickDate: false,
-            today: "",
+            selectedEvent: {},
+            selectedElement: null,
+            selectedOpen: false,
+            events: [],
+            colors: ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey darken-1'],
+            names: ['Meeting', 'Holiday', 'PTO', 'Travel', 'Event', 'Birthday', 'Conference', 'Party'],
         }),
+        inject: ["screenSize"],
         async created(){
-            const today = new Date()
-            this.today = today;
-            this.daysData.month.number = today.getMonth() + 1
-            this.daysData.year = today.getFullYear()
-            this.daysData.dayOfMonth = today.getDate();
-            await this.chooseAndGetCalendarData(undefined, undefined, true)
         },
-        mounted(){
-            document.getElementById("month-info").addEventListener("click", () => {
-                this.pickDate = true;
-            })
-        },
-        watch: {
-            menu (val) {
-                val && setTimeout(() => (this.activePicker = 'YEAR'))
-            },
+        mounted () {
+            this.$refs.calendar.checkChange()
         },
         computed: {
-            fullDate: {
-                async set(date) {
-                    date = date.split('-')
-                    this.daysData.month.number = date[1] !== "10" ? date[1].replace('0', ''): date[1]
-                    this.daysData.year = date[0]
-
-                    if(this.calendarType !== "monthly"){
-                        this.daysData.dayOfMonth = date[2]
-                    }
-                },
-                get() {
-                    if(this.calendarType !== "monthly"){
-                        return `${this.daysData.year}-${this.daysData.month.number}-${this.daysData.dayOfMonth}`
-                    } else {
-                        const monthNumber = this.daysData.month.number >= 10 
-                            ? this.daysData.month.number: 0 + this.daysData.month.number.toString()
-                        return `${this.daysData.year}-${monthNumber}`
-                    }
-                },
-            },
-
-            calendarHeader(){
-                let year = this.daysData.year
-                if(this.daysData.month.number === 12 && this.daysData.week === 1){
-                     year += 1
-                } else if(this.daysData.month.number === 1 && this.daysData.week >= 52){
-                    year -= 1
-                }
-                return (this.calendarType === "monthly" 
-                    ? `${this.daysData.month.name} - ${year}` 
-                    :  this.calendarType === "weekly" 
-                    // ?  `${this.daysData.week} - ${year}`
-                    ? `${this.daysData.week_start} do ${this.daysData.week_end}`
-                    : this.calendarType === "daily"
-                    ? `Dzień`
-                    : null
-                )
-            }
         },
         methods: {
-            setPickDate(value){
-                this.pickDate = value
+            viewDay ({ date }) {
+                this.focus = date
+                this.type = 'day'
             },
-            prepareDataForNextOrPrevDayOrWeek(dayCount, type){
-                return {
-                    month: this.daysData.month.number,
-                    dayOfMonth: this.daysData.dayOfMonth,
-                    year: this.daysData.year,
-                    dayCount: dayCount,
-                        monthDays: type === "next" 
-                            ? this.daysData.current_month_days 
-                            : this.daysData.last_month_days
+            getEventColor (event) {
+                return event.color
+            },
+            setToday () {
+                this.focus = ''
+            },
+            prev () {
+                this.$refs.calendar.prev()
+            },
+            next () {
+                this.$refs.calendar.next()
+            },
+            showEvent ({ nativeEvent, event }) {
+                const open = () => {
+                    this.selectedEvent = event
+                    this.selectedElement = nativeEvent.target
+                    requestAnimationFrame(() => requestAnimationFrame(() => this.selectedOpen = true))
                 }
-            },
-            setDate(date){
-                this.daysData.month.number = date[1] !== "10" ? date[1].replace('0', ''): date[1]
-                this.daysData.year = date[0]
-            },
-            setDayOfMonth(dayOfMonth){
-                this.daysData.dayOfMonth = dayOfMonth
-            },
-            async chooseAndGetCalendarData(next = false, prev = false, sameView = false, calendarType = ""){
-                if(!calendarType) calendarType = this.calendarType
-                let url = ``
-                if(calendarType === "monthly"){
-                    await this.prepareMonthlyDays(next, prev)
-                    url = `
-                        /api/v1/employee/getmonth/?month=${this.daysData.month.number}
-                        &year=${this.daysData.year}&calendarType=monthly`.replace(/\s/g, "")
-                    await this.getCalendarData(sameView, calendarType, url)
-                } else if(calendarType === "weekly"){
-                    let newDate = {}
-                    if(next) newDate = this.getNextDayOrWeek(this.prepareDataForNextOrPrevDayOrWeek(7, "next"))
-                    else if(prev) newDate = this.getPrevDayOrWeek(this.prepareDataForNextOrPrevDayOrWeek(7, "prev"))
-                    if(Object.keys(newDate).length){
-                        this.daysData = {
-                            ...this.daysData, 
-                            month: {...this.daysData.month, number: newDate.month},
-                            year: newDate.year,
-                            dayOfMonth: newDate.dayOfMonth,
-                        }
-                    }
-                    url = `/api/v1/employee/getmonth/?year=${this.daysData.year}
-                        &calendarType=weekly&dayOfMonth=${this.daysData.dayOfMonth}
-                        &month=${this.daysData.month.number}`.replace(/\s/g, "")
-                    await this.getCalendarData(sameView, calendarType, url)
-                }
-            },
-            async prepareMonthlyDays(next, prev){
-                if(next){
-                    if(this.daysData.month.number === 12){
-                        this.daysData.year += 1
-                        this.daysData.month.number = 1
-                        this.fullDate = `${this.daysData.year}-0${this.daysData.month.number}`
-                    } else {
-                        this.daysData.month.number += 1
-                        this.fullDate = this.daysData.month.number >= "10" 
-                            ? `${this.daysData.year}-${this.daysData.month.number}`
-                            : `${this.daysData.year}-0${this.daysData.month.number}`
-                    }
-                } else if (prev) {
-                    if(this.daysData.month.number === 1){
-                        this.daysData.year -= 1
-                        this.daysData.month.number = 12
-                        this.fullDate = `${this.daysData.year}-${this.daysData.month.number}`
-                    } else {
-                        this.daysData.month.number -= 1
-                        this.fullDate = this.daysData.month.number >= "10" 
-                            ? `${this.daysData.year}-${this.daysData.month.number}`
-                            : `${this.daysData.year}-0${this.daysData.month.number}`
-                    }
-                }
-            },
 
-            async getCalendarData(sameView, calendarType, url){
-                const API = await AUTH_API();
-                await API.get(url)
-                    .then((res) => {
-                        this.daysData = {...res.data}
-                        if(calendarType === "monthly" && this.daysData.month.number !== this.today.getMonth() + 1){
-                            this.daysData.dayOfMonth = 1
-                        }
+                if (this.selectedOpen) {
+                    this.selectedOpen = false
+                    requestAnimationFrame(() => requestAnimationFrame(() => open()))
+                } else {
+                    open()
+                }
+                nativeEvent.stopPropagation()
+            },
+            updateRange ({ start, end }) {
+                const events = []
+
+                const min = new Date(`${start.date}T00:00:00`)
+                const max = new Date(`${end.date}T23:59:59`)
+                const days = (max.getTime() - min.getTime()) / 86400000
+                const eventCount = this.rnd(days, days + 20)
+
+                for (let i = 0; i < eventCount; i++) {
+                    const allDay = this.rnd(0, 3) === 0
+                    const firstTimestamp = this.rnd(min.getTime(), max.getTime())
+                    const first = new Date(firstTimestamp - (firstTimestamp % 900000))
+                    const secondTimestamp = this.rnd(2, allDay ? 288 : 8) * 900000
+                    const second = new Date(first.getTime() + secondTimestamp)
+
+                    events.push({
+                        name: this.names[this.rnd(0, this.names.length - 1)],
+                        start: first,
+                        end: second,
+                        color: this.colors[this.rnd(0, this.colors.length - 1)],
+                        timed: !allDay,
                     })
-                if(!sameView){
-                    this.$router.push({ path: `/calendar/${calendarType}` })
-                } 
-            }
+                }
+                this.events = events
+            },
+            rnd (a, b) {
+                return Math.floor((b - a + 1) * Math.random()) + a
+            },
         }
     }
 </script>

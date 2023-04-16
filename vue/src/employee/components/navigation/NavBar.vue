@@ -5,7 +5,7 @@
     id="custom-navbar"
   >
     <v-app-bar class="indigo white--text">
-      <v-toolbar-title v-if="isAuthenticated">Salon Kosmetyczny</v-toolbar-title>
+      <v-toolbar-title>Salon Kosmetyczny</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items 
         class="d-none d-sm-flex"
@@ -80,9 +80,10 @@
           let menuItems = [];
           if(this.role && this.isAuthenticated){
             menuItems = [
-              this.auth,
+              { title: "Kalendarz", path: "/calendar", icon: "mdi-calendar-month " },
               { title: "Usługi", path: "/defineservice", icon: "mdi-plus" },
               { title: "Ustawienia", path: "/settings", icon: "mdi-cog-outline" },
+              this.auth,
             ]
             if(this.role == "owner"){
               menuItems.splice(2,0, 
