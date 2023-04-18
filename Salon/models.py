@@ -196,3 +196,24 @@ class CosmeticProcedure(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+class EmployeeAvailabilityConfiguration(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    max_weeks_for_registration = models.IntegerField()
+    min_time_for_registration = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class EmployeeAvailability(models.Model):
+    availability_config = models.ForeignKey(EmployeeAvailabilityConfiguration, on_delete=models.CASCADE)
+    date = models.CharField(max_length=255, blank=True, null=True)
+    is_free = models.BooleanField(default=False)
+    is_holiday = models.BooleanField(default=False)
+    is_default = models.BooleanField(default=False)
+    weekday = models.CharField(max_length=255)
+    start_time = models.CharField(max_length=255, blank=True, null=True)
+    end_time = models.CharField(max_length=255, blank=True, null=True)
+    is_break = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+

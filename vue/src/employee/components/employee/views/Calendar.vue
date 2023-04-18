@@ -2,6 +2,7 @@
     <v-row class="fill-height">
         <v-col>
             <availability-dialog
+                v-if="availabilityDialog"
                 @closeAvailabilityDialog="closeAvailabilityDialog"
                 :availability-dialog="availabilityDialog"
             />

@@ -11,6 +11,7 @@ from .employee.employee_info import *
 from .employee.service_category import *
 from .employee.business_activity import *
 from .employee.all_specs import *
+from .employee.availability import *
 from .client.client_info import *
 from .client.business_activity_info import *
 
@@ -46,5 +47,6 @@ urlpatterns = [
     path('api/v1/employee/create-employee/', CreateEmployee.as_view(), name = 'create_employee'),
     path('api/v1/employee/business-activity-employees/', BusinessActivityEmployeesApi.as_view(), name = 'business_activity_employees'),
     path('api/v1/employee/business-activity-services/', BusinessActivityServices.as_view(), name = 'business_activity_services'),
+    path('api/v1/employee/availability/', AvailabilityApi.as_view(), name = 'employee_availability'),
     # path('api/user/isauthenticated/', IsUserAuthenticated.as_view(), name = 'is_authenticated'),
 ]
