@@ -28,6 +28,10 @@
     color: white;
 }
 
+.d-flex{
+    display: flex!important;
+}
+
 ::-webkit-scrollbar {
     width: 14px!important;
     height: 14px!important;
