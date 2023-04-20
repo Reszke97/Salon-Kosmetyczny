@@ -26,7 +26,7 @@
                     <div 
                         class="px-2"
                         style="
-                            max-width: 130px;
+                            max-width: 150px;
                             border-right: 1px solid;
                             border-left: 1px solid;
                             border-top: 1px solid;
@@ -66,16 +66,39 @@
                         >
                             <div 
                                 style="
-                                    max-width: 121px;
+                                    max-width: 141px;
                                     border-right: 1px solid hsla(0,0%,100%,.12);
                                 "
                             >
-                                <h4>
-                                    {{ item.default.day.pl.charAt(0).toUpperCase() + item.default.day.pl.substring(1)  }}
-                                </h4>
+                                <div
+                                    class="d-flex"
+                                >
+                                    <h4 class="mr-1">
+                                        {{ item.default.day.pl.charAt(0).toUpperCase() + item.default.day.pl.substring(1)  }}
+                                    </h4>
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on, attrs }">
+                                            <v-icon
+                                                style="font-size:20px"
+                                                dark
+                                                v-bind="attrs"
+                                                v-on="on"
+                                                @click="setActionDataAndOpenDialog({
+                                                    day: item.default.day,
+                                                    isDefault: true,
+                                                    data: [ item.default ],
+                                                    date: now,
+                                                })"
+                                            >
+                                                mdi-pencil
+                                            </v-icon>
+                                        </template>
+                                        <span>Edytuj</span>
+                                    </v-tooltip>
+                                </div>
                                 <div 
                                     style="
-                                        min-width: 121px;
+                                        min-width: 141px;
                                         border-right: 1px solid hsla(0,0%,100%,.12);
                                     "
                                 >
@@ -86,7 +109,7 @@
                                             {{ `${defaultWorkHours.start_time} - ${defaultWorkHours.end_time}` }}
                                         </span>
                                     </div>
-                                    <span style="color: red" v-if="item.default.is_free">
+                                    <span style="color: greenyellow" v-if="item.default.is_free">
                                         Wolne
                                     </span>
                                     <span v-if="item.default.work_hours.length">
@@ -112,17 +135,42 @@
                                         </div>
                                     </template>
                                 </div>
+                                <div class="w-100 d-flex justify-end">
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on, attrs }">
+                                            <v-icon
+                                                style="font-size:20px"
+                                                dark
+                                                v-bind="attrs"
+                                                v-on="on"
+                                            >
+                                                mdi-pencil
+                                            </v-icon>
+                                        </template>
+                                        <span>Edytuj</span>
+                                    </v-tooltip>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div>
-                    <v-btn @click="$emit('closeAvailabilityDialog')">
+                    <v-btn 
+                        @click="$emit('closeAvailabilityDialog')"
+                        class="mt-2"
+                        color="success"
+                    >
                         Zamknij
                     </v-btn>
                 </div>
             </v-col>
         </v-row>
+        <edit-action
+            v-if="showEditAction"
+            :show-edit-action="showEditAction"
+            :selected-action-data="selectedActionData"
+            @closeEditAction="closeEditAction"
+        />
     </v-dialog>
 </template>
 
@@ -131,10 +179,12 @@
     import { defaultAvailability } from "../utils/defaultAvailability";
     import { days } from "../utils/days";
     import { formatDate } from "../../../../utils/formatDate"
+    import EditAction from "./EditAction.vue"
+
     export default {
         name: "",
         components: {
-            
+            EditAction
         },
         emits: [ "closeAvailabilityDialog" ],
         inject: ["screenSize"],
@@ -145,7 +195,9 @@
             availability: [],
             maxWeeksForRegistration: 2,
             minTimeForRegistration: "60min",
-            now: formatDate(new Date())
+            now: formatDate(new Date()),
+            showEditAction: false,
+            selectedActionData: {},
         }),
         computed: {
             
@@ -164,6 +216,24 @@
                 })
         },
         methods: {
+            closeEditAction(){
+                this.showEditAction = false;
+            },
+            openEditAction(){
+                this.showEditAction = true;
+            },
+            setActionData({ day, isDefault, data, date }){
+                this.selectedActionData = {
+                    day: day,
+                    is_default: isDefault,
+                    data: data,
+                    date: date,
+                }
+            },
+            setActionDataAndOpenDialog({ day, isDefault, data, date }){
+                this.setActionData({ day, isDefault, data, date });
+                this.openEditAction();
+            },
             mapAvailablility(items){
                 for(const day of days){
                     const itemsGrpedByDay = items.filter(item => item.weekday === day.gb)
