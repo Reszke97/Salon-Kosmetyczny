@@ -9,7 +9,7 @@
             class="fill-height white-text"
             justify="center"
             :style="{
-                height: `${screenSize.screenHeight - 70}px`,
+                maxHeight: `${screenSize.screenHeight - 60}px`,
             }"
         >
             <v-col
@@ -87,7 +87,6 @@
                                                     day: item.default.day,
                                                     isDefault: true,
                                                     data: [ item.default ],
-                                                    date: now,
                                                 })"
                                             >
                                                 mdi-pencil
@@ -102,24 +101,30 @@
                                         border-right: 1px solid hsla(0,0%,100%,.12);
                                     "
                                 >
-                                    <div
-                                        v-for="defaultWorkHours in item.default.work_hours"
-                                    >
-                                        <span>
-                                            {{ `${defaultWorkHours.start_time} - ${defaultWorkHours.end_time}` }}
+                                    <template v-if="!!!item.default.is_free">
+                                        <div
+                                            v-for="defaultWorkHours in item.default.work_hours"
+                                        >
+                                            <span>
+                                                {{ `${defaultWorkHours.start_time} - ${defaultWorkHours.end_time}` }}
+                                            </span>
+                                        </div>
+                                    </template>
+                                    <template v-else>
+                                        <span style="color: greenyellow">
+                                            Wolne
                                         </span>
-                                    </div>
-                                    <span style="color: greenyellow" v-if="item.default.is_free">
-                                        Wolne
-                                    </span>
-                                    <span v-if="item.default.work_hours.length">
-                                        Przerwy
-                                    </span>
-                                    <div
-                                        v-for="defaultBreaks in item.default.breaks"
-                                    >
-                                        {{ `${defaultBreaks.start_time} - ${defaultBreaks.end_time}` }}
-                                    </div>
+                                    </template>
+                                    <template v-if="item.default.work_hours.length && !!!item.default.is_free">
+                                        <span>
+                                            Przerwy
+                                        </span>
+                                        <div
+                                            v-for="defaultBreaks in item.default.breaks"
+                                        >
+                                            {{ `${defaultBreaks.start_time} - ${defaultBreaks.end_time}` }}
+                                        </div>
+                                    </template>
                                 </div>
                             </div>
                             <div class="flex-centered flex-row w-100">
@@ -170,6 +175,9 @@
             :show-edit-action="showEditAction"
             :selected-action-data="selectedActionData"
             @closeEditAction="closeEditAction"
+            @addBreak="addBreak"
+            @editAvailabilityProp="editAvailabilityProp"
+            @deleteBreak="deleteBreak"
         />
     </v-dialog>
 </template>
@@ -200,7 +208,10 @@
             selectedActionData: {},
         }),
         computed: {
-            
+            today(){
+                const todayNum = new Date(this.now).getDay();
+                return days.find(el => el.num === todayNum);
+            }
         },
         async created(){
             const API = await AUTH_API();
@@ -230,7 +241,24 @@
                     date: date,
                 }
             },
-            setActionDataAndOpenDialog({ day, isDefault, data, date }){
+
+            getSelectedWeekItemDate(day){
+                if(day.pl === this.today.pl){
+                    return this.now
+                } else {
+                    const chosenDay = day.num === 0 ? 7 : day.num;
+                    const todayNum = this.today.num === 0 ? 7 : this.today.num;
+                    const daysEquation = todayNum - chosenDay;
+                    if(daysEquation > 0){
+                        return formatDate(new Date(this.now).substractDays(daysEquation))
+                    } else {
+                        return formatDate(new Date(this.now).addDays(daysEquation * (-1)))
+                    }
+                }
+            },
+
+            setActionDataAndOpenDialog({ day, isDefault, data }){
+                const date = isDefault ? this.getSelectedWeekItemDate(day) : "";
                 this.setActionData({ day, isDefault, data, date });
                 this.openEditAction();
             },
@@ -310,7 +338,59 @@
                     keyToAppend: "extra"
                 })
                 itemToModify.extra.push(extraItems);
-            }
+            },
+            getAvailabilityIdx({ day }){
+                return this.availability.findIndex(avail => avail.default.day.pl === day.pl)
+            },
+            addBreak({ isDefault, day, date}){
+                const availabilityIdx = this.getAvailabilityIdx({ day: day });
+                if(isDefault){
+                    this.availability[availabilityIdx].default.breaks.push({
+                        end_time: "",
+                        start_time: "",
+                    })
+                } else {
+
+                }
+            },
+            getExtraDateIdx({ availabilityIdx, dayType, date }){
+                return this.availability[availabilityIdx][dayType].findIndex( extra => extra.date === date)
+            },
+            checkIfPropIsArray(prop){
+                if(["date", "is_free", "is_holiday"].includes(prop)){
+                    return false
+                } else return true
+            },
+            editAvailabilityProp({ date, day, eventIdx, eventType, isDefault, prop, value }){
+                const availabilityIdx = this.getAvailabilityIdx({ day: day });
+                const dayType = isDefault ? "default" : "extra";
+                const isPropArray = this.checkIfPropIsArray(prop);
+                if(isDefault){
+                    if(isPropArray){
+                        this.availability[availabilityIdx][dayType][eventType][eventIdx][prop] = value;
+                    } else {
+                        this.availability[availabilityIdx][dayType][prop] = value;
+                    }
+                } else {
+                    const extraDateIdx = this.getExtraDateIdx({ availabilityIdx: availabilityIdx, dayType: dayType, date: date })
+                    if(isPropArray){
+                        this.availability[availabilityIdx][dayType][extraDateIdx][eventType][eventIdx][prop] = value;
+                    } else {
+                        this.availability[availabilityIdx][dayType][extraDateIdx][prop] = value;
+                    }
+                }
+            },
+            deleteBreak({ day, isDefault, date, eventIdx, }){
+                const availabilityIdx = this.getAvailabilityIdx({ day: day });
+                const dayType = isDefault ? "default" : "extra";
+                if(isDefault){
+                    console.log('yeah')
+                    this.availability[availabilityIdx][dayType]["breaks"].splice(eventIdx, 1);
+                } else {
+                    const extraDateIdx = this.getExtraDateIdx({ availabilityIdx: availabilityIdx, dayType: dayType, date: date })
+                    this.availability[availabilityIdx][dayType][extraDateIdx]["breaks"].splice(eventIdx, 1);
+                }
+            },
         }
     }
 </script>

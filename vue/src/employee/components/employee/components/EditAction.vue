@@ -25,7 +25,7 @@
                             <span 
                                 v-if="selectedActionData.is_default"
                             >
-                                Domyślna dyspozycjność:
+                                Domyślna dyspozycyjność:
                             </span>
                             <span 
                                 v-else="selectedActionData.is_default"
@@ -80,6 +80,7 @@
                                                 v-bind="attrs"
                                                 @blur="date = formatDate(selectedActionData.is_default ? selectedActionData.date : currentDateData.date)"
                                                 v-on="on"
+                                                :disabled="selectedActionData.is_default"
                                             ></v-text-field>
                                         </template>
                                         <v-date-picker
@@ -101,21 +102,32 @@
                                     <v-checkbox
                                         :value="!!selectedActionData.is_free"
                                         label="Wolne"
+                                        @change="val => $emit('editAvailabilityProp', {
+                                            value: val,
+                                            day: selectedActionData.day,
+                                            isDefault: selectedActionData.is_default,
+                                            date: selectedActionData.is_default ? '' : currentDateData.date,
+                                            prop: 'is_free',
+                                            eventType: '',
+                                            eventIdx: null
+                                        })"
                                     />
                                 </div>
                             </div>
-                            <template v-if="!selectedActionData.is_free">
+                            <template v-if="!!!currentDateData.is_free">
                                 <div
                                     v-for="item of currentDateData.work_hours"
                                 >
                                     <v-text-field
                                         :value="item.start_time"
                                         label="Godzina rozpoczęcia"
+                                        type="time"
                                         dark
                                     />
                                     <v-text-field
                                         :value="item.end_time"
                                         label="Godzina zakończenia"
+                                        type="time"
                                         dark
                                     />
                                 </div>
@@ -136,11 +148,17 @@
                                                     <v-tooltip bottom>
                                                         <template v-slot:activator="{ on, attrs }">
                                                             <v-icon
-                                                                style="font-size:20px"
+                                                                style="font-size:20px; cursor: pointer"
                                                                 dark
                                                                 v-bind="attrs"
                                                                 v-on="on"
                                                                 color="red"
+                                                                @click="$emit('deleteBreak', {
+                                                                    day: selectedActionData.day,
+                                                                    isDefault: selectedActionData.is_default,
+                                                                    date: selectedActionData.is_default ? '' : currentDateData.date,
+                                                                    eventIdx: idx
+                                                                })"
                                                             >
                                                                 mdi-trash-can
                                                             </v-icon>
@@ -153,28 +171,48 @@
                                                 :value="item.start_time"
                                                 label="Godzina rozpoczęcia"
                                                 dark
+                                                type="time"
+                                                @input="val => $emit('editAvailabilityProp', {
+                                                    value: val,
+                                                    day: selectedActionData.day,
+                                                    isDefault: selectedActionData.is_default,
+                                                    date: selectedActionData.is_default ? '' : currentDateData.date,
+                                                    prop: 'start_time',
+                                                    eventType: 'breaks',
+                                                    eventIdx: idx
+                                                })"
                                             />
                                             <v-text-field
                                                 :value="item.end_time"
                                                 label="Godzina zakończenia"
+                                                type="time"
                                                 dark
+                                                @input="val => $emit('editAvailabilityProp', {
+                                                    value: val,
+                                                    day: selectedActionData.day,
+                                                    isDefault: selectedActionData.is_default,
+                                                    date: selectedActionData.is_default ? '' : currentDateData.date,
+                                                    prop: 'end_time',
+                                                    eventType: 'breaks',
+                                                    eventIdx: idx
+                                                })"
                                             />
                                         </div>
                                     </template>
-                                    <div>
-                                        <v-tooltip bottom>
-                                            <template v-slot:activator="{ on, attrs }">
-                                                <v-icon
-                                                    style="font-size:20px"
-                                                    dark
-                                                    v-bind="attrs"
-                                                    v-on="on"
-                                                >
-                                                    mdi-coffee
-                                                </v-icon>
-                                            </template>
-                                            <span>Dodaj przerwę</span>
-                                        </v-tooltip>
+                                    <div class="d-flex flex-row mt-2">
+                                        <div>
+                                            <v-btn
+                                                light
+                                                @click="$emit('addBreak', { 
+                                                        isDefault: selectedActionData.is_default,
+                                                        day: selectedActionData.day,
+                                                        date: selectedActionData.is_default ? '' : currentDateData.date,
+                                                    }
+                                                )"
+                                            >
+                                                Dodaj przerwę
+                                            </v-btn>
+                                        </div>
                                     </div>
                                 </div>
                             </template>
@@ -196,17 +234,16 @@
                             <span>Dodaj dzień</span>
                         </v-tooltip>
                     </div>
-                    <div class="ml-2">
-                        <v-tooltip bottom>
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-icon
-                                    dark
-                                    v-bind="attrs"
-                                    v-on="on"
-                                >mdi-content-save </v-icon>
-                            </template>
-                            <span>Zapisz zmiany</span>
-                        </v-tooltip>
+                    <div class="mt-2">
+                        <v-btn>
+                            Zapisz zmiany
+                            <v-icon
+                                color=""
+                            >
+                                mdi-content-save
+                            </v-icon>
+
+                        </v-btn>
                     </div>
                 </div>
             </div>
@@ -224,7 +261,8 @@
         components: {
             
         },
-        emits: [ "closeEditAction" ],
+        emits: [ "closeEditAction", "addBreak", "editAvailabilityProp", "deleteBreak" ],
+        inject: ["screenSize"],
         props: {
             showEditAction: { type: Boolean, default: false },
             selectedActionData: { type: Object, default: () => ({}) }
@@ -246,7 +284,7 @@
         methods: {
             formatDate(date){
                 return formatDate(date)
-            }
+            },
         }
     }
 </script>
