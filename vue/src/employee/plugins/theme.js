@@ -6,7 +6,7 @@ import colors from 'vuetify/lib/util/colors'
 export default {
     primary: "#FFFFFF",
     // secondary: "#FFFFFF",
-    error: colors.purple.base,
+    error: colors.red.base,
     warning: colors.pink.base,
     info: colors.red.base,
     success: colors.indigo.accent1,

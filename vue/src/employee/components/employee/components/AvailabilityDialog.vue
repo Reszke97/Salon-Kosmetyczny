@@ -148,6 +148,11 @@
                                                 dark
                                                 v-bind="attrs"
                                                 v-on="on"
+                                                @click="setActionDataAndOpenDialog({
+                                                    day: item.default.day,
+                                                    isDefault: false,
+                                                    data: item.extra,
+                                                })"
                                             >
                                                 mdi-pencil
                                             </v-icon>
@@ -178,6 +183,8 @@
             @addBreak="addBreak"
             @editAvailabilityProp="editAvailabilityProp"
             @deleteBreak="deleteBreak"
+            @addExtraDay="addExtraDay"
+            @deleteDay="deleteDay"
         />
     </v-dialog>
 </template>
@@ -273,8 +280,8 @@
                         if(item.is_default){
                             if(Object.keys(objectToAppend["default"]).length === 0){
                                 objectToAppend["default"].day = day;
-                                objectToAppend["default"].is_free = item.is_free;
-                                objectToAppend["default"].is_holiday = item.is_holiday;
+                                objectToAppend["default"].is_free = !!item.is_free;
+                                objectToAppend["default"].is_holiday = !!item.is_holiday;
                                 objectToAppend["default"].breaks = [];
                                 objectToAppend["default"].work_hours = [];
                             }
@@ -327,8 +334,8 @@
             createAndAppendNewExtraItem({data, itemToModify}){
                 const extraItems = {
                     date: data.date,
-                    is_free: data.is_free,
-                    is_holiday: data.is_holiday,
+                    is_free: !!data.is_free,
+                    is_holiday: !!data.is_holiday,
                     breaks: [],
                     work_hours: [],
                 }
@@ -342,7 +349,7 @@
             getAvailabilityIdx({ day }){
                 return this.availability.findIndex(avail => avail.default.day.pl === day.pl)
             },
-            addBreak({ isDefault, day, date}){
+            addBreak({ isDefault, day, extraDateIdx}){
                 const availabilityIdx = this.getAvailabilityIdx({ day: day });
                 if(isDefault){
                     this.availability[availabilityIdx].default.breaks.push({
@@ -350,18 +357,32 @@
                         start_time: "",
                     })
                 } else {
-
+                    this.availability[availabilityIdx]["extra"][extraDateIdx]["breaks"].push({
+                        end_time: "",
+                        start_time: "",
+                    })
                 }
-            },
-            getExtraDateIdx({ availabilityIdx, dayType, date }){
-                return this.availability[availabilityIdx][dayType].findIndex( extra => extra.date === date)
             },
             checkIfPropIsArray(prop){
                 if(["date", "is_free", "is_holiday"].includes(prop)){
                     return false
                 } else return true
             },
-            editAvailabilityProp({ date, day, eventIdx, eventType, isDefault, prop, value }){
+            checkiIfDayIsCorrect({ givenDate, dialogDay, givenDayEvents, prop }){
+                if(prop === "date"){
+                    const newDate = new Date(givenDate);
+                    const dayAlreadyDefined = givenDayEvents.some(el => el.date === givenDate);
+                    if(dayAlreadyDefined){
+                        alert(`Wybrana data została już zdefiniowana ${givenDate}`)
+                        return false
+                    }
+                    if(newDate.getDay() !== dialogDay.num){
+                        alert(`Wybrano inny dzień niż ${dialogDay.pl}`)
+                        return false
+                    }
+                } return true
+            },
+            editAvailabilityProp({ day, eventIdx, eventType, isDefault, prop, value, extraDateIdx }){
                 const availabilityIdx = this.getAvailabilityIdx({ day: day });
                 const dayType = isDefault ? "default" : "extra";
                 const isPropArray = this.checkIfPropIsArray(prop);
@@ -372,25 +393,46 @@
                         this.availability[availabilityIdx][dayType][prop] = value;
                     }
                 } else {
-                    const extraDateIdx = this.getExtraDateIdx({ availabilityIdx: availabilityIdx, dayType: dayType, date: date })
                     if(isPropArray){
                         this.availability[availabilityIdx][dayType][extraDateIdx][eventType][eventIdx][prop] = value;
                     } else {
-                        this.availability[availabilityIdx][dayType][extraDateIdx][prop] = value;
+                        if(this.checkiIfDayIsCorrect({ 
+                            givenDate: value, 
+                            dialogDay: day, 
+                            givenDayEvents: [...this.availability[availabilityIdx][dayType]],
+                            prop: prop
+                        })){
+                            this.availability[availabilityIdx][dayType][extraDateIdx][prop] = value;
+                        }
                     }
                 }
             },
-            deleteBreak({ day, isDefault, date, eventIdx, }){
+            deleteBreak({ day, isDefault, eventIdx, extraDateIdx }){
                 const availabilityIdx = this.getAvailabilityIdx({ day: day });
                 const dayType = isDefault ? "default" : "extra";
                 if(isDefault){
-                    console.log('yeah')
                     this.availability[availabilityIdx][dayType]["breaks"].splice(eventIdx, 1);
                 } else {
-                    const extraDateIdx = this.getExtraDateIdx({ availabilityIdx: availabilityIdx, dayType: dayType, date: date })
                     this.availability[availabilityIdx][dayType][extraDateIdx]["breaks"].splice(eventIdx, 1);
                 }
             },
+            deleteDay({ day, extraDateIdx }){
+                const availabilityIdx = this.getAvailabilityIdx({ day: day });
+                this.availability[availabilityIdx]["extra"].splice(extraDateIdx, 1);
+            },
+            addExtraDay({ day }){
+                const availabilityIdx = this.getAvailabilityIdx({ day: day });
+                this.availability[availabilityIdx]["extra"].push({
+                    breaks: [],
+                    date: "",
+                    is_free: false,
+                    is_holiday: false,
+                    work_hours: [{
+                        end_time: "",
+                        start_time: "",
+                    }],
+                })
+            }
         }
     }
 </script>
