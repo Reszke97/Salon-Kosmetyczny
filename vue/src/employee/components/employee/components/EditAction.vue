@@ -130,7 +130,7 @@
                                                     dark
                                                     v-bind="attrs"
                                                     v-on="on"
-                                                    @click="$emit('deleteDay', { day:selectedActionData.day, extraDateIdx: panelIdx })"
+                                                    @click.native.stop="$emit('deleteDay', { day:selectedActionData.day, extraDateIdx: panelIdx })"
                                                 >
                                                     mdi-trash-can
                                                 </v-icon>
@@ -294,6 +294,7 @@
                                                             extraDateIdx: selectedActionData.is_default ? null : panelIdx,
                                                         }
                                                     )"
+                                                    color="success"
                                                 >
                                                     Dodaj przerwę
                                                 </v-btn>
@@ -311,6 +312,7 @@
                     <div v-if="!selectedActionData.is_default" class="">
                         <v-btn
                             @click="$emit('addExtraDay', { day: selectedActionData.day })"
+                            color="success"
                         >
                             Dodaj dzień
                             <v-icon
@@ -324,6 +326,8 @@
                     <div class="ml-2">
                         <v-btn
                             :disabled="!valid"
+                            color="success"
+                            @click="$emit('saveData')"
                         >
                             Zapisz
                             <v-icon
@@ -350,7 +354,10 @@
         components: {
             
         },
-        emits: [ "closeEditAction", "addBreak", "editAvailabilityProp", "deleteBreak", "addExtraDay", "deleteDay" ],
+        emits: [ 
+            "closeEditAction", "addBreak", "editAvailabilityProp", 
+            "deleteBreak", "addExtraDay", "deleteDay", "saveData",
+        ],
         inject: ["screenSize"],
         props: {
             showEditAction: { type: Boolean, default: false },

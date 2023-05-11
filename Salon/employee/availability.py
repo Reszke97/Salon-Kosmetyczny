@@ -28,3 +28,70 @@ class AvailabilityApi(APIView):
         , [employee.pk, dt.date.today()])
         res = cursor_to_array_of_dicts(cursor)
         return Response(res, status=status.HTTP_200_OK)
+    
+    def delete(self, request):
+        user = User.objects.get(pk = request.user.pk)
+        try:
+            employee = Employee.objects.get(user_id = user.pk)
+        except Employee.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        data = request.data
+        # print(request.data)
+        return Response({ "status": status.HTTP_200_OK, "errors": "" })
+
+
+
+
+
+
+        # try:
+        #     avatar = EmployeeAvatar.objects.get(employee_id = employee.pk)
+        # except EmployeeAvatar.DoesNotExist:
+        #     avatar = None
+        # if avatar != None:
+        #     content = str(avatar.content).replace("/", "\\")
+        #     os.remove(os.path.join(settings.MEDIA_ROOT, content))
+        #     avatar_serializer = self.create_or_update_avatar(request, employee, avatar )
+        # else:
+        #     avatar_serializer = self.create_or_update_avatar(request, employee)
+        # if avatar_serializer.is_valid():
+        #     avatar_serializer.save()
+        #     return Response({ "status": status.HTTP_201_CREATED, "errors": "" })
+        # else:
+        #     return Response({ "status": status.HTTP_400_BAD_REQUEST, "errors": avatar_serializer.errors })
+
+    def post(self, request):
+        user = User.objects.get(pk = request.user.pk)
+        try:
+            employee = Employee.objects.get(user_id = user.pk)
+        except Employee.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        for data in request.data:
+            if data["default"]["id"] == "new":
+                pass
+                #add
+            else:
+                pass
+                #update
+            for def_breaks in data["default"]["breaks"]:
+                if def_breaks["id"] == "new":
+                    pass
+                    #add
+                else:
+                    pass
+                    #update
+            for extra in data["extra"]:
+                if extra["id"] == "new":
+                    pass
+                    #add
+                else:
+                    pass
+                    #update
+                for extra_breaks in extra["breaks"]:
+                    if extra_breaks["id"] == "new":
+                        pass
+                    #add
+                    else:
+                        pass
+                        #update
+        return Response({ "status": status.HTTP_200_OK, "errors": "" })

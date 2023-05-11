@@ -185,6 +185,7 @@
             @deleteBreak="deleteBreak"
             @addExtraDay="addExtraDay"
             @deleteDay="deleteDay"
+            @saveData="saveDataAndRefresh"
         />
     </v-dialog>
 </template>
@@ -213,6 +214,7 @@
             now: formatDate(new Date()),
             showEditAction: false,
             selectedActionData: {},
+            itemsToDelete: [],
         }),
         computed: {
             today(){
@@ -221,19 +223,47 @@
             }
         },
         async created(){
-            const API = await AUTH_API();
-            await API.get("api/v1/employee/availability")
-                .then(res => {
-                    if(res.data){
-                        this.mapAvailablility(res.data)
-                        this.maxWeeksForRegistration = res.data[0].max_weeks_for_registration;
-                        this.minTimeForRegistration = res.data[0].min_time_for_registration;
-                    } else {
-                        this.availability = [...defaultAvailability]
-                    }
-                })
+            await this.getAvailability();
         },
         methods: {
+            async getAvailability(){
+                this.availability = [];
+                const API = await AUTH_API();
+                await API.get("api/v1/employee/availability/")
+                    .then(res => {
+                        if(res.data){
+                            this.mapAvailablility(res.data)
+                            this.maxWeeksForRegistration = res.data[0].max_weeks_for_registration;
+                            this.minTimeForRegistration = res.data[0].min_time_for_registration;
+                        } else {
+                            this.availability = [...defaultAvailability]
+                        }
+                    })
+            },
+            async deleteItems(){
+                const uniqueItemsToDelete = [...new Set(this.itemsToDelete.map((el) => el))];
+                const itemsForRequest = uniqueItemsToDelete.filter(el => el !== null && el !== "new");
+                const API = await AUTH_API();
+                await API.delete("api/v1/employee/availability/", { data: itemsForRequest })
+            },
+            async postData(){
+                const API = await AUTH_API();
+                await API.post("api/v1/employee/availability/", this.availability)
+                    .then( () => {
+                        alert("All good")
+                    })
+            },
+            async saveData(){
+                if(this.itemsToDelete.length) await this.deleteItems();
+                await this.postData();
+            },
+            async saveDataAndRefresh(){
+                await this.saveData();
+                await this.getAvailability();
+                this.showEditAction = false;
+                this.selectedActionData = {};
+                this.itemsToDelete = [];
+            },
             closeEditAction(){
                 this.showEditAction = false;
             },
@@ -284,6 +314,10 @@
                                 objectToAppend["default"].is_holiday = !!item.is_holiday;
                                 objectToAppend["default"].breaks = [];
                                 objectToAppend["default"].work_hours = [];
+                                objectToAppend["default"].id = null;
+                                if(!objectToAppend["default"].is_free && !objectToAppend["default"].is_break) {
+                                    objectToAppend["default"].id = item.id;
+                                }
                             }
                             this.appendItemToDefaultOrExtra({
                                 objectToModify: objectToAppend,
@@ -296,6 +330,7 @@
                             } else {
                                 const foundIdx = objectToAppend.extra.findIndex(el => el.date === item.date)
                                 if(foundIdx !== -1){
+                                    if(!item.is_free && !item.is_break) objectToAppend.extra[foundIdx].id = item.id;
                                     this.appendItemToDefaultOrExtra({
                                         objectToModify: objectToAppend.extra[foundIdx],
                                         item: item,
@@ -315,19 +350,18 @@
                 if(item.is_break){
                     secondKeyToAppend = "breaks";
                 }
+                const objectToPush = {
+                    start_time: item.start_time,
+                    end_time: item.end_time
+                }
+                if(secondKeyToAppend !== "work_hours") objectToPush.id = item.id;
                 if(keyToAppend === "default"){
                     if(item.is_free === 0 && item.start_time){
-                        objectToModify[keyToAppend][secondKeyToAppend].push({
-                            start_time: item.start_time,
-                            end_time: item.end_time,
-                        }) 
+                        objectToModify[keyToAppend][secondKeyToAppend].push(objectToPush);
                     }
                 } else {
                     if(item.is_free === 0){
-                        objectToModify[secondKeyToAppend].push({
-                            start_time: item.start_time,
-                            end_time: item.end_time,
-                        }) 
+                        objectToModify[secondKeyToAppend].push(objectToPush) ;
                     }
                 }
             },
@@ -338,7 +372,9 @@
                     is_holiday: !!data.is_holiday,
                     breaks: [],
                     work_hours: [],
+                    id: null,
                 }
+                if(!extraItems.is_break && !extraItems.is_free) extraItems.id = data.id;
                 this.appendItemToDefaultOrExtra({
                     objectToModify: extraItems,
                     item: data,
@@ -355,11 +391,13 @@
                     this.availability[availabilityIdx].default.breaks.push({
                         end_time: "",
                         start_time: "",
+                        id: "new",
                     })
                 } else {
                     this.availability[availabilityIdx]["extra"][extraDateIdx]["breaks"].push({
                         end_time: "",
                         start_time: "",
+                        id: "new",
                     })
                 }
             },
@@ -411,13 +449,19 @@
                 const availabilityIdx = this.getAvailabilityIdx({ day: day });
                 const dayType = isDefault ? "default" : "extra";
                 if(isDefault){
+                    this.itemsToDelete.push(this.availability[availabilityIdx][dayType]["breaks"][eventIdx]["id"]);
                     this.availability[availabilityIdx][dayType]["breaks"].splice(eventIdx, 1);
                 } else {
+                    this.itemsToDelete.push(this.availability[availabilityIdx][dayType][extraDateIdx]["breaks"][eventIdx]["id"]);
                     this.availability[availabilityIdx][dayType][extraDateIdx]["breaks"].splice(eventIdx, 1);
                 }
             },
             deleteDay({ day, extraDateIdx }){
                 const availabilityIdx = this.getAvailabilityIdx({ day: day });
+                this.itemsToDelete.push(this.availability[availabilityIdx]["extra"][extraDateIdx]["id"]);
+                this.availability[availabilityIdx]["extra"][extraDateIdx]["breaks"].forEach(el => {
+                    this.itemsToDelete.push(el.id)
+                })
                 this.availability[availabilityIdx]["extra"].splice(extraDateIdx, 1);
             },
             addExtraDay({ day }){
@@ -427,6 +471,7 @@
                     date: "",
                     is_free: false,
                     is_holiday: false,
+                    id: "new",
                     work_hours: [{
                         end_time: "",
                         start_time: "",
