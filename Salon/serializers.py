@@ -300,6 +300,23 @@ class DistinctServiceSerializer(serializers.ModelSerializer):
             "name", 
         )
 
+class AvailabilitySerializer(serializers.ModelSerializer):
+    availability_config_id = serializers.IntegerField()
+    class Meta:
+        model = EmployeeAvailability
+        fields = (
+            "date",
+            "is_free",
+            "is_holiday",
+            "is_default",
+            "weekday",
+            "start_time",
+            "end_time",
+            "is_break",
+            "availability_config_id",
+            "created_at"
+        )
+
 # class EmployeeServices(serializers.ModelSerializer):
 #     service = ServiceSerializer()
 #     class Meta:

@@ -313,9 +313,10 @@
                                 objectToAppend["default"].is_free = !!item.is_free;
                                 objectToAppend["default"].is_holiday = !!item.is_holiday;
                                 objectToAppend["default"].breaks = [];
+                                objectToAppend["default"].is_break = !!item.is_break;
                                 objectToAppend["default"].work_hours = [];
                                 objectToAppend["default"].id = null;
-                                if(!objectToAppend["default"].is_free && !objectToAppend["default"].is_break) {
+                                if(!objectToAppend["default"].is_break) {
                                     objectToAppend["default"].id = item.id;
                                 }
                             }
@@ -325,12 +326,12 @@
                                 keyToAppend: "default"
                             });
                         } else {
-                            if(objectToAppend.length === 0){
+                            if(objectToAppend.extra.length === 0){
                                 this.createAndAppendNewExtraItem({data: item, itemToModify: objectToAppend});
                             } else {
                                 const foundIdx = objectToAppend.extra.findIndex(el => el.date === item.date)
                                 if(foundIdx !== -1){
-                                    if(!item.is_free && !item.is_break) objectToAppend.extra[foundIdx].id = item.id;
+                                    if(!!!item.is_break) objectToAppend.extra[foundIdx].id = item.id;
                                     this.appendItemToDefaultOrExtra({
                                         objectToModify: objectToAppend.extra[foundIdx],
                                         item: item,
@@ -354,7 +355,7 @@
                     start_time: item.start_time,
                     end_time: item.end_time
                 }
-                if(secondKeyToAppend !== "work_hours") objectToPush.id = item.id;
+                if(secondKeyToAppend === "breaks") objectToPush.id = item.id;
                 if(keyToAppend === "default"){
                     if(item.is_free === 0 && item.start_time){
                         objectToModify[keyToAppend][secondKeyToAppend].push(objectToPush);
@@ -370,11 +371,12 @@
                     date: data.date,
                     is_free: !!data.is_free,
                     is_holiday: !!data.is_holiday,
+                    is_break: false,
                     breaks: [],
                     work_hours: [],
                     id: null,
                 }
-                if(!extraItems.is_break && !extraItems.is_free) extraItems.id = data.id;
+                if(!!!data.is_break) extraItems.id = data.id;
                 this.appendItemToDefaultOrExtra({
                     objectToModify: extraItems,
                     item: data,
