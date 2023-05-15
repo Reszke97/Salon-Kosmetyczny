@@ -426,6 +426,7 @@
                 const availabilityIdx = this.getAvailabilityIdx({ day: day });
                 const dayType = isDefault ? "default" : "extra";
                 const isPropArray = this.checkIfPropIsArray(prop);
+                if(prop === "is_free") this.setFreeEvent({ day: day, extraDateIdx: extraDateIdx, isDefault: isDefault });
                 if(isDefault){
                     if(isPropArray){
                         this.availability[availabilityIdx][dayType][eventType][eventIdx][prop] = value;
@@ -465,6 +466,32 @@
                     this.itemsToDelete.push(el.id)
                 })
                 this.availability[availabilityIdx]["extra"].splice(extraDateIdx, 1);
+            },
+            setFreeEvent({ day, extraDateIdx, isDefault }){
+                const availabilityIdx = this.getAvailabilityIdx({ day: day });
+                const dayType = isDefault ? "default" : "extra";
+                if(isDefault){
+                    this.availability[availabilityIdx][dayType]["is_free"] = true;
+                    this.availability[availabilityIdx][dayType]["work_hours"][0] = {
+                        start_time: null,
+                        end_time: null,
+                    }
+                    this.availability[availabilityIdx][dayType]["breaks"].forEach(el => {
+                        this.itemsToDelete.push(el.id);
+                    });
+                    this.availability[availabilityIdx][dayType]["breaks"] = [];
+                } else {
+                    this.availability[availabilityIdx]["extra"][extraDateIdx]["is_free"] = true;
+                    this.availability[availabilityIdx]["extra"][extraDateIdx]["work_hours"][0] = {
+                        start_time: null,
+                        end_time: null,
+                    };
+                    this.availability[availabilityIdx]["extra"][extraDateIdx]["breaks"].forEach(el => {
+                        this.itemsToDelete.push(el.id);
+                    });
+                    this.availability[availabilityIdx]["extra"][extraDateIdx]["breaks"] = [];
+                }
+
             },
             addExtraDay({ day }){
                 const availabilityIdx = this.getAvailabilityIdx({ day: day });

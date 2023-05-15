@@ -37,29 +37,10 @@ class AvailabilityApi(APIView):
         except Employee.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         data = request.data
-        # print(request.data)
+        for availabilityId in data:
+            availability = EmployeeAvailability.objects.get(pk = availabilityId)
+            availability.delete()
         return Response({ "status": status.HTTP_200_OK, "errors": "" })
-
-
-
-
-
-
-        # try:
-        #     avatar = EmployeeAvatar.objects.get(employee_id = employee.pk)
-        # except EmployeeAvatar.DoesNotExist:
-        #     avatar = None
-        # if avatar != None:
-        #     content = str(avatar.content).replace("/", "\\")
-        #     os.remove(os.path.join(settings.MEDIA_ROOT, content))
-        #     avatar_serializer = self.create_or_update_avatar(request, employee, avatar )
-        # else:
-        #     avatar_serializer = self.create_or_update_avatar(request, employee)
-        # if avatar_serializer.is_valid():
-        #     avatar_serializer.save()
-        #     return Response({ "status": status.HTTP_201_CREATED, "errors": "" })
-        # else:
-        #     return Response({ "status": status.HTTP_400_BAD_REQUEST, "errors": avatar_serializer.errors })
 
     def serializer_save(self, serializer):
         if serializer.is_valid():
