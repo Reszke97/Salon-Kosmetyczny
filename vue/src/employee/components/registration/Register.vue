@@ -36,6 +36,7 @@
             :step="1"
           >
             <about-owner
+              ref="aboutOwner"
               :owner-info="ownerInfo"
               :default-specializations="defaultSpecializations"
               @setOwnerInfo="setOwnerInfo"
@@ -46,13 +47,16 @@
             :step="2"
           >
             <business-activity
+              ref="aboutBusiness"
               :salon-info="salonInfo"
+              :valid="validBusiness"
               @setSalonInfo="setSalonInfo"
             />
           </v-stepper-content>
         </v-stepper-items>
         <stepper-footer
           :valid="valid"
+          @submit="submit"
         />
       </v-stepper>
     </v-col>
@@ -71,6 +75,23 @@ import StepperFooter from "./StepperFooter.vue";
 import AccountActivation from "./AccountActivation.vue";
 
 import { employeeSpecs } from "../../../utils";
+
+const stepperPositionArray = [
+  {
+    position: {
+      value: 1,
+      component: "aboutOwner",
+      form: "ownerForm"
+    }
+  },
+  {
+    position: {
+      value: 2,
+      component: "aboutBusiness",
+      form: "businessForm"
+    }
+  },
+]
 
 export default {
   components: {
@@ -93,7 +114,9 @@ export default {
       },
       salonInfo: {
         name: "",
-        post_code: "",
+        post_code_part1: "",
+        post_code_part2: "",
+        city: "",
         street: "",
         apartment_number: "",
         house_number: "",
@@ -101,6 +124,7 @@ export default {
       },
       defaultSpecializations: employeeSpecs(),
       valid: true,
+      validBusiness: true,
       stepperPosition: 1,
       stepperPositionPrev: 1,
       activationDialog: false
@@ -117,6 +141,28 @@ export default {
       this.salonInfo[prop] = val;
     },
     submit () {
+      this.valid = true;
+      const foundItemIdx = stepperPositionArray.findIndex(el => el.position.value === this.stepperPosition);
+      const firstItem = { ...stepperPositionArray[foundItemIdx].position };
+      const otherItemIdx = foundItemIdx === 0 ? 1 : 0;
+      const secondItem = { ...stepperPositionArray[otherItemIdx].position };
+      this.validBusiness = true;
+
+      this.valid = this.$refs[firstItem.component].$refs[firstItem.form].validate();
+      if(!this.valid) {
+        if(firstItem.component === "aboutBusiness") this.validBusiness = false;
+        return;
+      }
+      this.stepperPosition = otherItemIdx + 1;
+      this.valid = this.$refs[secondItem.component].$refs[secondItem.form].validate();
+      if(!this.valid) {
+        if(secondItem.component === "aboutBusiness") this.validBusiness = false;
+        return
+      }
+      alert('all good')
+
+      // ownerForm
+      // businessForm
       // const IS_VALID = this.$refs.form.validate()
       // if(IS_VALID){
       //     this.sendForm()
