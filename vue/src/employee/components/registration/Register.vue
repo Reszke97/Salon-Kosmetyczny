@@ -62,6 +62,7 @@
     </v-col>
     <account-activation
       :activation-dialog="activationDialog"
+      @closeActivateDialog="closeActivateDialog"
     />
   </v-row>
 </template>
@@ -73,8 +74,6 @@ import AboutOwner from "./AboutOwner.vue";
 import BusinessActivity from "./BusinessActivity.vue";
 import StepperFooter from "./StepperFooter.vue";
 import AccountActivation from "./AccountActivation.vue";
-
-import { employeeSpecs } from "../../../utils";
 
 const stepperPositionArray = [
   {
@@ -92,6 +91,28 @@ const stepperPositionArray = [
     }
   },
 ]
+
+const userInfo = {
+  email: "bromex3125@gmail.com",
+  userName: "Recha",
+  password1: "Marik1234",
+  password2: "Marik1234",
+  name: "Marcin",
+  lastName: "Reszke",
+  selectedSpec: "Tester",
+  isNewSpec: true,
+}
+
+const businessInfo = {
+  name: "Rechas",
+  post_code_part1: "84",
+  post_code_part2: "200",
+  city: "Wejherowo",
+  street: "asd",
+  apartment_number: "1",
+  house_number: "2",
+  contact_phone: "",
+}
 
 export default {
   components: {
@@ -121,16 +142,31 @@ export default {
         apartment_number: "",
         house_number: "",
         contact_phone: "",
+        about: "",
       },
-      defaultSpecializations: employeeSpecs(),
+      defaultSpecializations: [],
       valid: true,
       validBusiness: true,
       stepperPosition: 1,
       stepperPositionPrev: 1,
-      activationDialog: false
+      activationDialog: false,
     };
   },
+  async created(){
+    await this.getAllSpecs();
+    this.ownerInfo = {...userInfo}
+    this.salonInfo = {...businessInfo}
+  },
   methods: {
+    async getAllSpecs(){
+      await axios.get("http://127.0.0.1:8000/api/v1/employee/all-specs/")
+      .then(res => {
+        this.defaultSpecializations = res.data;
+      })
+    },
+    closeActivateDialog() {
+      this.activationDialog = false;
+    },
     toggleSpecInput() {
       this.ownerInfo.isNewSpec = !this.ownerInfo.isNewSpec
     },
@@ -140,7 +176,7 @@ export default {
     setSalonInfo({ prop, val }){
       this.salonInfo[prop] = val;
     },
-    submit () {
+    async submit () {
       this.valid = true;
       const foundItemIdx = stepperPositionArray.findIndex(el => el.position.value === this.stepperPosition);
       const firstItem = { ...stepperPositionArray[foundItemIdx].position };
@@ -159,25 +195,38 @@ export default {
         if(secondItem.component === "aboutBusiness") this.validBusiness = false;
         return
       }
-      alert('all good')
-
-      // ownerForm
-      // businessForm
-      // const IS_VALID = this.$refs.form.validate()
-      // if(IS_VALID){
-      //     this.sendForm()
-      // }
+      await this.sendForm()
+    },
+    openActivationDialog(){
+      this.activationDialog = true;
     },
     async sendForm(){
-      await axios.post('http://127.0.0.1:8000/api/v1/user/register/', {
-        'email': this.email,
-        'user_name': this.userName,
-        'password': this.password1,
-        'first_name': this.name,
-        'last_name': this.lastName,
-      })
-      .then(response => {
-        this.activation = true
+      await axios.post('http://127.0.0.1:8000/api/v1/user/register/', 
+        {
+          userForm: {
+            is_employee: true,
+            email: this.ownerInfo.email,
+            user_name: this.ownerInfo.userName,
+            password: this.ownerInfo.password1,
+            first_name: this.ownerInfo.name,
+            last_name: this.ownerInfo.lastName,
+            selected_spec: this.ownerInfo.selectedSpec,
+            is_new_spec: this.ownerInfo.isNewSpec,
+          },
+          businessForm: {
+            name: this.salonInfo.name,
+            city: this.salonInfo.city,
+            street: this.salonInfo.street,
+            apartment_number: this.salonInfo.apartment_number,
+            house_number: this.salonInfo.house_number,
+            contact_phone: this.salonInfo.contact_phone,
+            post_code: `${this.salonInfo.post_code_part1}-${this.salonInfo.post_code_part2}`,
+            about: this.salonInfo.about,
+          }
+        },
+      )
+      .then(() => {
+        this.openActivationDialog();
       })
       .catch(error => {
         alert(error)

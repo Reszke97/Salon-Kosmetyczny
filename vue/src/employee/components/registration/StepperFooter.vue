@@ -9,7 +9,6 @@
             lg="5"
         >
             <v-btn
-                :disabled="!valid"
                 color="success"
                 @click="$emit('submit')"
                 style="width:100%!important"

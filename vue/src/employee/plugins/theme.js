@@ -10,6 +10,6 @@ export default {
     warning: colors.pink.base,
     info: colors.red.base,
     success: colors.indigo.accent1,
-    'success--text': '#FF00FF'
-    // background: colors.indigo,
+    'success--text': '#FF00FF',
+    background: colors.indigo,
 }
