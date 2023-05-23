@@ -106,9 +106,10 @@ class BusinessActivity(models.Model):
     street = models.CharField(blank=False, max_length=45)
     apartment_number = models.CharField(blank=False, max_length=45)
     house_number = models.CharField(blank=False, max_length=45)
-    contact_phone = models.CharField(blank=False, max_length=45)
+    contact_phone = models.CharField(blank=True, max_length=45)
     city = models.CharField(blank=False, max_length=200)
     about = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

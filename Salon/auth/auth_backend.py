@@ -107,23 +107,16 @@ def send_activation_email(user, request):
     token.set_exp(lifetime=timedelta(minutes=10))
     subject = 'Aktywuj swoje konto'
     email_body = render_to_string('authentication/activate.html', {
-        'user': user.user_name,
+        'user': user["user_name"],
         'domain': current_site,
-        'uid': urlsafe_base64_encode(smart_bytes(user.pk)),
+        'uid': urlsafe_base64_encode(smart_bytes(user["pk"])),
         'token': token
     })
     from_email = settings.EMAIL_FROM_USER
 
-    email = EmailMultiAlternatives( subject, email_body, from_email, to=[user.email] )
+    email = EmailMultiAlternatives( subject, email_body, from_email, to=[user["email"]] )
     email.mixed_subtype = 'related'
     email.attach_alternative(email_body, "text/html")
-
-    # email = EmailMessage(
-    #     subject=email_subject, 
-    #     body=email_body, 
-        
-        
-    # )
     EmailThread(email).start()
     # email.send()
 
@@ -178,17 +171,76 @@ def activate_user(request, uidb64, token):
 class CustomUserCreate(APIView):
     permission_classes = [AllowAny]
 
-    def post(self, request, format='json'):
-        formatted_email = request.data["email"].lower()
-        request.data["email"] = formatted_email
-        serializer = CustomUserSerializer(data=request.data)
+    def create_employee(self, business, user):
+        serializer = EmployeeSerializer(data={
+            "is_owner": True,
+            "user": user["pk"],
+            "business_activity": business.pk,
+            "spec": user["selected_spec"]
+        })
         if serializer.is_valid():
-            user = serializer.save()
+            employee = serializer.save()
+            if employee:
+                return Response(data = employee, status = status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+
+    def create_business(self, businessForm):
+        serializer = BusinessActivitySerializer(data=businessForm)
+        if serializer.is_valid():
+            business = serializer.save()
+            if business:
+                return Response(data = business, status = status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def create_user(self, request):
+        formatted_email = request.data["userForm"]["email"].lower()
+        request.data["userForm"]["email"] = formatted_email
+        serializer = CustomUserSerializer(data=request.data["userForm"])
+        if serializer.is_valid():
+            _user = serializer.save()
+            user = {
+                "pk": _user.pk,
+                **request.data["userForm"]
+            }
             if user:
                 send_activation_email(user, request)
                 messages.add_message(request, messages.SUCCESS, 'Activation link was sent to given email.')
-                return Response(status=status.HTTP_201_CREATED)
+                return Response(data = user, status = status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def create_new_spec(self, spec_name):
+        serializer = EmployeeSpecializationSerializer(data={ "name": spec_name })
+        if serializer.is_valid():
+            new_spec = serializer.save()
+            if new_spec:
+                return Response(data = new_spec, status = status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+
+    def post(self, request, format='json'):
+        user_res = self.create_user(request)
+        if user_res.status_code == status.HTTP_201_CREATED:
+            if request.data["userForm"]["is_employee"]:
+                business_res = self.create_business(request.data["businessForm"])
+                if business_res.status_code == status.HTTP_201_CREATED:
+                    if user_res.data["is_new_spec"] == True:
+                        new_spec_res = self.create_new_spec(user_res.data["selected_spec"])
+                        if new_spec_res.status_code == status.HTTP_400_BAD_REQUEST:
+                            return Response(new_spec_res.exception, status=new_spec_res.status_code)
+                        else:
+                            user_res.data = {
+                                **user_res.data,
+                                "selected_spec": new_spec_res.data.pk
+                            }
+                    employee_res = self.create_employee(business_res.data, user_res.data)
+                    return Response(status=employee_res.status_code)
+                else:
+                    return Response(business_res.exception, status=business_res.status_code)
+            else:
+                return Response(status=user_res.status_code)
+        else:
+            return Response(user_res.exception, status=user_res.status_code)
+    
+
 
 class CreateEmployee(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
