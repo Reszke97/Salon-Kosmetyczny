@@ -26,6 +26,7 @@ urlpatterns = [
     path('api/v1/client/employee-preview/', ServiceApiClient.as_view(), name = 'services_clients'),
 
     path('api/v1/user/register/', CustomUserCreate.as_view(), name = "register"),
+    path('api/v1/user/check-for-unique-names/', CheckForUniqueNames.as_view(), name = "check_for_unique_names"),
     path('api/v1/user/passwordchange/', ChangePasswordView.as_view(), name = "changepass"),
     path('api/v1/user/activateuser/<uidb64>/<token>/', auth_backend.activate_user, name = 'activate_user'),
     path('api/v1/user/logout/', BlacklistTokenUpdateView.as_view(), name = 'logout'),

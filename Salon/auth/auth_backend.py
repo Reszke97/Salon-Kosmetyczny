@@ -168,6 +168,36 @@ def activate_user(request, uidb64, token):
     )
     # return render(request, 'authentication/activatefailed.html', {"user":user})
 
+class CheckForUniqueNames(APIView):
+    permission_classes = [ AllowAny ]
+    def check_unique_username(self, username):
+        is_unique = True
+        try:
+            User.objects.get( user_name = username )
+            is_unique = False
+        except User.DoesNotExist:
+            pass
+        return is_unique
+    
+    def check_unique_business_name( self, name ):
+        is_unique = True
+        try:
+            BusinessActivity.objects.get( name = name )
+            is_unique = False
+        except BusinessActivity.DoesNotExist:
+            pass
+        return is_unique
+    
+    def get(self, request):
+        res = {
+            "unique_username": True,
+            "unique_business_name": True,
+        }
+        res["unique_username"] = self.check_unique_username(request.query_params.get("username"))
+        res["unique_business_name"] = self.check_unique_business_name(request.query_params.get("business_name"))
+        return Response( data = res, status = status.HTTP_200_OK )
+        
+
 class CustomUserCreate(APIView):
     permission_classes = [AllowAny]
 
@@ -215,6 +245,160 @@ class CustomUserCreate(APIView):
             if new_spec:
                 return Response(data = new_spec, status = status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+    
+    def create_default_employee_availability_config(self, employee):
+        serializer = AvailabilityConfigSerializer( data = {
+            "max_weeks_for_registration": 2,
+            "min_time_for_registration": "24h",
+            "employee": employee.pk
+        })
+        if serializer.is_valid():
+            config = serializer.save()
+            if config:
+                return Response(data = config, status = status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def create_default_employee_availability(self, config):
+        serializers = {
+            "serializer_1_D": AvailabilitySerializer(data={
+                "date": None,
+                "is_free": False,
+                "is_holiday": False,
+                "is_default": True,
+                "weekday": "monday",
+                "start_time": "08:00",
+                "end_time": "16:00",
+                "is_break": False,
+                "availability_config_id": config.pk,
+            }),
+            "serializer_1_B": AvailabilitySerializer(data={
+                "date": None,
+                "is_free": False,
+                "is_holiday": False,
+                "is_default": True,
+                "weekday": "monday",
+                "start_time": "10:00",
+                "end_time": "10:45",
+                "is_break": True,
+                "availability_config_id": config.pk,
+            }),
+            "serializer_2_D": AvailabilitySerializer(data={
+                "date": None,
+                "is_free": False,
+                "is_holiday": False,
+                "is_default": True,
+                "weekday": "tuesday",
+                "start_time": "08:00",
+                "end_time": "16:00",
+                "is_break": False,
+                "availability_config_id": config.pk,
+            }),
+            "serializer_2_B": AvailabilitySerializer(data={
+                "date": None,
+                "is_free": False,
+                "is_holiday": False,
+                "is_default": True,
+                "weekday": "tuesday",
+                "start_time": "10:00",
+                "end_time": "10:45",
+                "is_break": True,
+                "availability_config_id": config.pk,
+            }),
+            "serializer_3_D": AvailabilitySerializer(data={
+                "date": None,
+                "is_free": False,
+                "is_holiday": False,
+                "is_default": True,
+                "weekday": "wednesday",
+                "start_time": "08:00",
+                "end_time": "16:00",
+                "is_break": False,
+                "availability_config_id": config.pk,
+            }),
+            "serializer_3_B": AvailabilitySerializer(data={
+                "date": None,
+                "is_free": False,
+                "is_holiday": False,
+                "is_default": True,
+                "weekday": "wednesday",
+                "start_time": "10:00",
+                "end_time": "10:45",
+                "is_break": True,
+                "availability_config_id": config.pk,
+            }),
+            "serializer_4_D": AvailabilitySerializer(data={
+                "date": None,
+                "is_free": False,
+                "is_holiday": False,
+                "is_default": True,
+                "weekday": "thursday",
+                "start_time": "08:00",
+                "end_time": "16:00",
+                "is_break": False,
+                "availability_config_id": config.pk,
+            }),
+            "serializer_4_B": AvailabilitySerializer(data={
+                "date": None,
+                "is_free": False,
+                "is_holiday": False,
+                "is_default": True,
+                "weekday": "thursday",
+                "start_time": "10:00",
+                "end_time": "10:45",
+                "is_break": True,
+                "availability_config_id": config.pk,
+            }),
+            "serializer_5_D": AvailabilitySerializer(data={
+                "date": None,
+                "is_free": False,
+                "is_holiday": False,
+                "is_default": True,
+                "weekday": "friday",
+                "start_time": "08:00",
+                "end_time": "16:00",
+                "is_break": False,
+                "availability_config_id": config.pk,
+            }),
+            "serializer_5_B": AvailabilitySerializer(data={
+                "date": None,
+                "is_free": False,
+                "is_holiday": False,
+                "is_default": True,
+                "weekday": "friday",
+                "start_time": "10:00",
+                "end_time": "10:45",
+                "is_break": True,
+                "availability_config_id": config.pk,
+            }),
+            "serializer_6_D": AvailabilitySerializer(data={
+                "date": None,
+                "is_free": True,
+                "is_holiday": False,
+                "is_default": True,
+                "weekday": "saturday",
+                "start_time": None,
+                "end_time": None,
+                "is_break": False,
+                "availability_config_id": config.pk,
+            }),
+            "serializer_7_D": AvailabilitySerializer(data={
+                "date": None,
+                "is_free": True,
+                "is_holiday": False,
+                "is_default": True,
+                "weekday": "sunday",
+                "start_time": None,
+                "end_time": None,
+                "is_break": False,
+                "availability_config_id": config.pk,
+            })
+        }
+        for key in serializers:
+            if serializers[key].is_valid():
+                serializers[key].save()
+            
+
+            
 
     def post(self, request, format='json'):
         user_res = self.create_user(request)
@@ -232,7 +416,15 @@ class CustomUserCreate(APIView):
                                 "selected_spec": new_spec_res.data.pk
                             }
                     employee_res = self.create_employee(business_res.data, user_res.data)
-                    return Response(status=employee_res.status_code)
+                    if(employee_res.status_code == status.HTTP_201_CREATED):
+                        config_res = self.create_default_employee_availability_config(employee_res.data)
+                        if config_res.status_code == status.HTTP_201_CREATED:
+                            self.create_default_employee_availability(config_res.data)
+                            return Response(status=status.HTTP_201_CREATED)
+                        else:
+                            return Response(config_res.exception, status=config_res.status_code) 
+                    else:
+                        return Response(employee_res.exception, status=employee_res.status_code)
                 else:
                     return Response(business_res.exception, status=business_res.status_code)
             else:

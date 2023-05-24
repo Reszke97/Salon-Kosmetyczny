@@ -317,6 +317,15 @@ class AvailabilitySerializer(serializers.ModelSerializer):
             "created_at"
         )
 
+class AvailabilityConfigSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmployeeAvailabilityConfiguration
+        fields = (
+            "max_weeks_for_registration",
+            "min_time_for_registration",
+            "employee"
+        )
+
 # class EmployeeServices(serializers.ModelSerializer):
 #     service = ServiceSerializer()
 #     class Meta:

@@ -1,78 +1,72 @@
 <template>
-    <div
-        class="w40"
-    >
-        <v-card
-            elevation="2"
-            class = "message"
-            color = "#FFFEE9"
-            v-if="route"
+    <v-row justify="center">
+        <v-col
+            class="bg-color"
+            cols="12"
+            sm="12"
+            md="6"
+            lg="3"
         >
-            Twoje konto zostało aktywowane. Możesz przejść do logowania.
-        </v-card>
-        <v-form
-            ref="form"
-            v-model="valid"
-            lazy-validation
-            class = "mt1 w100"
-        >
-            <v-text-field
-                v-model="user_name"
-                :rules="[]"
-                label="E-mail"
-                required
-            ></v-text-field>
-
-            <v-text-field
-                v-model="password1"
-                :rules="password1Rules"
-                label="Hasło"
-                required
-                type="password"
-            ></v-text-field>
-
-            <div
-                class="flexible"
+            <v-card
+                class = "message"
+                color = "#FFFEE9"
+                v-if="route"
             >
-                <div
-                    class="buttonContainer"
-                >
-                    <p>Nie pamiętasz hasła?</p>
-                </div>
-            </div>
-            <div
-                class="flexible"
+                Twoje konto zostało aktywowane. Możesz przejść do logowania.
+            </v-card>
+            <v-form
+                ref="form"
+                v-model="valid"
+                lazy-validation
+                class = "mt1"
             >
+                <v-text-field
+                    dark
+                    v-model="user_name"
+                    label="E-mail"
+                ></v-text-field>
+
+                <v-text-field
+                    dark
+                    v-model="password1"
+                    label="Hasło"
+                    type="password"
+                ></v-text-field>
+
                 <div
-                    class="buttonContainer"
+                    class="flexible"
                 >
-                    <v-btn
-                        class="success"
-                        @click="submit"
+                    <div
+                        style="color:white"
+                        class="buttonContainer"
                     >
-                        Zaloguj
-                    </v-btn>
+                        <p>Nie pamiętasz hasła?</p>
+                    </div>
                 </div>
-            </div>
-        </v-form>
-    </div>
+                <div
+                    class="flexible"
+                >
+                    <div
+                        class="buttonContainer"
+                    >
+                        <v-btn
+                            class="success"
+                            @click="submit"
+                        >
+                            Zaloguj
+                        </v-btn>
+                    </div>
+                </div>
+            </v-form>
+        </v-col>
+    </v-row>
 </template>
 <script>
-    import { AUTH_API } from '../../authorization/AuthAPI'
     import axios from 'axios'
     export default {
         data: () => ({
             valid: true,
             route: null,
-            user_name: '',
-            user_nameRules: [
-                v => !!v || 'E-mail jest wymagany',
-                v => /.+@.+\..+/.test(v) || 'E-mail musi być poprawny przykład:\n example@mail.com',
-            ],
-            password1:'',
-            password1Rules: [
-                v => !!v || 'Hasło jest wymagane',
-            ],
         }),
         
         created(){
@@ -130,7 +124,6 @@
         margin-top: 1rem;
     }
     .message{
-        margin-top: 2rem;
         text-align: center;
         width: 40%;
         padding: 2% 0;

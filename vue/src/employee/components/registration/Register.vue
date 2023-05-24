@@ -176,6 +176,24 @@ export default {
     setSalonInfo({ prop, val }){
       this.salonInfo[prop] = val;
     },
+    async checkValidNames(){
+      await axios.get(
+        `http://127.0.0.1:8000/api/v1/user/check-for-unique-names/?username=${
+          this.ownerInfo.userName
+        }&business_name=${this.salonInfo.name}`
+      )
+      .then( res => {
+        const { unique_username, unique_business_name } = res.data;
+        if(!unique_username || !unique_business_name) {
+          this.valid = false;
+          const notUniqueUsernameMessage = "Podana nazwa użytkownika jest już zajęta!\n"
+          const notUniqueBusinessNameMessage = "Podana nazwa działalności jest już zajęta!\n"
+          let finalMessage = !unique_username ? notUniqueUsernameMessage : "";
+          finalMessage += !unique_business_name ? notUniqueBusinessNameMessage : "";
+          alert(finalMessage);
+        }
+      })
+    },
     async submit () {
       this.valid = true;
       const foundItemIdx = stepperPositionArray.findIndex(el => el.position.value === this.stepperPosition);
@@ -193,9 +211,10 @@ export default {
       this.valid = this.$refs[secondItem.component].$refs[secondItem.form].validate();
       if(!this.valid) {
         if(secondItem.component === "aboutBusiness") this.validBusiness = false;
-        return
+        return;
       }
-      await this.sendForm()
+      await this.checkValidNames();
+      if(this.valid) await this.sendForm();
     },
     openActivationDialog(){
       this.activationDialog = true;
