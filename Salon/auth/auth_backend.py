@@ -563,7 +563,12 @@ def check_reset_token(request, uidb64, token):
         user = None
     
     if user and PasswordResetTokenGenerator().check_token(user, token):
-        return redirect('http://localhost:8080/passwordreset?uidb64='+uidb64+'&token='+token)
+        url = 'http://localhost:8080/employee/passwordreset'
+        try:
+            Employee.objects.get(user_id = user.pk)
+        except Employee.DoesNotExist:
+            url = 'http://localhost:8080/client/passwordreset'
+        return redirect(url + '?uidb64=' + uidb64 + '&token=' + token)
 
     return HttpResponse(
         """<html 

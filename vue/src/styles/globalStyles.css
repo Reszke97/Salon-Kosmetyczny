@@ -32,6 +32,10 @@ input[type="time"]::-webkit-calendar-picker-indicator{
     filter: invert(100%);
 }
 
+.font-bold{
+    font-weight: bold!important;
+}
+
 
 .d-flex{
     display: flex!important;

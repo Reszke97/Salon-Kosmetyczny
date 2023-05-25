@@ -1,42 +1,71 @@
 <template>
-    <div>
-        <v-form
-            ref="form"
-            v-model="valid"
-            lazy-validation
-            class = "mt1"
+    <v-row justify="center">
+        <v-col
+            class="bg-color"
+            cols="12"
+            sm="12"
+            md="6"
+            lg="3"
         >
-            <v-text-field
-                v-model="newPassword"
-                :rules="newPasswordRules"
-                label="Nowe hasło"
-                required
-                class="w40"
-                type="password"
-            ></v-text-field>
-            <v-text-field
-                v-model="repeatPassword"
-                :rules="[...repeatPasswordRules, (repeatPassword == newPassword) || 'Podane hasła się nie zgadzają']"
-                label="Powtórz nowe hasło"
-                required
-                class="w40"
-                type="password"
-            ></v-text-field>
-
-            <div
-                class="w40"
+            <v-form
+                ref="form"
+                v-model="valid"
+                lazy-validation
             >
-                <v-btn
-                    color="success"
-                    class="mr-4"
-                    @click="submit"
-                >
-                    Zmień
-                </v-btn>
+                <h3 style="color:white"> Zmiana hasła </h3>
+                <v-text-field
+                    v-model="newPassword"
+                    :rules="newPasswordRules"
+                    label="Nowe hasło"
+                    required
+                    dark
+                    type="password"
+                ></v-text-field>
+                <v-text-field
+                    v-model="repeatPassword"
+                    :rules="[...repeatPasswordRules, (repeatPassword == newPassword) || 'Podane hasła się nie zgadzają']"
+                    label="Powtórz nowe hasło"
+                    required
+                    dark
+                    type="password"
+                ></v-text-field>
 
-            </div>
-        </v-form>
-    </div>
+                <div>
+                    <v-btn
+                        color="success"
+                        class="mr-4"
+                        @click="submit"
+                    >
+                        Zmień hasło
+                    </v-btn>
+
+                </div>
+            </v-form>
+        </v-col>
+        <v-dialog
+            :value="showDialog"
+            width="500"
+        >
+            <v-card class="indigo">
+                <v-card-title class="text-h5 grey lighten-2">
+                    Twoje hasło zostało zmienione.
+                </v-card-title>
+
+                <v-divider></v-divider>
+
+                <v-card-actions class="indigo">
+                    <v-btn
+                        class="indigo"
+                        dark
+                        text
+                        @click="redirectToLogin()"
+                    >
+                        Zamknij
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+    </v-row>
 </template>
 <script>
     import axios from 'axios'
@@ -46,11 +75,11 @@
             token: null,
             valid: true,
             route: null,
-            email:'',
+            email: "",
+            showDialog: false,
             newPassword: null,
             newPasswordRules: [
                 v => !!v || 'Hasło jest wymagane',
-                // v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
             ],
             repeatPassword: null,
             repeatPasswordRules: [
@@ -70,6 +99,12 @@
                     this.passwordChange()
                 }
             },
+            openDialog(){
+                this.showDialog = true;
+            },
+            redirectToLogin(){
+                window.location.assign("/employee/login");
+            },
             passwordChange(){
                 console.log(this.newPassword)
                 axios.patch('http://127.0.0.1:8000/api/v1/user/passwordresetcomplete/', {
@@ -77,13 +112,8 @@
                     token: this.token, 
                     uidb64: this.uidb64
                 })
-                .then(response => {
-                    // alert('twoje hasło zostało zmienione')
-                    console.log(response)
-                    // if(response){
-                    //     console.log(response)
-                    //     alert('twoje hasło zostało zmienione')
-                    // }
+                .then(() => {
+                    this.openDialog();
                 })
                 .catch(error =>{
                     console.log(error)

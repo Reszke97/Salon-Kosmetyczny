@@ -185,7 +185,7 @@ router.beforeEach( async (to, from, next) => {
         next();
       }
     } else {
-      if(to.path === "/login" || to.path == "/register"){
+      if(["/passwordchange", "/login", "/register", "/passwordreset", "/passwordresetemailsend"].includes(to.path)){
         next();
       } else {
         window.location.assign("/employee/login");

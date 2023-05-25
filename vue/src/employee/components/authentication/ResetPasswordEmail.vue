@@ -1,32 +1,48 @@
 <template>
-    <div>
-        <v-form
-            ref="form"
-            v-model="valid"
-            lazy-validation
-            class = "mt1"
+    <v-row justify="center">
+        <v-col
+            class="bg-color"
+            cols="12"
+            sm="12"
+            md="6"
+            lg="3"
         >
-            <v-text-field
-                v-model="email"
-                label="Email"
-                required
-                class="w40"
-            ></v-text-field>
-
-            <div
-                class="w40"
+            <v-form
+                ref="form"
+                v-model="valid"
+                lazy-validation
+                class = "mt1"
             >
-                <v-btn
-                    color="success"
-                    class="mr-4"
-                    @click="submit"
+                <v-card
+                    v-if="showMessage"
+                    class = "message mb-2 px-2"
+                    color = "#FFFEE9"
                 >
-                    Wyślij
-                </v-btn>
+                    Instrukcję do zmiany hasła zostały przesłane, na podany adres e-mail.
+                </v-card>
+                <h3 style="color:white">
+                    Resetowanie hasła
+                </h3>
+                <v-text-field
+                    dark
+                    v-model="email"
+                    label="Email"
+                    required
+                ></v-text-field>
 
-            </div>
-        </v-form>
-    </div>
+                <div>
+                    <v-btn
+                        color="success"
+                        class="mr-4"
+                        @click="submit"
+                    >
+                        Wyślij
+                    </v-btn>
+
+                </div>
+            </v-form>
+        </v-col>
+    </v-row>
 </template>
 <script>
     import { AUTH_API } from '../../authorization/AuthAPI'
@@ -35,31 +51,21 @@
         data: () => ({
             valid: true,
             route: null,
-            email:'',
-            newPasswordRules: [
-                v => !!v || 'Hasło jest wymagane',
-                // v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
-            ],
-            oldPassword:'',
-            oldPasswordRules: [
-                v => !!v || 'Hasło jest wymagane',
-                // v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
-            ],
+            email: "",
+            showMessage: false,
         }),
         
         created(){
             this.route = this.$route.params.activated
-            console.log(this.route = this.$route.params.activated)
         },
         methods: {
             submit () {
-                // const IS_VALID = this.$refs.form.validate()
-                // if(IS_VALID){
-                //     this.passwordChange()
-                // }
                 console.log(this.email)
-                axios.post('http://127.0.0.1:8000/api/user/requestpasswordreset/',{
+                axios.post('http://127.0.0.1:8000/api/v1/user/requestpasswordreset/',{
                     email: this.email
+                })
+                .then(() => {
+                    this.showMessage = true;
                 })
             },
             async passwordChange(){
@@ -69,18 +75,8 @@
                     old_password: this.oldPassword,
                     new_password: this.newPassword
                 })
-                .then(response => {
-                    alert('twoje hasło zostało zmienione')
-                    // if(response){
-                    //     console.log(response)
-                    //     alert('twoje hasło zostało zmienione')
-                    // }
-                })
-                .catch(error =>{
-                    if(error.response.status === 400){
-                        alert('Stare hasło jest błędne.')
-                    }
-                })
+                .then(() => {})
+                .catch(error =>{})
             }
         },
     }
@@ -99,9 +95,7 @@
         margin-top: 1rem;
     }
     .message{
-        margin-top: 2rem;
-        text-align: center;
-        width: 40%;
+        text-align: justify;
         padding: 2% 0;
         margin-left: auto;
         margin-right: auto;

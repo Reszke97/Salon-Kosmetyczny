@@ -37,10 +37,11 @@
                     class="flexible"
                 >
                     <div
-                        style="color:white"
-                        class="buttonContainer"
+                        style="color:white;"
+                        class="flex; flex-row"
                     >
-                        <p>Nie pamiętasz hasła?</p>
+                        <p>Nie pamiętasz hasła? <a class="font-bold" href="http://localhost:8080/employee/passwordresetemailsend">Zresetuj hasło</a></p>
+                        <p>Nie masz konta? <a class="font-bold" href="http://localhost:8080/employee/register">Zarejestruj się</a></p>
                     </div>
                 </div>
                 <div

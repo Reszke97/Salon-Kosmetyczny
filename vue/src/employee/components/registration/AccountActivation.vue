@@ -19,13 +19,6 @@
                 >
                     Zamknij
                 </v-btn>
-                <v-btn
-                    class="indigo"
-                    dark
-                    text
-                >
-                    Przejdź do logowania
-                </v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>

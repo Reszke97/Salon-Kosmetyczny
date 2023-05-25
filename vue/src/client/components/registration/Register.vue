@@ -36,19 +36,6 @@
         </v-stepper-items>
         <v-row style="padding: 0px 24px 16px">
           <v-col
-            cols="12"
-            style="padding-top: 0px!important;"
-          >
-            <v-checkbox
-              v-model="checkbox"
-              :rules="checkboxRules"
-              value="1"
-              label="Zgadzam się na przetwarzanie danych"
-              type="checkbox"
-              required
-            ></v-checkbox>
-          </v-col>
-          <v-col
             cols="6"
             sm="4"
             style="padding-top: 0px!important"
@@ -59,7 +46,7 @@
               @click="submit"
               style="width:100%!important"
             >
-              Validate
+              Zapisz
             </v-btn>
           </v-col>
           <v-col
@@ -67,13 +54,6 @@
             sm="4"
             style="padding-top: 0px!important"
           >
-            <v-btn
-              color="error"
-              style="width:100%!important"
-              @click="reset"
-            >
-              Reset Form
-            </v-btn>
           </v-col>
         </v-row>
       </v-stepper>
@@ -132,11 +112,6 @@ export default {
         valid: true,
       },
       activation: false,
-
-      checkbox: false,
-      checkboxRules : [
-        v => !!v || 'Aby kontynuować konieczna jest zgoda!'
-      ],
     };
   },
 
@@ -163,13 +138,18 @@ export default {
       this.inputData[key] = value;
     },
     sendForm(){
-      axios.post('http://127.0.0.1:8000/api/v1/user/register/', {
-        'email': this.inputData.email,
-        'user_name': this.inputData.userName,
-        'password': this.inputData.password1,
-        'first_name': this.inputData.name,
-        'last_name': this.inputData.lastName,
-      })
+      axios.post('http://127.0.0.1:8000/api/v1/user/register/', 
+        {
+          userForm: {
+            is_employee: false,
+            email: this.inputData.email,
+            user_name: this.inputData.userName,
+            password: this.inputData.password1,
+            first_name: this.inputData.name,
+            last_name: this.inputData.lastName,
+          }
+        },
+      )
       .then(() => {
         this.activation = true
       })

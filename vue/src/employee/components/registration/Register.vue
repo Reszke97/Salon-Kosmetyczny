@@ -93,8 +93,8 @@ const stepperPositionArray = [
 ]
 
 const userInfo = {
-  email: "bromex3125@gmail.com",
-  userName: "Recha",
+  email: "marcinreszke2@gmail.com",
+  userName: "Recha2",
   password1: "Marik1234",
   password2: "Marik1234",
   name: "Marcin",
@@ -104,7 +104,7 @@ const userInfo = {
 }
 
 const businessInfo = {
-  name: "Rechas",
+  name: "Rechas2",
   post_code_part1: "84",
   post_code_part2: "200",
   city: "Wejherowo",
@@ -166,6 +166,7 @@ export default {
     },
     closeActivateDialog() {
       this.activationDialog = false;
+      window.location.assign("/employee/login");
     },
     toggleSpecInput() {
       this.ownerInfo.isNewSpec = !this.ownerInfo.isNewSpec
