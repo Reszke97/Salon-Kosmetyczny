@@ -256,6 +256,7 @@ class BusinessActivitySerializer(serializers.ModelSerializer):
             "house_number",
             "contact_phone",
             "about",
+            "is_active",
         )
 
 class EmployeeSpecializationSerializer(serializers.ModelSerializer):

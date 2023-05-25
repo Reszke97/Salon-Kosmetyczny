@@ -27,7 +27,8 @@ class BusinessActivityApi(APIView):
             "apartment_number": None, 
             "house_number": None,
             "contact_phone": "",
-            "city": ""
+            "city": "",
+            "is_active": False,
         }
 
     def map_request_data(self, data):
@@ -75,21 +76,29 @@ class BusinessActivityApi(APIView):
     def put(self, request):
         employee = Employee.objects.get(user = request.user.pk)
         self.map_request_data(request.data)
-        try:
-            img = BusinessActivityImage.objects.get(business_activity_id = employee.business_activity_id)
-        except BusinessActivityImage.DoesNotExist:
-            img = None
-        if img != None:
-            content = str(img.content).replace("/", "\\")
-            os.remove(os.path.join(settings.MEDIA_ROOT, content))
-            img_serializer = self.create_or_update_img(request, employee, img )
+        if len(request.FILES.getlist('files')) != 0:
+            try:
+                img = BusinessActivityImage.objects.get(business_activity_id = employee.business_activity_id)
+            except BusinessActivityImage.DoesNotExist:
+                img = None
+            if img != None:
+                content = str(img.content).replace("/", "\\")
+                os.remove(os.path.join(settings.MEDIA_ROOT, content))
+                img_serializer = self.create_or_update_img(request, employee, img )
+            else:
+                img_serializer = self.create_or_update_img(request, employee)
+            if img_serializer.is_valid() and request.FILES.getlist('files') != None:
+                img_serializer.save()
+                return Response({ "status": status.HTTP_201_CREATED, "errors": "" })
+            else:
+                return Response(img_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+        b_activity = BusinessActivity.objects.get(pk=employee.business_activity_id)
+        serializer = BusinessActivitySerializer(b_activity, data=self.b_activity)
+        if serializer.is_valid():
+            serializer.save()
         else:
-            img_serializer = self.create_or_update_img(request, employee)
-        if img_serializer.is_valid():
-            img_serializer.save()
-            return Response({ "status": status.HTTP_201_CREATED, "errors": "" })
-        else:
-            return Response(img_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_200_OK)
 
 class BusinessActivityEmployeesApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]

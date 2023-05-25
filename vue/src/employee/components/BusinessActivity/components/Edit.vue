@@ -23,6 +23,14 @@
                         :src="businessActivity.image"
                         style="width:100%;height: 100%"
                     />
+                    <v-checkbox
+                        dark
+                        v-model="businessActivity.is_active"
+                        label="Działalność aktywna"
+                        type="checkbox"
+                    >
+                        
+                    </v-checkbox>
                     <v-file-input
                         v-model="uploadImg"
                         accept=".png, .jpg"
@@ -239,6 +247,7 @@
                             name: this.businessActivity.name,
                             post_code: this.businessActivity.post_code,
                             street: this.businessActivity.street,
+                            is_active: this.businessActivity.is_active,
                         },
                         images: this.uploadImg,
                         arrayOfImages: false,
