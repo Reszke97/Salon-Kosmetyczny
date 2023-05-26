@@ -1,20 +1,59 @@
 <!DOCTYPE html>
 <html>
-    <head>
-    </head>
-    <body>
-        <div>
-            <h1 style="background-color: blue;">
-                Hi {{user}}
+    <body style="font-family: Roboto;">
+        <div 
+            style="
+                background-color: rgb(63, 81, 181); 
+                min-height: 80px;
+                display: flex;
+                justify-content: center;
+                width: 100%;
+                color: white!important;
+                padding-right: 8px;
+                padding-left: 8px;
+            "
+        >
+            <h1>
+                Salon Kosmetyczny App
             </h1>
-            <p>
-                Please use the link below to verify your account.
+        </div>
+        <div style="background-color: #0844a4; color: white!important; padding: 8px; font-size: 18px;">
+            <div 
+                style="
+                    width: 100%;
+                    color: white!important;
+                "
+            >
+                <span style="color: white!important;"> Witaj <b>{{ user }}!</b> </span>
+            </div>
+            <div 
+                style="
+                    width: 100%;
+                    color: white!important;
+                "
+            >
+                <span style="color: white!important;">Kliknij przycisk poniżej aby aktywować swoje konto.</span>
+            </div>
+            <div style="margin-top: 8px; width: 100%;">
                 <a
                     href="http://{{domain}}{% url 'activate_user' uidb64=uid token=token %}"
                 >
-                    klik
+                    <button
+                        style="
+                            background-color: rgb(140, 158, 255);
+                            color: white; 
+                            height: 36px;
+                            min-width: 64px;
+                            padding: 0 16px;
+                            border: none!important;
+                            cursor: pointer;
+                            font-weight: bold;
+                        "
+                    >
+                        Aktywuj moje konto
+                    </button>
                 </a>
-            </p>
+            </div>
         </div>
     </body>
 </html>

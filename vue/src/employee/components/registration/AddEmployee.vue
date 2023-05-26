@@ -35,6 +35,10 @@
 
                     <v-autocomplete
                         v-if="!employeeInfo.isNewSpec"
+                        :required="!employeeInfo.isNewSpec"
+                        :rules="[
+                            (employeeInfo.employee_spec && !employeeInfo.isNewSpec) || 'Pole wymagane'
+                        ]"
                         v-model="employeeInfo.employee_spec"
                         :items="defaultSpecializations"
                         item-text="name"
@@ -58,6 +62,10 @@
                     </v-autocomplete>
                     <v-text-field
                         v-if="employeeInfo.isNewSpec"
+                        :required="employeeInfo.isNewSpec"
+                        :rules="[
+                            (employeeInfo.employee_spec && employeeInfo.isNewSpec) || 'Pole wymagane'
+                        ]"
                         v-model="employeeInfo.employee_spec"
                         label="Specjalność"
                         placeholder="Podaj specjalność"
@@ -99,7 +107,6 @@
                             sm="4"
                         >
                             <v-btn
-                                :disabled="!valid"
                                 color="success"
                                 @click="submit"
                                 style="width:100%!important"
@@ -116,6 +123,7 @@
 
 
 <script>
+    import axios from "axios";
     import { AUTH_API } from "../../authorization/AuthAPI";
     
     export default {
@@ -177,7 +185,27 @@
                    await this.sendForm()
                 }
             },
+            async checkValidNames(){
+                await axios.get(
+                    `http://127.0.0.1:8000/api/v1/user/check-for-unique-names/?username=${
+                        this.employeeInfo.userName
+                    }&business_name=${""}`
+                )
+                .then( res => {
+                    const { unique_username } = res.data;
+                    if(!unique_username) {
+                        this.valid = false;
+                        const notUniqueUsernameMessage = "Podana nazwa użytkownika jest już zajęta!\n"
+                        const finalMessage = notUniqueUsernameMessage;
+                        alert(finalMessage);
+                    }
+                })
+            },
             async sendForm(){
+                this.valid = this.$refs.form.validate();
+                if(!this.valid) return;
+                await this.checkValidNames();
+                if(!this.valid) return;
                 const API = await AUTH_API();
                 await API.post('api/v1/employee/create-employee/', this.employeeInfo)
                 .then(response => {

@@ -68,6 +68,8 @@
         data: () => ({
             valid: true,
             route: null,
+            user_name: "",
+            password1: "",
         }),
         
         created(){

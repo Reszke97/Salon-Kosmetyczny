@@ -16,24 +16,25 @@
                     @input="(event) => setInput(event, 'valid')"
                 >
                     <v-text-field
+                        dark
                         :value="inputData.name"
                         :rules="nameRules"
                         label="Imię"
-                        :counter="50"
                         required
                         @input="(event) => setInput(event, 'name')"
                     ></v-text-field>
 
                     <v-text-field
+                        dark
                         :value="inputData.lastName"
                         :rules="lastNameRules"
                         label="Nazwisko"
-                        :counter="50"
                         required
                         @input="(event) => setInput(event, 'lastName')"
                     ></v-text-field>
 
                     <v-text-field
+                        dark
                         :value="inputData.email"
                         :rules="emailRules"
                         label="E-mail"
@@ -42,17 +43,21 @@
                     ></v-text-field>
 
                     <v-text-field
+                        dark
                         :value="inputData.userName"
                         :rules="userNameRules"
-                        :counter="10"
                         label="Nazwa użytkownika"
                         required
                         @input="(event) => setInput(event, 'userName')"
                     ></v-text-field>
 
                     <v-text-field
+                        dark
                         :value="inputData.password1"
-                        :rules="password1Rules"
+                        :rules="[
+                            ...password1Rules,
+                            inputData.password1 === inputData.password2 || 'Podane hasła się nie zgadzają'
+                        ]"
                         label="Hasło"
                         required
                         type="password"
@@ -60,8 +65,12 @@
                     ></v-text-field>
 
                     <v-text-field
+                        dark
                         :value="inputData.password2"
-                        :rules="password2Rules"
+                        :rules="[
+                            ...password2Rules,
+                            inputData.password1 === inputData.password2 || 'Podane hasła się nie zgadzają'
+                        ]"
                         label="Potwierdź hasło"
                         required
                         type="password"
@@ -91,28 +100,23 @@
             ],
       
             userNameRules: [
-                v => !!v || 'Nazwa użytkownika jest wymagana',
-                // v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
+                v => !!v || 'Pole wymagane',
             ],
             
             password1Rules: [
-                v => !!v || 'Hasło jest wymagane',
-                // v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
+                v => !!v || 'Pole wymagane',
             ],
             
             password2Rules: [
-                v => !!v || 'Potwierdzenie Hasła jest wymagane',
-                // v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
+                v => !!v || 'Pole wymagane',
             ],
             
             nameRules: [
-                v => !!v || 'Name is required',
-                v => (v && v.length <= 10) || 'Name must be less than 10 characters',
+                v => !!v || 'Pole wymagane',
             ],
             
             lastNameRules: [
-                v => !!v || 'Nazwisko jest wymagane',
-                // v => (v && v.length <= 10) || 'Name must be less than 10 characters',
+                v => !!v || 'Pole wymagane',
             ],
         }),
         computed: {

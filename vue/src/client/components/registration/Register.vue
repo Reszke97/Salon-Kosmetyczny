@@ -9,7 +9,7 @@
       md="6"
       lg="3"
     >
-      <v-stepper v-model="stepperPosition" class="indigo" dark>
+      <v-stepper class="indigo" dark>
         <v-stepper-header class="">
           <div style="
               display: flex; 
@@ -41,7 +41,6 @@
             style="padding-top: 0px!important"
           >
             <v-btn
-              :disabled="!inputData.valid"
               color="success"
               @click="submit"
               style="width:100%!important"
@@ -58,49 +57,25 @@
         </v-row>
       </v-stepper>
     </v-col>
-    <v-dialog
-      v-model="activation"
-      width="500"
-    >
-      <v-card>
-        <v-card-title class="text-h5 grey lighten-2">
-          Na podany email został przesłany link do aktywacji konta.
-        </v-card-title>
-        <v-divider></v-divider>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="primary"
-            text
-            @click="activation = false"
-          >
-            Zamknij
-          </v-btn>
-          <v-btn
-            color="primary"
-            text
-          >
-            Przejdź do logowania
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <account-activation
+      :activation-dialog="activationDialog"
+      @closeActivateDialog="closeActivateDialog"
+    />
   </v-row>
 </template>
 
 <script>
 import axios from 'axios'
 import ClientInfo from "./ClientInfo.vue"
+import AccountActivation from "./AccountActivation.vue";
 
 export default {
   components: {
     ClientInfo,
+    AccountActivation,
   },
   data() {
     return {
-      stepperPosition: 1,
-      stepperPositionPrev: 1,
-
       inputData: {
         email: '',
         userName:'',
@@ -111,7 +86,7 @@ export default {
         phone: '',
         valid: true,
       },
-      activation: false,
+      activationDialog: false,
     };
   },
 
@@ -122,23 +97,40 @@ export default {
         this.sendForm()
       }
     },
-    reset () {
-      this.inputData.checkbox = false
-      this.inputData.lastName = ''
-      this.inputData.password2 = ''
-      this.inputData.password1 = ''
-      this.inputData.userName = ''
-      this.inputData.email = ''
-      this.activation = false
-      this.inputData.valid = ''
-      this.inputData.name = ''
-      this.$refs.clientInfo.resetValidation()
+    closeActivateDialog() {
+      this.activationDialog = false;
+      window.location.assign("/client/login");
+    },
+    openActivationDialog(){
+      this.activationDialog = true;
     },
     setInput(value, key){
       this.inputData[key] = value;
     },
-    sendForm(){
-      axios.post('http://127.0.0.1:8000/api/v1/user/register/', 
+    async checkValidNames(){
+      await axios.get(
+        `http://127.0.0.1:8000/api/v1/user/check-for-unique-names/?username=${
+          this.inputData.userName
+        }&business_name=${""}`
+      )
+      .then( res => {
+        const { unique_username } = res.data;
+        if(!unique_username) {
+          this.valid = false;
+          const notUniqueUsernameMessage = "Podana nazwa użytkownika jest już zajęta!\n"
+          const finalMessage = notUniqueUsernameMessage;
+          alert(finalMessage);
+        }
+      })
+    },
+    async sendForm(){
+      this.inputData.valid = true;
+      this.valid = this.$refs.clientInfo.$refs.form.validate();
+      if (!this.valid) return;
+      await this.checkValidNames();
+      if (!this.valid) return;
+
+      await axios.post('http://127.0.0.1:8000/api/v1/user/register/', 
         {
           userForm: {
             is_employee: false,
@@ -151,7 +143,7 @@ export default {
         },
       )
       .then(() => {
-        this.activation = true
+        this.openActivationDialog();
       })
       .catch(error => {
         alert(error)

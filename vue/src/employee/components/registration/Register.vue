@@ -39,6 +39,7 @@
               ref="aboutOwner"
               :owner-info="ownerInfo"
               :default-specializations="defaultSpecializations"
+              :valid="valid"
               @setOwnerInfo="setOwnerInfo"
               @toggleSpecInput="toggleSpecInput"
             />
@@ -206,6 +207,7 @@ export default {
       this.valid = this.$refs[firstItem.component].$refs[firstItem.form].validate();
       if(!this.valid) {
         if(firstItem.component === "aboutBusiness") this.validBusiness = false;
+        this.valid = false;
         return;
       }
       this.stepperPosition = otherItemIdx + 1;

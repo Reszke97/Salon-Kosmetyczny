@@ -30,6 +30,10 @@
                     ></v-text-field>
                     <v-autocomplete
                         v-if="!ownerInfo.isNewSpec"
+                        :required="!ownerInfo.isNewSpec"
+                        :rules="[
+                            (ownerInfo.selectedSpec && !ownerInfo.isNewSpec) || 'Pole wymagane'
+                        ]"
                         :value="ownerInfo.selectedSpec"
                         :items="defaultSpecializations"
                         item-text="name"
@@ -55,6 +59,10 @@
                     <v-text-field
                         v-if="ownerInfo.isNewSpec"
                         :value="ownerInfo.selectedSpec"
+                        :required="ownerInfo.isNewSpec"
+                        :rules="[
+                            (ownerInfo.selectedSpec && ownerInfo.isNewSpec) || 'Pole wymagane'
+                        ]"
                         label="Specjalność"
                         placeholder="Podaj specjalność"
                         hint="Kliknij na ikonę aby wybrać specjalność z listy."
@@ -84,7 +92,6 @@
                     <v-text-field
                         :value="ownerInfo.userName"
                         :rules="userNameRules"
-                        :counter="10"
                         label="Nazwa użytkownika"
                         required
                         @change="val => $emit('setOwnerInfo', { val: val, prop: 'userName' })"
@@ -123,6 +130,7 @@
         props: {
             ownerInfo: { type: Object, required: true },
             defaultSpecializations: { type: Array, default: () => ([]) },
+            valid: { type: Boolean, required: true },
         },
         emits: [ "setOwnerInfo", "toggleSpecInput" ],
         data: () => ({

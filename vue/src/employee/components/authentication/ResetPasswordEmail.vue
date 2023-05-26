@@ -45,7 +45,6 @@
     </v-row>
 </template>
 <script>
-    import { AUTH_API } from '../../authorization/AuthAPI'
     import axios from 'axios'
     export default {
         data: () => ({
@@ -68,16 +67,6 @@
                     this.showMessage = true;
                 })
             },
-            async passwordChange(){
-                const API = await AUTH_API();
-                
-                API.put('api/user/passwordchange/', {
-                    old_password: this.oldPassword,
-                    new_password: this.newPassword
-                })
-                .then(() => {})
-                .catch(error =>{})
-            }
         },
     }
 </script>

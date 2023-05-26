@@ -242,6 +242,7 @@ def send_activation_email_for_employee(user, request):
     subject = 'Aktywuj swoje konto'
     email_body = render_to_string('authentication/employee_credentials.html', {
         'user': user.user_name,
+        'full_name': user.first_name + ' ' + user.last_name,
         'domain': current_site,
         'password': request.data["password"],
     })
@@ -518,7 +519,6 @@ class GetUserRole(APIView):
         }
         return Response(response)
 
-
 def send_reset_email(user, request):
     current_site = get_current_site(request)
     email_subject = 'Zresetuj hasło'
@@ -529,12 +529,14 @@ def send_reset_email(user, request):
         'token': PasswordResetTokenGenerator().make_token(user)
     })
 
-    email = EmailMessage(
+    email = EmailMultiAlternatives(
         subject=email_subject, 
         body=email_body, 
         from_email = settings.EMAIL_FROM_USER,
         to = [user.email]
     )
+    email.mixed_subtype = 'related'
+    email.attach_alternative(email_body, "text/html")
     EmailThread(email).start()
     # email.send()
 
