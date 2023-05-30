@@ -5,6 +5,7 @@
                 v-if="availabilityDialog"
                 @closeAvailabilityDialog="closeAvailabilityDialog"
                 :availability-dialog="availabilityDialog"
+                :non-working-dates="nonWorkingDates"
             />
             <v-sheet height="64">
                 <v-toolbar
@@ -145,6 +146,7 @@
 </template>
 
 <script>
+    import axios from "axios";
     import { AUTH_API } from '../../../authorization/AuthAPI'
     import { weekdays } from '../../../../utils'
     import AvailabilityDialog from '../components/AvailabilityDialog.vue'
@@ -165,6 +167,7 @@
         data: () => ({
             weekdays: weekdays,
             availabilityDialog: false,
+            nonWorkingDates: [],
             focus: '',
             type: 'month',
             typeToLabel: {
@@ -182,6 +185,7 @@
         }),
         inject: ["screenSize"],
         async created(){
+            await this.getNonWorkingDates();
         },
         mounted () {
             this.$refs.calendar.checkChange()
@@ -189,6 +193,13 @@
         computed: {
         },
         methods: {
+            async getNonWorkingDates(){
+                const today = new Date();
+                await axios.get(`http://127.0.0.1:8000/api/v1/employee/non-working-days/?year=${today.getFullYear()}`)
+                    .then(res => {
+                        this.nonWorkingDates = res.data;
+                    })
+            },
             openAvailabilityDialog(){
                 this.availabilityDialog = true;
             },

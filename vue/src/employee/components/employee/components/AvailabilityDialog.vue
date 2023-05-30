@@ -179,6 +179,7 @@
             v-if="showEditAction"
             :show-edit-action="showEditAction"
             :selected-action-data="selectedActionData"
+            :non-working-dates="nonWorkingDates"
             @closeEditAction="closeEditAction"
             @addBreak="addBreak"
             @editAvailabilityProp="editAvailabilityProp"
@@ -192,7 +193,6 @@
 
 <script>
     import { AUTH_API } from '../../../authorization/AuthAPI';
-    import { defaultAvailability } from "../utils/defaultAvailability";
     import { days } from "../utils/days";
     import { formatDate } from "../../../../utils/formatDate"
     import EditAction from "./EditAction.vue"
@@ -206,9 +206,11 @@
         inject: ["screenSize"],
         props: {
             availabilityDialog: { type: Boolean, default: false },
+            nonWorkingDates: { type: Array, required: true },
         },
         data: () => ({
             availability: [],
+            firstDayOfTheWeekDate: "",
             maxWeeksForRegistration: 2,
             minTimeForRegistration: "60min",
             now: formatDate(new Date()),
@@ -219,10 +221,12 @@
         computed: {
             today(){
                 const todayNum = new Date(this.now).getDay();
-                return days.find(el => el.num === todayNum);
+                return days(this.firstDayOfTheWeekDate).find(el => el.num === todayNum);
             }
         },
         async created(){
+            const _now = new Date(this.now)
+            this.firstDayOfTheWeekDate = new Date(_now).substractDays(_now.getDay() - 1)
             await this.getAvailability();
         },
         methods: {
@@ -231,13 +235,10 @@
                 const API = await AUTH_API();
                 await API.get("api/v1/employee/availability/")
                     .then(res => {
-                        if(res.data){
-                            this.mapAvailablility(res.data)
-                            this.maxWeeksForRegistration = res.data[0].max_weeks_for_registration;
-                            this.minTimeForRegistration = res.data[0].min_time_for_registration;
-                        } else {
-                            this.availability = [...defaultAvailability]
-                        }
+                        this.mapAvailablility(res.data)
+                        this.maxWeeksForRegistration = res.data[0].max_weeks_for_registration;
+                        this.minTimeForRegistration = res.data[0].min_time_for_registration;
+                        
                     })
             },
             async deleteItems(){
@@ -283,14 +284,15 @@
                 if(day.pl === this.today.pl){
                     return this.now
                 } else {
-                    const chosenDay = day.num === 0 ? 7 : day.num;
-                    const todayNum = this.today.num === 0 ? 7 : this.today.num;
-                    const daysEquation = todayNum - chosenDay;
-                    if(daysEquation > 0){
-                        return formatDate(new Date(this.now).substractDays(daysEquation))
-                    } else {
-                        return formatDate(new Date(this.now).addDays(daysEquation * (-1)))
-                    }
+                    return day.currentWeekDayDate
+                    // const chosenDay = day.num === 0 ? 7 : day.num;
+                    // const todayNum = this.today.num === 0 ? 7 : this.today.num;
+                    // const daysEquation = todayNum - chosenDay;
+                    // if(daysEquation > 0){
+                    //     return formatDate(new Date(this.now).substractDays(daysEquation))
+                    // } else {
+                    //     return formatDate(new Date(this.now).addDays(daysEquation * (-1)))
+                    // }
                 }
             },
 
@@ -299,8 +301,9 @@
                 this.setActionData({ day, isDefault, data, date });
                 this.openEditAction();
             },
+
             mapAvailablility(items){
-                for(const day of days){
+                for(const day of days(this.firstDayOfTheWeekDate)){
                     const itemsGrpedByDay = items.filter(item => item.weekday === day.gb)
                     const objectToAppend = {
                         default: {},

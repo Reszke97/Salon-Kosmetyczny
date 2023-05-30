@@ -361,7 +361,8 @@
         inject: ["screenSize"],
         props: {
             showEditAction: { type: Boolean, default: false },
-            selectedActionData: { type: Object, default: () => ({}) }
+            selectedActionData: { type: Object, default: () => ({}) },
+            nonWorkingDates: { type: Array, required: true },
         },
         data: () => ({
             showDatePickerMenu: false,

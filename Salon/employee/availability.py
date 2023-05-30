@@ -11,11 +11,13 @@ from rest_framework.views import APIView
 from ..serializers import *
 from ..models import EmployeeAvailability
 from .utils.cursor_to_array_of_dicts import cursor_to_array_of_dicts
+from .utils.non_working_days import NonWorkingDays
 import datetime as dt
 
 class AvailabilityApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
     def get(self, request):
+        today = dt.date.today()
         user = request.user
         employee = Employee.objects.get(user_id = user.pk)
         cursor = connection.cursor()
@@ -26,8 +28,14 @@ class AvailabilityApi(APIView):
                 where seac.employee_id = %s
                     and ( sea.date is null or Date(sea.date) >= %s )
             """
-        , [employee.pk, dt.date.today()])
+        , [employee.pk, today])
         res = cursor_to_array_of_dicts(cursor)
+        non_working_days = NonWorkingDays(str(today).split('-')[0])
+        for item in res:
+            if item["date"] != None:
+                split_date = item["date"].split('-')
+                if non_working_days.checkForHoliday(split_date[2], split_date[1]):
+                    item["is_holiday"] = True
         return Response(res, status=status.HTTP_200_OK)
     
     def delete(self, request):

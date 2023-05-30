@@ -15,6 +15,12 @@ from rest_framework import status
 import datetime as dt
 import calendar
 
+class Holidays(APIView):
+    # permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
+    def get(self, request):
+        non_working_days = NonWorkingDays(request.query_params.get("year")).non_working_days
+        return Response(data=non_working_days, status=status.HTTP_200_OK)
+
 class GetMonthDays(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
     def __init__(self):
