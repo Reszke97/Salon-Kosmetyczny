@@ -104,6 +104,8 @@
                                             </template>
                                             <v-date-picker
                                                 :value="selectedActionData.is_default ? selectedActionData.date : currentDateData.date"
+                                                :events="holidays"
+                                                event-color="rgb(255, 87, 76)"
                                                 no-title
                                                 @input="showDatePickerMenu = false"
                                                 @change="val => $emit('editAvailabilityProp', {
@@ -348,6 +350,7 @@
 
 <script>
     import { formatDate } from '../../../../utils/formatDate';
+    import axios from 'axios';
     
     export default {
         name: "",
@@ -362,9 +365,10 @@
         props: {
             showEditAction: { type: Boolean, default: false },
             selectedActionData: { type: Object, default: () => ({}) },
-            nonWorkingDates: { type: Array, required: true },
+            firstDayOfTheWeekDate: { type: Date, required: true },
         },
         data: () => ({
+            holidays: [],
             showDatePickerMenu: false,
             panel: undefined,
             startHourRules: [
@@ -375,10 +379,21 @@
             ],
             valid: true,
         }),
+        async created(){
+            await this.getNonWorkingDaysForThreeYears();
+        },
         methods: {
             formatDate(date){
                 return formatDate(date)
             },
+            async getNonWorkingDaysForThreeYears(){
+                await axios.get(`http://127.0.0.1:8000/api/v1/employee/non-working-days-three-years/?year=${
+                    this.firstDayOfTheWeekDate.getFullYear()
+                }`)
+                    .then(res => {
+                        this.holidays = res.data;
+                    })
+            }
         }
     }
 </script>

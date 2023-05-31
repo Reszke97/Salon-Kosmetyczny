@@ -39,7 +39,13 @@ class NonWorkingDays:
             "12-25",
             "12-26"
         ]
+        self.non_working_days_with_year = []
         self.getMovableHolidays(year)
+        self.append_year()
+
+    def append_year(self):
+        for date in self.non_working_days:
+            self.non_working_days_with_year.append(str(self.year) + '-' + date)
     
     def getMovableHolidays(self, year):
         self.year = year

@@ -20,6 +20,14 @@ class Holidays(APIView):
     def get(self, request):
         non_working_days = NonWorkingDays(request.query_params.get("year")).non_working_days
         return Response(data=non_working_days, status=status.HTTP_200_OK)
+    
+class HolidaysForThreeYears(APIView):
+    def get(self, request):
+        non_working_days_current_year = NonWorkingDays(request.query_params.get("year")).non_working_days_with_year
+        non_working_days_prev_year = NonWorkingDays(str(int(request.query_params.get("year")) - 1)).non_working_days_with_year
+        non_working_days_next_year = NonWorkingDays(str(int(request.query_params.get("year")) +1)).non_working_days_with_year
+        non_working_days = non_working_days_prev_year + non_working_days_current_year + non_working_days_next_year
+        return Response(data=non_working_days, status=status.HTTP_200_OK)
 
 class GetMonthDays(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]

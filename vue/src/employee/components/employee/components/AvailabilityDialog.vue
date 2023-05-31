@@ -101,7 +101,7 @@
                                         border-right: 1px solid hsla(0,0%,100%,.12);
                                     "
                                 >
-                                    <template v-if="!!!item.default.is_free">
+                                    <template v-if="!!!item.default.is_free && !item.default.day.isHoliday">
                                         <div
                                             v-for="defaultWorkHours in item.default.work_hours"
                                         >
@@ -110,12 +110,17 @@
                                             </span>
                                         </div>
                                     </template>
+                                    <template v-else-if="item.default.day.isHoliday">
+                                        <span class="font-bold" style="color: rgb(255, 87, 76)">
+                                            Święto
+                                        </span>
+                                    </template>
                                     <template v-else>
-                                        <span style="color: greenyellow">
+                                        <span class="font-bold" style="color: greenyellow">
                                             Wolne
                                         </span>
                                     </template>
-                                    <template v-if="item.default.work_hours.length && !!!item.default.is_free">
+                                    <template v-if="item.default.work_hours.length && !!!item.default.is_free && !item.default.day.isHoliday">
                                         <span>
                                             Przerwy
                                         </span>
@@ -179,7 +184,7 @@
             v-if="showEditAction"
             :show-edit-action="showEditAction"
             :selected-action-data="selectedActionData"
-            :non-working-dates="nonWorkingDates"
+            :first-day-of-the-week-date="firstDayOfTheWeekDate"
             @closeEditAction="closeEditAction"
             @addBreak="addBreak"
             @editAvailabilityProp="editAvailabilityProp"
@@ -221,7 +226,10 @@
         computed: {
             today(){
                 const todayNum = new Date(this.now).getDay();
-                return days(this.firstDayOfTheWeekDate).find(el => el.num === todayNum);
+                return (
+                    days({ first: this.firstDayOfTheWeekDate, nonWorkingDates: this.nonWorkingDates })
+                        .find(el => el.num === todayNum)
+                );
             }
         },
         async created(){
@@ -303,7 +311,7 @@
             },
 
             mapAvailablility(items){
-                for(const day of days(this.firstDayOfTheWeekDate)){
+                for(const day of days({ first: this.firstDayOfTheWeekDate, nonWorkingDates: this.nonWorkingDates })){
                     const itemsGrpedByDay = items.filter(item => item.weekday === day.gb)
                     const objectToAppend = {
                         default: {},
