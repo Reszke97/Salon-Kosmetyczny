@@ -58,8 +58,23 @@ class NonWorkingDays:
             if(split_easter_date[0] == self.year):
                 _easter = split_easter_date[1] + '-' + split_easter_date[2]
                 self.month = int(split_easter_date[1]) if split_easter_date[1][0] != "0" else int(split_easter_date[1][1])
+                month_of_easter = self.month
                 self.day = int(split_easter_date[2]) if split_easter_date[2][0] != "0" else int(split_easter_date[2][1])
+                day_of_easter = self.day
                 self.non_working_days.append(_easter)
+                month_days = calendar.monthrange(int(self.year), int(self.month))[1]
+                if int(self.day) == int(month_days):
+                    self.month += 1
+                    self.day = "01"
+                    self.month = '0' + str(self.month) if self.month < 10 else str(self.month)
+                    self.non_working_days.append(self.month + '-' + self.day)
+                else:
+                    self.day += 1
+                    self.day = '0' + str(self.day) if self.day < 10 else str(self.day)
+                    self.month = '0' + str(self.month) if self.month < 10 else str(self.month)
+                    self.non_working_days.append(str(self.month) + '-' + self.day)
+                self.month = month_of_easter
+                self.day = day_of_easter
                 break
     # Boże ciało + 60 dni od wielkanocy zawsze
     def getCorpusChristiDay(self):

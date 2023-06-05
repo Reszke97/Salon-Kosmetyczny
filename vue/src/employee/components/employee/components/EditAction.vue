@@ -93,18 +93,22 @@
                                             <template v-slot:activator="{ on, attrs }">
                                                 <v-text-field
                                                     :value="selectedActionData.is_default ? selectedActionData.date : currentDateData.date"
-                                                    label="Data"
+                                                    :label="
+                                                        checkForHoliday({idx: panelIdx, is_default: selectedActionData.is_default}) 
+                                                        ? 'Data (Święto)' : 'Data'"
                                                     persistent-hint
                                                     prepend-icon="mdi-calendar"
                                                     v-bind="attrs"
                                                     @blur="date = formatDate(selectedActionData.is_default ? selectedActionData.date : currentDateData.date)"
                                                     v-on="on"
                                                     :disabled="selectedActionData.is_default"
+                                                    readonly
                                                 ></v-text-field>
                                             </template>
                                             <v-date-picker
                                                 :value="selectedActionData.is_default ? selectedActionData.date : currentDateData.date"
                                                 :events="holidays"
+                                                :allowed-dates="getAllowedDates"
                                                 event-color="rgb(255, 87, 76)"
                                                 no-title
                                                 @input="showDatePickerMenu = false"
@@ -393,7 +397,20 @@
                     .then(res => {
                         this.holidays = res.data;
                     })
-            }
+            },
+            checkForHoliday({idx, is_default}){
+                if(!is_default){
+                    if(this.holidays.includes(this.selectedActionData.data[idx].date)){
+                        return true;
+                    } return false;
+                } else {
+                    return this.selectedActionData.day.isHoliday;
+                }
+            },
+            getAllowedDates(givenDate){
+                const date = new Date(givenDate);
+                return this.selectedActionData.day.num === date.getDay();
+            },
         }
     }
 </script>

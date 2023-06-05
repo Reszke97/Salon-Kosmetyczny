@@ -7,6 +7,11 @@
                 :availability-dialog="availabilityDialog"
                 :non-working-dates="nonWorkingDates"
             />
+            <appointment-config-dialog
+                v-if="appointmentConfigDialog"
+                @closeAppointmentConfigDialog="closeAppointmentConfigDialog"
+                :appointment-config-dialog="appointmentConfigDialog"
+            />
             <v-sheet height="64">
                 <v-toolbar
                     flat
@@ -63,6 +68,12 @@
                             </v-btn>
                             <v-btn 
                                 class="mx-2" color="success"
+                                @click="openAppointmentConfigDialog"
+                            >
+                                Ustawienia wizyty
+                            </v-btn>
+                            <v-btn 
+                                color="success"
                                 @click="openAvailabilityDialog"
                             >
                                 Dyspozycyjność
@@ -147,14 +158,14 @@
 
 <script>
     import axios from "axios";
-    import { AUTH_API } from '../../../authorization/AuthAPI'
     import { weekdays } from '../../../../utils'
     import AvailabilityDialog from '../components/AvailabilityDialog.vue'
-    // const API = await AUTH_API();
+    import AppointmentConfigDialog from '../components/AppointmentConfigDialog.vue'
 
     export default {
         components: {
-            AvailabilityDialog
+            AvailabilityDialog,
+            AppointmentConfigDialog
         },
         mixins: [
         ],
@@ -168,6 +179,7 @@
             weekdays: weekdays,
             availabilityDialog: false,
             nonWorkingDates: [],
+            appointmentConfigDialog: false,
             focus: '',
             type: 'month',
             typeToLabel: {
@@ -199,6 +211,12 @@
                     .then(res => {
                         this.nonWorkingDates = res.data;
                     })
+            },
+            openAppointmentConfigDialog(){
+                this.appointmentConfigDialog = true;
+            },
+            closeAppointmentConfigDialog(){
+                this.appointmentConfigDialog = false;
             },
             openAvailabilityDialog(){
                 this.availabilityDialog = true;
