@@ -51,5 +51,6 @@ urlpatterns = [
     path('api/v1/employee/availability/', AvailabilityApi.as_view(), name = 'employee_availability'),
     path('api/v1/employee/non-working-days/', Holidays.as_view(), name = 'non_working_days'),
     path('api/v1/employee/non-working-days-three-years/', HolidaysForThreeYears.as_view(), name = 'non_working_days_three_years'),
+    path('api/v1/employee/availability-config/', AvailabilityConfigApi.as_view(), name = 'availability_config'),
     # path('api/user/isauthenticated/', IsUserAuthenticated.as_view(), name = 'is_authenticated'),
 ]

@@ -163,3 +163,34 @@ class AvailabilityApi(APIView):
                             extra_breaks_action, "update", extra_breaks["id"]
                         )
         return Response({ "status": status.HTTP_200_OK, "errors": "" })
+    
+class AvailabilityConfigApi(APIView):
+    permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
+
+    def get(self, request):
+        user = User.objects.get(pk = request.user.pk)
+        try:
+            employee = Employee.objects.get(user_id = user.pk)
+        except Employee.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        emp_config = EmployeeAvailabilityConfiguration.objects.get(employee=employee.pk)
+        return Response(status=status.HTTP_200_OK, data={
+            "max_weeks_for_registration": emp_config.max_weeks_for_registration,
+            "min_time_for_registration": emp_config.min_time_for_registration
+        })
+
+    def put(self, request):
+        data = request.data
+        user = User.objects.get(pk = request.user.pk)
+        try:
+            employee = Employee.objects.get(user_id = user.pk)
+        except Employee.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        emp_config = EmployeeAvailabilityConfiguration.objects.get(employee=employee.pk)
+        serializer = AvailabilityConfigSerializer(emp_config, data={ **data, "employee": employee.pk })
+        if serializer.is_valid():
+            serializer.save()
+        else:
+            return Response(exception=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_200_OK)
+        
