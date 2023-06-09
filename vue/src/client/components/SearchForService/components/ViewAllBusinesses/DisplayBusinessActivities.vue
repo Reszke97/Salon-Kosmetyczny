@@ -98,7 +98,7 @@
                                                     right
                                                     v-bind="attrs"
                                                     v-on="on"
-                                                    @click="signForVisit"
+                                                    @click="openSignUpForVisitDialog(item)"
                                                 >
                                                     mdi-plus
                                                 </v-icon>
@@ -127,7 +127,7 @@
         props: {
             items: { type: Object, required: true },
             businessesHeight: { type: Number, default: 0 },
-            signForVisit: { type: Function, default: () => {} },
+            openSignUpForVisitDialog: { type: Function, default: () => {} },
             previewBusinessActivity: { type: Function, default: () => {} },
         },
         data: () => ({

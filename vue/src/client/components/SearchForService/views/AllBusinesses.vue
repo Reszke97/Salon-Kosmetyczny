@@ -146,7 +146,7 @@
                 <display-business-activities
                     :items="items"
                     :businessesHeight="businessesHeight"
-                    :sign-for-visit="signForVisit"
+                    :open-sign-up-for-visit-dialog="openSignUpForVisitDialog"
                     :preview-business-activity="previewBusinessActivity"
                 />
             </template>
@@ -166,13 +166,19 @@
             :business-activity-preview-data="businessActivityPreviewData"
             :close-preview="closePreview"
         />
+        <SignUpForVisit
+            :sign-up-for-visit-dialog="signUpForVisitDialog"
+            :close-sign-up-for-visit-dialog="closeSignUpForVisitDialog"
+            :selected-service="selectedService"
+            :component-dims="componentDims"
+        />
     </v-row>
 </template>
 
 <script>
     import axios from "axios";
     import { appendMimeType } from "../../../utils";
-    import { ChooseLocalization, DisplayBusinessActivities } from "../components";
+    import { ChooseLocalization, DisplayBusinessActivities, SignUpForVisit } from "../components";
     import BusinessActivityPreview from "./BusinessActivityPreview.vue";
     
     export default {
@@ -181,11 +187,15 @@
             ChooseLocalization,
             DisplayBusinessActivities,
             BusinessActivityPreview,
+            SignUpForVisit,
         },
         props: {
             
         },
         data: () => ({
+            selectedService: {},
+            signUpForVisitDialog: false,
+            componentDims: {},
             items: {},
             inputVariables: {
                 selectedSpec: "",
@@ -226,8 +236,18 @@
         },
 
         methods: {
-            signForVisit(){
-
+            openSignUpForVisitDialog(item){
+                this.componentDims = {
+                    height: `${document.getElementById('appointment').offsetHeight - 200}px`,
+                    width: `${document.getElementById('appointment').offsetWidth}px`,
+                }
+                this.selectedService = item;
+                this.signUpForVisitDialog = true;
+            },
+            closeSignUpForVisitDialog(){
+                this.signUpForVisitDialog = false;
+                this.selectedService = {};
+                this.componentDims = {};
             },
             openPreview(){
                 this.businessActivityPreview = true;

@@ -5,6 +5,7 @@ import BusinessActivityServices from "./PreviewBusiness/BusinessActivityServices
 import ManageServicesDialog from "./PreviewBusiness/ManageServicesDialog.vue";
 import ManageServices from "./PreviewBusiness/ManageServices.vue";
 import Comment from "./PreviewBusiness/Comment.vue";
+import SignUpForVisit from "./SignForService/SignUpForVisit.vue"
 
 export {
     ChooseLocalization,
@@ -13,4 +14,5 @@ export {
     ManageServicesDialog,
     ManageServices,
     Comment,
+    SignUpForVisit,
 }

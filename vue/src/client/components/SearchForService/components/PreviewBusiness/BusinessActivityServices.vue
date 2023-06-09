@@ -75,7 +75,7 @@
                                                         :id="`employee-${employee.id}`"
                                                         style="font-size:40px"
                                                         v-if="!employee.avatar.image"
-                                                        @click="() => previewEmployee(employee.id)"
+                                                        @click="() => previewEmployee(employee.id, false)"
                                                         dark
                                                     >
                                                         mdi-account-circle
@@ -86,7 +86,7 @@
                                                         :src="employee.avatar.image"
                                                         style="width:100%;height: 100%;"
                                                         v-bind="attrs"
-                                                        @click="() => previewEmployee(employee.id)"
+                                                        @click="() => previewEmployee(employee.id, false)"
                                                         v-on="on"
                                                     />
                                                 </template>

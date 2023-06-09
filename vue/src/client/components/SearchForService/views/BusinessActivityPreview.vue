@@ -71,14 +71,13 @@
                                     :business-activity-categories="businessActivityPreviewData.categories"
                                     :preview-employee="previewEmployee"
                                 >
-                                <template #employeePreviewDialog>
-                                    <!-- <manage-services-dialog
-                                        :employee-view-dialog="employeeViewDialog"
-                                        :get-services="getServices"
-                                        :services="services"
-                                        :closeEmployeeViewDialog="closeEmployeeViewDialog"
-                                    /> -->
-                                </template>
+                                    <template #employeePreviewDialog>
+                                        <manage-services-dialog
+                                            :employee-view-dialog="employeeViewDialog"
+                                            :services="services"
+                                            :closeEmployeeViewDialog="closeEmployeeViewDialog"
+                                        />
+                                    </template>
                                 </business-activity-services>
                             </template>
                             <template v-else-if="businessInfoView">
@@ -221,6 +220,7 @@
                                         </v-col>
                                     </v-row>
                                     <manage-services-dialog
+                                        v-if="businessInfoView"
                                         :employee-view-dialog="employeeViewDialog"
                                         :services="services"
                                         :closeEmployeeViewDialog="closeEmployeeViewDialog"
@@ -323,8 +323,9 @@
                     categoryIdx += 1;
                 } return groupedServices
             },
-            async getServices(employee){
-                await axios.get(`http://127.0.0.1:8000/api/v1/client/employee-preview/?empId=${employee.employee_id}`)
+            async getServices(employee, def){
+                const empId = def ? employee.employee_id : employee
+                await axios.get(`http://127.0.0.1:8000/api/v1/client/employee-preview/?empId=${empId}`)
                     .then(res => {
                         res.data.service_info = res.data.service_info.map(el => {
                             const { service } = el
@@ -356,8 +357,8 @@
                     })
                 })
             },
-            async previewEmployee(employee){
-                await this.getServices(employee);
+            async previewEmployee(employee, def = true){
+                await this.getServices(employee, def);
                 this.openEmployeeViewDialog();
             },
 
