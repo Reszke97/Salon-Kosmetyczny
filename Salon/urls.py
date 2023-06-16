@@ -14,6 +14,7 @@ from .employee.all_specs import *
 from .employee.availability import *
 from .client.client_info import *
 from .client.business_activity_info import *
+from .client.employee_availability import *
 
 
 urlpatterns = [
@@ -24,6 +25,8 @@ urlpatterns = [
     path('api/v1/client/info/', ClientApi.as_view(), name = 'client_api'),
     path('api/v1/client/business-activities/', BusinessActivities.as_view(), name = 'business_activities'),
     path('api/v1/client/employee-preview/', ServiceApiClient.as_view(), name = 'services_clients'),
+    path('api/v1/client/employee-availability/', ClientEmployeeAvailability.as_view(), name = 'client_employee_availability'),
+
 
     path('api/v1/user/register/', CustomUserCreate.as_view(), name = "register"),
     path('api/v1/user/check-for-unique-names/', CheckForUniqueNames.as_view(), name = "check_for_unique_names"),

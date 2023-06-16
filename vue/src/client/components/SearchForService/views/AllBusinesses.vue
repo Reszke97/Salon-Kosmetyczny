@@ -167,6 +167,7 @@
             :close-preview="closePreview"
         />
         <SignUpForVisit
+            v-if="signUpForVisitDialog"
             :sign-up-for-visit-dialog="signUpForVisitDialog"
             :close-sign-up-for-visit-dialog="closeSignUpForVisitDialog"
             :selected-service="selectedService"
@@ -300,7 +301,9 @@
                     Object.keys(res.data).forEach(bActivity => {
                         Object.keys(res.data[bActivity]).forEach(el => {
                             if(el == "image"){
-                                res.data[bActivity].image = appendMimeType(res.data[bActivity].image)
+                                if(res.data[bActivity].image){
+                                    res.data[bActivity].image = appendMimeType(res.data[bActivity].image)
+                                }
                             } else if(el == "categories"){
                                 Object.keys(res.data[bActivity].categories).forEach(category => {
                                     res.data[bActivity].categories[category].forEach((item, idx) => {

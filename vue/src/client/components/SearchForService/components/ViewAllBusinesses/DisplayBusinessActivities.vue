@@ -56,7 +56,7 @@
                 </div>
                 <div
                     style="height:200px"
-                    v-if="item.image.image"
+                    v-if="item.image"
                 >
                     <img
                         :src="item.image.image"

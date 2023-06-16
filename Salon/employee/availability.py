@@ -16,10 +16,12 @@ import datetime as dt
 
 class AvailabilityApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
-    def get(self, request):
+
+    def get_emp_availability(self, user = None, emp = None):
         today = dt.date.today()
-        user = request.user
-        employee = Employee.objects.get(user_id = user.pk)
+        employee = emp
+        if(emp is None):
+            employee = Employee.objects.get(user_id = user.pk)
         cursor = connection.cursor()
         cursor.execute("""SELECT 
                 seac.max_weeks_for_registration, seac.min_time_for_registration, sea.*
@@ -36,6 +38,10 @@ class AvailabilityApi(APIView):
                 split_date = item["date"].split('-')
                 if non_working_days.checkForHoliday(split_date[2], split_date[1]):
                     item["is_holiday"] = True
+        return res
+
+    def get(self, request):
+        res = self.get_emp_availability(user=request.user)
         return Response(res, status=status.HTTP_200_OK)
     
     def delete(self, request):
@@ -167,17 +173,26 @@ class AvailabilityApi(APIView):
 class AvailabilityConfigApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
 
-    def get(self, request):
-        user = User.objects.get(pk = request.user.pk)
-        try:
-            employee = Employee.objects.get(user_id = user.pk)
-        except Employee.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+    def get_emp_config(self, user = None, emp = None):
+        employee = emp
+        if(emp is None):
+            try:
+                employee = Employee.objects.get(user_id = user.pk)
+            except Employee.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
         emp_config = EmployeeAvailabilityConfiguration.objects.get(employee=employee.pk)
-        return Response(status=status.HTTP_200_OK, data={
+        return {
             "max_weeks_for_registration": emp_config.max_weeks_for_registration,
             "min_time_for_registration": emp_config.min_time_for_registration
+        }
+
+    def get(self, request):
+        data = self.get_emp_config(user=User.objects.get(pk = request.user.pk))
+        return Response(status=status.HTTP_200_OK, data={
+            "max_weeks_for_registration": data["max_weeks_for_registration"],
+            "min_time_for_registration": data["min_time_for_registration"]
         })
+        
 
     def put(self, request):
         data = request.data

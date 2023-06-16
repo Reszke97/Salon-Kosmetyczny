@@ -39,6 +39,7 @@
 </template>
 
 <script>
+  import axios from "axios"
     export default {
         name: "",
         components: {
@@ -51,13 +52,29 @@
           closeSignUpForVisitDialog: { type: Function, required: true },
         },
         data: () => ({
-            
+          employees: [],
         }),
         computed: {
             
         },
+        async created(){
+          this.setEmployees();
+          await this.getAvailableDateTime();
+        },
         methods: {
-            
+          setEmployees(){
+            for(const employee of this.selectedService.employees){
+              this.employees.push({
+                emp_id: employee.id,
+                user_info: employee.user,
+              })
+            }
+          },
+          async getAvailableDateTime(){
+            await axios.get(`http://127.0.0.1:8000/api/v1/client/employee-availability/?${
+              this.employees.map((employee, idx) => `employee-${idx}=${employee.emp_id}`).join('&')
+            }&service_name=${this.selectedService.service_name}`)
+          },
         }
     }
 </script>
