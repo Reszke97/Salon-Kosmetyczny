@@ -16,8 +16,12 @@ import calendar
 
 class Holidays(APIView):
     # permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
+
+    def get_holidays(self, year):
+        return NonWorkingDays(year).non_working_days
+
     def get(self, request):
-        non_working_days = NonWorkingDays(request.query_params.get("year")).non_working_days
+        non_working_days = self.get_holidays(request.query_params.get("year"))
         return Response(data=non_working_days, status=status.HTTP_200_OK)
     
 class HolidaysForThreeYears(APIView):
