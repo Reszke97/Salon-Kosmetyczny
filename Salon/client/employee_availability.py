@@ -139,38 +139,46 @@ class ClientEmployeeAvailability(APIView):
         data = cursor_to_array_of_dicts(cursor)
         return self.calc_breaks_and_time(data, date, "date")
     
-    def calculate_current_day_possible_time(self, availability, appointments, date_now):
-        date = dt.date(1, 1, 1)
-        avail_end_time = dt.datetime.combine(date, availability["work_hours"]["end_time"]) 
-        avail_start_time = dt.datetime.combine(date, availability["work_hours"]["start_time"]) 
-        daily_work_time = avail_end_time - avail_start_time
-        time_now = timedelta(hours=date_now.hour, minutes=date_now.minute)
-    
-    def get_possible_overlaping_visits(self, appointments, start, end, date):
+    def get_possible_overlaping_visits(self, item):
+        dates = []
+        possible_visit_time_start = item["possible_visit_time_start"]
+        existing_activities_set = set()
+        duration = item["service_duration"].seconds/60
+        possible_visit_time_end = possible_visit_time_start + item["service_duration"]
 
-        #zrobić for na przerwy(breaks)
+        for reserved_activity in item["reserved_activities"]:
+            activity_start = reserved_activity["start_time"]
+            activity_start = timedelta(hours=activity_start.hour, minutes=activity_start.minute)
+            activity_end = reserved_activity["end_time"]
+            activity_end = timedelta(hours=activity_end.hour, minutes=activity_end.minute)
+            iterator = activity_start
 
-        for appointment in appointments:
-            appointment_start = appointment["start_time"]
-            appointment_start = timedelta(hours=appointment_start.hour, minutes=appointment_start.minute)
-            appointment_end = appointment["end_time"]
-            appointment_end = timedelta(hours=appointment_end.hour, minutes=appointment_end.minute)
-            appointment_iterator_start = appointment_start
-            availability_iterator_start = start
-            existing_appointment_set = set()
-
-            while appointment_iterator_start < appointment_end:
-                existing_appointment_set.add(appointment_iterator_start)
-                appointment_iterator_start += timedelta(minutes=1)
-
-            while availability_iterator_start <= end:
-                if availability_iterator_start in existing_appointment_set:
-                    print(availability_iterator_start)
-                availability_iterator_start += timedelta(minutes=1)
-
-        #jeśli nie ma appointments to co godzinę else co pol godziny
-
-        return "a"
+            while iterator <= activity_end:
+                existing_activities_set.add(iterator)
+                iterator += timedelta(minutes=1) 
+                
+        while possible_visit_time_end < item["end_time"]:
+            duration_progress = 0
+            while True:
+                if possible_visit_time_start + timedelta(minutes=duration_progress) in existing_activities_set:
+                    possible_visit_time_start += timedelta(minutes=duration_progress + 1)
+                    possible_visit_time_end += timedelta(minutes=duration_progress + 1)
+                    break
+                else:
+                    duration_progress += 1
+                    if duration_progress == duration:
+                        if  (possible_visit_time_start - timedelta(minutes=1)).seconds/60 % 5 == 0 :
+                            possible_visit_time_start -= timedelta(minutes=1)
+                            possible_visit_time_end -= timedelta(minutes=1)
+                        
+                        dates.append({
+                            "start_time": str(possible_visit_time_start),
+                            "end_time": str(possible_visit_time_end)
+                        })
+                        possible_visit_time_start += item["service_duration"]
+                        possible_visit_time_end += item["service_duration"]
+                        break
+        return dates
 
     
                 
@@ -180,6 +188,8 @@ class ClientEmployeeAvailability(APIView):
         date_now = dt.datetime.now()
         holidays = Holidays().get_holidays(str(date_now.year))
 
+        employee_available_visits = []
+
         for key in data:
             employee = Employee.objects.get(pk=data[key])
             service = Service.objects.get(employee = employee, name = service_name)
@@ -187,7 +197,6 @@ class ClientEmployeeAvailability(APIView):
             serialized_service = ServiceSerializer(service)
             appointments = self.get_appointments(employee)
             default_availabilities = self.get_default_emp_availability(employee)
-            latest_date = date_now + timedelta(days=availability_config["max_weeks_for_registration"] * 7)
             days_left_to_check = availability_config["max_weeks_for_registration"] * 7
             dates = []
             default_availabilities = self.calc_time_from_default_availability(default_availabilities)
@@ -233,28 +242,25 @@ class ClientEmployeeAvailability(APIView):
                                     end_time = availability_dict[availability_type]["work_hours"]["end_time"]
                                     end_time = timedelta(hours=end_time.hour, minutes=end_time.minute)
                                     possible_visit_time_start = start_time
-                                    possible_visit_time_end = start_time + service_duration
 
-                                    while possible_visit_time_start < end_time:
-                                        overlap_found = self.get_possible_overlaping_visits(
-                                            day_appointments["work_hours"], possible_visit_time_start, possible_visit_time_end, date
-                                        )
-                                        possible_visit_time_start += timedelta(minutes=30)
-                                        possible_visit_time_end += timedelta(minutes=30)
-
-                                        #
-                                
-                                # print(str(date)[:10])
-                                # if str(date)[:10] == str(date_now)[:10]:
-                                #     possible_time = self.calculate_current_day_possible_time(
-                                #         availability_dict[availability_type], appointments, date_now
-                                #     )
-
-                                # print((str(day_appointments["time_delta"])) + " appointments")
-                                # print((str(availability_dict[availability_type]["time"])) + " All Time")
-                                # print(str(availability_dict[availability_type]["time"] - day_appointments["time_delta"]) + " final")
-                                # print(date)
-        # client = User.objects.get(pk = request.user.pk)
+                                    found_appointments = self.get_possible_overlaping_visits({
+                                        "reserved_activities": day_appointments["work_hours"] + availability_dict[availability_type]["break_times"],
+                                        "possible_visit_time_start": possible_visit_time_start,
+                                        "date": date,
+                                        "service_duration": service_duration,
+                                        "start_time": start_time,
+                                        "end_time": end_time,
+                                    })
+                                    dates.append({
+                                        "date": str(date)[:10],
+                                        "day_name": day_name,
+                                        "items": found_appointments
+                                    })
+            employee_available_visits.append({
+                "employee": employee.pk,
+                "dates": dates
+            })
+        return Response(status=200, data=employee_available_visits)
 
     def put(self, request):
         pass
