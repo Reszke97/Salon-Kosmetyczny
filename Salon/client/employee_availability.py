@@ -146,6 +146,12 @@ class ClientEmployeeAvailability(APIView):
         duration = item["service_duration"].seconds/60
         possible_visit_time_end = possible_visit_time_start + item["service_duration"]
 
+        if str(item["date"])[:10] == str(item["earliest_date"])[:10]:
+            reserved_time = timedelta(hours=0, minutes=0)
+            while reserved_time <= item["start_time"]:
+                existing_activities_set.add(reserved_time)
+                reserved_time += timedelta(minutes=1)
+
         for reserved_activity in item["reserved_activities"]:
             activity_start = reserved_activity["start_time"]
             activity_start = timedelta(hours=activity_start.hour, minutes=activity_start.minute)
@@ -154,7 +160,8 @@ class ClientEmployeeAvailability(APIView):
             iterator = activity_start
 
             while iterator <= activity_end:
-                existing_activities_set.add(iterator)
+                if iterator not in existing_activities_set:
+                    existing_activities_set.add(iterator)
                 iterator += timedelta(minutes=1) 
                 
         while possible_visit_time_end < item["end_time"]:
@@ -219,14 +226,14 @@ class ClientEmployeeAvailability(APIView):
                         "default": day_default_availability[0],
                         "non_default": day_non_default_availability
                     }
-                    earliest_date = date_now + timedelta(hours=int((availability_config["min_time_for_registration"])[:-1]))
+                    earliest_date = date_now + timedelta(days=1)
                     if day_non_default_availability["is_free"] == False:
                         if (  
                             (day_non_default_availability["not_assigned"] == True
                                 and day_default_availability[0]["is_free"] == False
                             ) or day_non_default_availability["not_assigned"] == False
                         ):
-                            if earliest_date <= dt.datetime.combine(date, availability_dict[availability_type]["work_hours"]["end_time"]):
+                            if str(earliest_date)[:10] <= str(date)[:10]:
                                 day_appointments = [
                                     dictionary for dictionary in appointments
                                     if dictionary.get("appointment_date") == str(date)[:10]
@@ -250,6 +257,7 @@ class ClientEmployeeAvailability(APIView):
                                         "service_duration": service_duration,
                                         "start_time": start_time,
                                         "end_time": end_time,
+                                        "earliest_date": earliest_date,
                                     })
                                     dates.append({
                                         "date": str(date)[:10],

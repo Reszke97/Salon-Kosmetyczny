@@ -93,7 +93,7 @@
                                             lg="10"
                                         >
                                             <img
-                                                v-if="Object.keys(businessActivityPreviewData).length"
+                                                v-if="Object.keys(businessActivityPreviewData).length && businessActivityPreviewData.image"
                                                 id="b-activity-img"
                                                 :src="businessActivityPreviewData.image.image"
                                                 style="width:100%;height: 100%;"
