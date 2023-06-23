@@ -13,14 +13,14 @@
         cols="12"
       >
         <div class="flex-centered">
-          <h2>
+          <h3>
             <span>
               Zapis na usługę 
             </span>
             <span style="color: orange!important">
               {{ selectedService.service_name }}
             </span>
-          </h2>
+          </h3>
         </div>
         <div class="d-flex flex-column">
           <div
@@ -66,7 +66,7 @@
                       color="success"
                       label
                       text-color="white"
-                      @click="test"
+                      @click="showChosenDatesHours(schedule.dates[(idx * 4) - (5 - jdx)])"
                     >
                       {{ schedule.dates[(idx * 4) - (5 - jdx)].date }}
                       <v-icon right>
@@ -83,7 +83,7 @@
         <div class="pt-2">
           <v-btn 
             @click="closeSignUpForVisitDialog"
-            color="success"
+            color="background"
           >
             <v-icon left>
               mdi-close-circle
@@ -93,15 +93,24 @@
         </div>
       </v-col>
     </v-row>
+    <choose-visit-time
+      v-if="visitTimeDialog"
+      :visit-time-dialog="visitTimeDialog"
+      :selected-date="selectedDate"
+      :component-dims="componentDims"
+      @closeDialog="closeVisitTimeDialog"
+      @successSave="closeVisitTimeDialogAndGetNewData"
+    />
   </v-dialog>
 </template>
 
 <script>
   import axios from "axios"
+  import ChooseVisitTime from "./ChooseVisitTime.vue"
     export default {
         name: "",
         components: {
-            
+          ChooseVisitTime
         },
         props: {
           signUpForVisitDialog: { type: Boolean, required: true },
@@ -112,6 +121,8 @@
         data: () => ({
           employees: [],
           employeeSchedule: [],
+          visitTimeDialog: false,
+          selectedDate: null,
         }),
         computed: {
             
@@ -131,6 +142,7 @@
             }
           },
           async getAvailableDateTime(){
+            this.employeeSchedule = [];
             await axios.get(`http://127.0.0.1:8000/api/v1/client/employee-availability/?${
               this.employees.map((employee, idx) => `employee-${idx}=${employee.emp_id}`).join('&')
             }&service_name=${this.selectedService.service_name}`)
@@ -143,9 +155,20 @@
               })
             })
           },
-          test(){
-            alert("test")
-          }
+          openVisitTimeDialog(){
+            this.visitTimeDialog = true;
+          },
+          closeVisitTimeDialog(){
+            this.visitTimeDialog = false;
+          },
+          showChosenDatesHours(chosenDate){
+            this.selectedDate = chosenDate;
+            this.openVisitTimeDialog();
+          },
+          async closeVisitTimeDialogAndGetNewData(){
+            this.closeVisitTimeDialog();
+            await this.getAvailableDateTime();
+          },
         }
     }
 </script>
