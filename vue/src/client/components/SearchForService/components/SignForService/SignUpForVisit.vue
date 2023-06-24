@@ -66,7 +66,7 @@
                       color="success"
                       label
                       text-color="white"
-                      @click="showChosenDatesHours(schedule.dates[(idx * 4) - (5 - jdx)])"
+                      @click="showChosenDatesHours(schedule.dates[(idx * 4) - (5 - jdx)], schedule.employee)"
                     >
                       {{ schedule.dates[(idx * 4) - (5 - jdx)].date }}
                       <v-icon right>
@@ -98,6 +98,7 @@
       :visit-time-dialog="visitTimeDialog"
       :selected-date="selectedDate"
       :component-dims="componentDims"
+      :selected-service="selectedService"
       @closeDialog="closeVisitTimeDialog"
       @successSave="closeVisitTimeDialogAndGetNewData"
     />
@@ -161,8 +162,15 @@
           closeVisitTimeDialog(){
             this.visitTimeDialog = false;
           },
-          showChosenDatesHours(chosenDate){
-            this.selectedDate = chosenDate;
+          showChosenDatesHours(chosenDate, employee){
+            this.selectedDate = { 
+              ...chosenDate, 
+              employee: {
+                employee_id: employee.emp_id, 
+                employee_first_name: employee.user_info.first_name,
+                employee_last_name: employee.user_info.last_name,
+              }
+            };
             this.openVisitTimeDialog();
           },
           async closeVisitTimeDialogAndGetNewData(){

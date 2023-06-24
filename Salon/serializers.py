@@ -327,6 +327,29 @@ class AvailabilityConfigSerializer(serializers.ModelSerializer):
             "employee"
         )
 
+class ApointmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Appointment
+        fields = (
+            "date",
+            "time_start",
+        )
+
+class AppointmentHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AppointmentHistory
+        fields = (
+            "appointment",
+        )
+
+class CosmeticProcedureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CosmeticProcedure
+        fields = (
+            "appointment",
+            "client",
+            "service",
+        )
 # class EmployeeServices(serializers.ModelSerializer):
 #     service = ServiceSerializer()
 #     class Meta:

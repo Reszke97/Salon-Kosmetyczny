@@ -8,7 +8,7 @@
         class="mt-2"
     >
         <v-col
-            v-for="(item, key) in items"
+            v-for="(business, key) in items"
             :key="key"
             :cols="6"
             class="px-2"
@@ -47,19 +47,19 @@
                 </div>
                 <div style="display: flex">
                     <div style="display: flex">
-                        {{ `${item.city} ${item.post_code}` }}
+                        {{ `${business.city} ${business.post_code}` }}
                     </div>
                     <div class="mx-2" style="display: flex">
-                        {{ `ul. ${item.street} ${item.house_number}` }}
+                        {{ `ul. ${business.street} ${business.house_number}` }}
                     </div>
                     
                 </div>
                 <div
                     style="height:200px"
-                    v-if="item.image"
+                    v-if="business.image"
                 >
                     <img
-                        :src="item.image.image"
+                        :src="business.image.image"
                         style="max-height:200px; width: 100%"
                     />
                 </div>
@@ -68,7 +68,7 @@
                     class="accordion-wrapper"
                 >
                     <v-expansion-panel
-                        v-for="(category, idx) of item.categories"
+                        v-for="(category, idx) of business.categories"
                         :key="idx"
                         style="background-color:#3f51b5;"
                     >
@@ -98,7 +98,16 @@
                                                     right
                                                     v-bind="attrs"
                                                     v-on="on"
-                                                    @click="openSignUpForVisitDialog(item)"
+                                                    @click="openSignUpForVisitDialog({
+                                                        ...item,
+                                                        business: {
+                                                            business_city: business.city,
+                                                            business_post_code: business.post_code,
+                                                            business_street: business.street,
+                                                            business_house_number: business.house_number,
+                                                            business_name: key,
+                                                        }
+                                                    })"
                                                 >
                                                     mdi-plus
                                                 </v-icon>

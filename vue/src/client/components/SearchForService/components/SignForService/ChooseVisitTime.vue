@@ -93,26 +93,39 @@
         :onConfirmAction="saveVisitAndOpenSummaryDialog"
         :setDialog="setConfirmationDialog"
       />
+      <visit-summary
+        v-if="summaryDialog"
+        :dialog="summaryDialog"
+        :summary="summary"
+        @closeSummary="closeSummaryDialog"
+      />
     </v-row>
   </v-dialog>
 </template>
 
 <script>
-  import ConfirmDialog from "../../../../utils/Components/Dialog.vue" 
+  import ConfirmDialog from "../../../../utils/Components/Dialog.vue"
+  import VisitSummary from "./VisitSummary.vue"
+  import { AUTH_API } from "../../../../authorization/AuthAPI"
+
   export default {
     name: "",
     components: {
-      ConfirmDialog
+      ConfirmDialog,
+      VisitSummary,
     },
     props: {
       visitTimeDialog: { type: Boolean, required: true },
       selectedDate: { type: Object, required: true },
       componentDims: { type: Object, required: true },
+      selectedService: { type: Object, required: true },
     },
     emits: [ "closeDialog", "successSave" ],
     data: () => ({
       selectedTime: null,
       confirmationDialog: false,
+      summaryDialog: false,
+      summary: null,
     }),
     computed: {
       mappedDateItems(){
@@ -138,20 +151,45 @@
         this.confirmationDialog = val;
       },
       async saveVisit(resolve, reject){
-        
+        this.summary = {
+          service_id: this.selectedService.service_id,
+          employee_id: this.selectedDate.employee.employee_id,
+          employee_first_name: this.selectedDate.employee.employee_first_name,
+          employee_last_name: this.selectedDate.employee.employee_last_name,
+          service_name: this.selectedService.service_name,
+          business: this.selectedService.business,
+          dateTime: {
+            date: this.selectedDate.date,
+            ...this.selectedTime,
+          }
+        }
+        await AUTH_API.post("/api/v1/client/visit/", { ...this.summary })
+        .then(res => {
+          resolve(res)
+        })
+        .catch(err => {
+          reject(err)
+        })
       },
       async saveVisitAndOpenSummaryDialog(){
-        console.log("aye")
         new Promise( async (resolve, reject) => {
           await this.saveVisit(resolve, reject);
         })
-        .then(res => {
-          setConfirmationDialog(true);
+        .then(() => {
+          this.setConfirmationDialog(false);
+          this.openSummaryDialog();
         })
         .catch(err => {
-
+          console.log(err)
         })
-      }
+      },
+      openSummaryDialog(){
+        this.summaryDialog = true;
+      },
+      closeSummaryDialog(){
+        this.summaryDialog = false;
+        this.$emit("successSave");
+      },
     }
   }
 </script>
