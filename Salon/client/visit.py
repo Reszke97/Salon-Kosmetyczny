@@ -186,41 +186,41 @@ class VisitApi(APIView):
         data = request.data
         user_pk = request.user.pk
         appointment_pk = None
-        visit_available = self.check_if_visit_still_available(
-            data["dateTime"]["start_time"], 
-            data["dateTime"]["end_time"],
-            data["dateTime"]["date"],
-            data["employee_id"]
-        )
-        if visit_available:
-            appointment_serializer = ApointmentSerializer(data = {
-                "date": data["dateTime"]["date"],
-                "time_start": data["dateTime"]["start_time"][:5],
-            })
+        appointment_serializer = ApointmentSerializer(data = {
+            "date": data["dateTime"]["date"],
+            "time_start": data["dateTime"]["start_time"][:5],
+        })
 
-            if appointment_serializer.is_valid():
+        if appointment_serializer.is_valid():
+            if self.check_if_visit_still_available(
+                data["dateTime"]["start_time"], 
+                data["dateTime"]["end_time"],
+                data["dateTime"]["date"],
+                data["employee_id"]
+            ):
                 appointment_pk = appointment_serializer.save().pk
             else:
-                return Response(appointment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
-            appointment_history_serializer = AppointmentHistorySerializer(data = {
-                "appointment": appointment_pk,
-            })
+                return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+        else:
+            return Response(appointment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        appointment_history_serializer = AppointmentHistorySerializer(data = {
+            "appointment": appointment_pk,
+        })
 
-            if appointment_history_serializer.is_valid():
-                appointment_history_serializer.save()
-            else:
-                return Response(appointment_history_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
-            cosmetic_procedure_serializer = CosmeticProcedureSerializer(data = {
-                "appointment": appointment_pk,
-                "client": user_pk,
-                "service": data["service_id"]
-            })
+        if appointment_history_serializer.is_valid():
+            appointment_history_serializer.save()
+        else:
+            return Response(appointment_history_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        cosmetic_procedure_serializer = CosmeticProcedureSerializer(data = {
+            "appointment": appointment_pk,
+            "client": user_pk,
+            "service": data["service_id"]
+        })
 
-            if cosmetic_procedure_serializer.is_valid():
-                cosmetic_procedure_serializer.save()
-                return Response(status=status.HTTP_201_CREATED)
-            else:
-                return Response(cosmetic_procedure_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+        if cosmetic_procedure_serializer.is_valid():
+            cosmetic_procedure_serializer.save()
+            return Response(status=status.HTTP_201_CREATED)
+        else:
+            return Response(cosmetic_procedure_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
