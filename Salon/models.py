@@ -95,10 +95,6 @@ class Appointment(models.Model):
     time_start = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-class AppointmentHistory(models.Model):
-    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
 class BusinessActivity(models.Model):
     name = models.CharField(blank=False, max_length=100)

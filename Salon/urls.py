@@ -17,7 +17,6 @@ from .client.business_activity_info import *
 from .client.employee_availability import *
 from .client.visit import *
 
-
 urlpatterns = [
     path('api/v1/token/refresh/', CustomTokenRefreshView.as_view(), name = 'token_refresh'),
     path('api/v1/token/verify/', CustomTokenVerifyView.as_view(), name = 'token_verify'),
@@ -27,7 +26,8 @@ urlpatterns = [
     path('api/v1/client/business-activities/', BusinessActivities.as_view(), name = 'business_activities'),
     path('api/v1/client/employee-preview/', ServiceApiClient.as_view(), name = 'services_clients'),
     path('api/v1/client/employee-availability/', ClientEmployeeAvailability.as_view(), name = 'client_employee_availability'),
-    path('api/v1/client/visit/', VisitApi.as_view(), name = 'client_visit_api'),
+    path('api/v1/client/visit/', VisitApi.as_view(), name = 'client_register_visit_api'),
+    path('api/v1/client/my-visits/', ClientVisitApi.as_view(), name = 'client_my_visit_api'),
 
 
     path('api/v1/user/register/', CustomUserCreate.as_view(), name = "register"),

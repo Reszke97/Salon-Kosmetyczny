@@ -2,17 +2,15 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 
-import Register from '../components/registration/Register.vue'
-import Login from '../components/authentication/Login.vue'
-import Logout from '../components/authentication/Logout.vue'
-import PasswordChange from '../components/Settings/components/PasswordChange.vue'
-import ResetPassword from '../components/authentication/ResetPassword.vue'
-import PasswordResetEmail from '../components/authentication/ResetPasswordEmail.vue'
-// import SearchForService from '../components/appointment/views/SearchForService.vue'
-import AllBusinesses from '../components/SearchForService/views/AllBusinesses.vue'
-import SettingsPanel from '../components/Settings/views/SettingsPanel.vue'
-// import Calendar from '../components/employee/views/Calendar.vue'
-// import Service from "../components/service/views/Service.vue"
+import Register from '../components/registration/Register.vue';
+import Login from '../components/authentication/Login.vue';
+import Logout from '../components/authentication/Logout.vue';
+import PasswordChange from '../components/Settings/components/PasswordChange.vue';
+import ResetPassword from '../components/authentication/ResetPassword.vue';
+import PasswordResetEmail from '../components/authentication/ResetPasswordEmail.vue';
+import AllBusinesses from '../components/SearchForService/views/AllBusinesses.vue';
+import SettingsPanel from '../components/Settings/views/SettingsPanel.vue';
+import DisplayVisits from "../components/Visits/DisplayVisits.vue";
 
 Vue.use(VueRouter)
 
@@ -87,6 +85,12 @@ const routes = [
     path: '/settings',
     name: 'Settings',
     component: SettingsPanel
+  },
+
+  {
+    path: '/visits',
+    name: 'Visits',
+    component: DisplayVisits
   },
 
   // {

@@ -11,6 +11,7 @@ from datetime import timedelta
 from django.db import connection
 from operator import itemgetter
 from ..employee.utils.cursor_to_array_of_dicts import cursor_to_array_of_dicts
+from ..employee.utils.image_actions import map_images
 
 class VisitApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
@@ -204,15 +205,6 @@ class VisitApi(APIView):
         else:
             return Response(appointment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        appointment_history_serializer = AppointmentHistorySerializer(data = {
-            "appointment": appointment_pk,
-        })
-
-        if appointment_history_serializer.is_valid():
-            appointment_history_serializer.save()
-        else:
-            return Response(appointment_history_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
         cosmetic_procedure_serializer = CosmeticProcedureSerializer(data = {
             "appointment": appointment_pk,
             "client": user_pk,
@@ -224,3 +216,54 @@ class VisitApi(APIView):
             return Response(status=status.HTTP_201_CREATED)
         else:
             return Response(cosmetic_procedure_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class ClientVisitApi(APIView):
+    permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
+
+    def get_client_visits(self, user, visit_type):
+        date_now = dt.datetime.now()
+        time = str(date_now.time())[:5]
+        date = str(date_now.date())
+        where_query = """
+            where scp.client_id = %s
+            and concat(sa.date, ' ', sa.time_start) >= %s
+        """
+        if visit_type == "historical":
+            where_query = """
+                where scp.client_id = %s
+                and concat(sa.date, ' ', sa.time_start) <= %s
+            """
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+                select
+                    ss.name as 'service_name', ss.price, su.first_name as 'employee_name', su.last_name as 'employee_last_name', 
+                    DATE_FORMAT((Time(sa.time_start) + INTERVAL ss.duration MINUTE), '%%H:%%i') as 'appointment_end_time',
+                    su.phone_number as 'employee_phone', su.email as 'employee_mail', sa.date as 'appointment_date', 
+                    sa.time_start as 'appointment_start_time', sba.name as 'business_name', sba.post_code as 'business_post_code',
+                    sba.apartment_number as 'business_apartment_number', sba.house_number as 'business_house_number', 
+                    sba.contact_phone as 'business_phone', sba.city as 'business_city', sbai.content as 'business_img', 
+                    sba.street as 'business_street'
+                from salon_cosmeticprocedure scp
+                join salon_appointment sa on sa.id = scp.appointment_id
+                join salon_service ss on ss.id = scp.service_id
+                join salon_employee se on se.id = ss.employee_id
+                join salon_user su on su.id = se.user_id
+                join salon_businessactivity sba on sba.id = se.business_activity_id 
+                join salon_businessactivityimage sbai on sbai.business_activity_id = sba.id
+            """ + where_query + " order by sa.date, sa.time_start"
+        , [user.pk, date + ' ' + time])
+
+        return cursor_to_array_of_dicts(cursor)
+
+    def get(self, request):
+        visit_type = request.query_params.get("visitType")
+        items = self.get_client_visits(request.user, visit_type)
+        for idx, item in enumerate(items):
+            if item["business_img"]:
+                class Img():
+                    def __init__(self, content):
+                        self.content = content
+                items[idx]["business_img"] = map_images(Img(item["business_img"]))
+        return Response(status=status.HTTP_200_OK, data=items)
+

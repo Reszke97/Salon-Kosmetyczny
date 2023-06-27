@@ -335,13 +335,6 @@ class ApointmentSerializer(serializers.ModelSerializer):
             "time_start",
         )
 
-class AppointmentHistorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AppointmentHistory
-        fields = (
-            "appointment",
-        )
-
 class CosmeticProcedureSerializer(serializers.ModelSerializer):
     class Meta:
         model = CosmeticProcedure

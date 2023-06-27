@@ -64,10 +64,10 @@ input[type="time"]::-webkit-calendar-picker-indicator{
     border-radius: 50px!important;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: #5b92ea!important;
+    background: #0052ea!important;
 }
 ::-webkit-scrollbar-track {
-    background: #0844a4!important;
+    background: #5b92ea!important;
     border: 43px none #621d1d!important;
     border-radius: 50px!important;
 }

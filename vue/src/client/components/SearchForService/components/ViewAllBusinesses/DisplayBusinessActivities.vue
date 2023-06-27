@@ -36,7 +36,7 @@
                                     right
                                     v-bind="attrs"
                                     v-on="on"
-                                    @click="previewBusinessActivity(item)"
+                                    @click="previewBusinessActivity(business)"
                                 >
                                     mdi-information 
                                 </v-icon>

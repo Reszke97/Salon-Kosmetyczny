@@ -68,7 +68,6 @@
           loaded: false,
           menuItems: [
             { title: "login", path: "login", icon: "mdi-login" },
-            { title: "Ustawienia", path: "/settings", icon: "mdi-cog-outline" },
           ],
         }
       },
@@ -82,7 +81,7 @@
           if(this.role && this.isAuthenticated){
             let menuItems = []
             menuItems = [
-              this.auth,
+              ...this.auth,
               { title: "Ustawienia", path: "/settings", icon: "mdi-cog-outline" },
             ]
             return menuItems
@@ -91,8 +90,15 @@
         },
         auth(){
           return this.isAuthenticated
-          ? { title: 'wyloguj', path: '/logout', icon: 'mdi-logout' }
-          : { title: 'login', path: '/login', icon: 'mdi-login' }
+          ? [
+              {
+                title: 'wyloguj', path: '/logout', icon: 'mdi-logout'
+              },
+              {
+                title: 'wizyty', path: '/visits', icon: 'mdi-calendar-blank-multiple'
+              },
+            ]
+          : [{ title: 'login', path: '/login', icon: 'mdi-login' }]
         },
       },
     }
