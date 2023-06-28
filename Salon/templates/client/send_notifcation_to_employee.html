@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <body style="font-family: Roboto;">
+        <div 
+            style="
+                background-color: rgb(63, 81, 181); 
+                min-height: 80px;
+                display: flex;
+                justify-content: center;
+                width: 100%;
+                color: white!important;
+                padding-right: 8px;
+                padding-left: 8px;
+            "
+        >
+            <h1>
+                Salon Kosmetyczny App
+            </h1>
+        </div>
+        <div style="background-color: #0844a4; color: white!important; padding: 8px; font-size: 16px;">
+            <div 
+                style="
+                    width: 100%;
+                    color: white!important;
+                "
+            >
+                <span style="color: white!important;"> Witaj <b>{{ full_employee_name }}!</b> </span>
+            </div>
+            <div 
+                style="
+                    width: 100%;
+                    color: white!important;
+                "
+            >
+                <span style="color: white!important;">
+                    Dnia <span style="color: orange; font-weight: bold;">{{ appointment_date }}</span> w godzinach <span style="color: orange; font-weight: bold;">{{ appointment_start_time }} - {{ appointment_end_time }}</span> dodano nową wizytę.
+                </span>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,17 +1,20 @@
 from rest_framework.permissions import (
     IsAuthenticated,
 )
-from ..auth.auth_backend import CheckIfPasswordWasChanged
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from ..serializers import *
 import datetime as dt
 from datetime import timedelta
 from django.db import connection
 from operator import itemgetter
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
+from ..serializers import *
 from ..employee.utils.cursor_to_array_of_dicts import cursor_to_array_of_dicts
 from ..employee.utils.image_actions import map_images
+from ..auth.auth_backend import CheckIfPasswordWasChanged
+from ..auth.auth_backend import EmailThread
 
 class VisitApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
@@ -45,8 +48,8 @@ class VisitApi(APIView):
             for avail in availability:
                 if avail["is_default"] == 1:
                     if(avail["is_break"] == 0 and avail["is_free"] == 0):
-                        modified_availability["time"]["start"] = self.convert_time_from_string_to_time_object(avail["start_time"], "%H:%M")
-                        modified_availability["time"]["end"] = self.convert_time_from_string_to_time_object(avail["end_time"], "%H:%M")
+                        modified_availability["work_time"]["start"] = self.convert_time_from_string_to_time_object(avail["start_time"], "%H:%M")
+                        modified_availability["work_time"]["end"] = self.convert_time_from_string_to_time_object(avail["end_time"], "%H:%M")
                     elif avail["is_break"] == 1 and avail["is_free"] == 0:
                         modified_availability["availability"]["breaks"].append(avail)
                     else:
@@ -116,7 +119,7 @@ class VisitApi(APIView):
             activity_end = timedelta(hours=activity_end.hour, minutes=activity_end.minute)
             iterator = activity_start
 
-            while iterator <= activity_end:
+            while iterator < activity_end:
                 if iterator not in existing_activities_set:
                     existing_activities_set.add(iterator)
                 iterator += timedelta(minutes=1) 
@@ -183,6 +186,24 @@ class VisitApi(APIView):
             else:
                 return False
             
+    def send_notification_to_employee(self, user, data):
+        emp = Employee.objects.get(pk=data["employee_id"])
+        user_employee = User.objects.get(pk=emp.user_id)
+
+        subject = "Nowa wizyta"
+        email_body = render_to_string('client/send_notifcation_to_employee.html', {
+            "full_client_name": user.first_name + ' ' + user.last_name,
+            "appointment_date": data["dateTime"]["date"],
+            "appointment_start_time": data["dateTime"]["start_time"][:5],
+            "appointment_end_time": data["dateTime"]["end_time"][:5],
+            "full_employee_name": user_employee.first_name + ' ' + user_employee.last_name
+        })
+        from_email = settings.EMAIL_FROM_USER
+        email = EmailMultiAlternatives( subject, email_body, from_email, to=[user_employee.email])
+        email.mixed_subtype = "related"
+        email.attach_alternative(email_body, "text/html")
+        EmailThread(email).start()
+            
     def post(self, request):
         data = request.data
         user_pk = request.user.pk
@@ -213,9 +234,10 @@ class VisitApi(APIView):
 
         if cosmetic_procedure_serializer.is_valid():
             cosmetic_procedure_serializer.save()
-            return Response(status=status.HTTP_201_CREATED)
         else:
             return Response(cosmetic_procedure_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        self.send_notification_to_employee(request.user, data)
+        return Response(status=status.HTTP_201_CREATED)
         
 class ClientVisitApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
@@ -243,7 +265,7 @@ class ClientVisitApi(APIView):
                     sa.time_start as 'appointment_start_time', sba.name as 'business_name', sba.post_code as 'business_post_code',
                     sba.apartment_number as 'business_apartment_number', sba.house_number as 'business_house_number', 
                     sba.contact_phone as 'business_phone', sba.city as 'business_city', sbai.content as 'business_img', 
-                    sba.street as 'business_street'
+                    sba.street as 'business_street', sa.id as 'appointment_id'
                 from salon_cosmeticprocedure scp
                 join salon_appointment sa on sa.id = scp.appointment_id
                 join salon_service ss on ss.id = scp.service_id
@@ -266,4 +288,58 @@ class ClientVisitApi(APIView):
                         self.content = content
                 items[idx]["business_img"] = map_images(Img(item["business_img"]))
         return Response(status=status.HTTP_200_OK, data=items)
+    
+    def send_delete_email_for_employee(self, user, data):
+        subject = "Odwołanie wizyty"
+        email_body = render_to_string('client/cancel_visit.html', {
+            "full_client_name": user.first_name + ' ' + user.last_name,
+            "appointment_date": data["appointment_date"],
+            "appointment_start_time": data["appointment_start_time"],
+            "appointment_end_time": data["appointment_end_time"],
+            "full_employee_name": data["employee_name"] + ' ' + data["employee_last_name"]
+        })
+        from_email = settings.EMAIL_FROM_USER
+        email = EmailMultiAlternatives( subject, email_body, from_email, to=[data["employee_mail"]])
+        email.mixed_subtype = "related"
+        email.attach_alternative(email_body, "text/html")
+        EmailThread(email).start()
+    
+    def delete(self, request):
+        data = request.data
+        user = request.user
+        appointment_id = request.query_params.get("appointment_id")
+
+        cosmetic_procedure = CosmeticProcedure.objects.get(appointment_id=appointment_id, client_id=user.pk)
+        appointment = Appointment.objects.get(pk=appointment_id)
+        cosmetic_procedure.delete()
+        appointment.delete()
+        self.send_delete_email_for_employee(user, data)
+
+        return Response(status=status.HTTP_200_OK)
+    
+class MessageToEmployee(APIView):
+    permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
+
+    def send_message_to_employee(self, user, data):
+        subject = "Komentarz do wizyty"
+        email_body = render_to_string('client/send_message_to_employee.html', {
+            "full_client_name": user.first_name + ' ' + user.last_name,
+            "duration": data["duration"],
+            "full_employee_name": data["employee_full_name"],
+            "message": data["message"],
+            "date": data["date"],
+            "user_mail": user.email,
+            "date_now": str(dt.datetime.now())[:19]
+        })
+        from_email = settings.EMAIL_FROM_USER
+        email = EmailMultiAlternatives( subject, email_body, from_email, to=[data["employee_mail"]])
+        email.mixed_subtype = "related"
+        email.attach_alternative(email_body, "text/html")
+        EmailThread(email).start()
+
+    def post(self, request):
+        data = request.data
+        user = request.user
+        self.send_message_to_employee(user, data)
+        return Response(status=status.HTTP_200_OK)
 

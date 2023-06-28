@@ -28,6 +28,7 @@ urlpatterns = [
     path('api/v1/client/employee-availability/', ClientEmployeeAvailability.as_view(), name = 'client_employee_availability'),
     path('api/v1/client/visit/', VisitApi.as_view(), name = 'client_register_visit_api'),
     path('api/v1/client/my-visits/', ClientVisitApi.as_view(), name = 'client_my_visit_api'),
+    path('api/v1/client/message/', MessageToEmployee.as_view(), name = 'message_to_employee'),
 
 
     path('api/v1/user/register/', CustomUserCreate.as_view(), name = "register"),

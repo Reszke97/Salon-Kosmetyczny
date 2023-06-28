@@ -24,7 +24,7 @@
               summary.business.business_street
             }${
               summary.business.business_house_number
-            }`  
+            }${summary.business.business_apartment_number ? "/" + summary.business.business_apartment_number : ""}`  
           }}
         </span>
       </div>

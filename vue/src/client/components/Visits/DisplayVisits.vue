@@ -64,7 +64,9 @@
                             </div>
                         </v-card-subtitle>
 
-                        <v-card-actions>
+                        <v-card-actions
+                            v-if="selectedVisitType==='planned'"
+                        >
                             <div>
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
@@ -97,6 +99,7 @@
                                         height="40px"
                                         right
                                         width="40px"
+                                        @click="setMessageDialog(true, visit)"
                                     >
                                         <v-icon v-on="on" color="indigo lighten-4">mdi-message-text</v-icon>
                                         </v-btn>
@@ -116,7 +119,7 @@
                         </v-avatar>
                         <div class="d-flex flex-column">
                             <span>{{`${visit.business_city} ${visit.business_post_code}`}}</span>
-                            <span>{{`ul. ${visit.business_street} ${visit.business_house_number}`}}</span>
+                            <span>{{`ul. ${visit.business_street} ${visit.business_house_number}${visit.business_apartment_number ? "/" + visit.business_apartment_number: ""}`}}</span>
                         </div>
                     </div>
                 </div>
@@ -127,6 +130,14 @@
                 :onConfirmAction="deleteVisit"
                 :setDialog="setConfirmationDialog"
             />
+            <message-to-employee
+                v-if="showMessageDialog"
+                :selectedVisit="selectedVisit"
+                :showDialog="showMessageDialog"
+                :componentDims="componentDims"
+                @closeDialog="setMessageDialog(false)"
+                @sendMessage="sendMessage"
+            />
         </v-col>
   </v-row>
 </template>
@@ -135,6 +146,7 @@
     import { AUTH_API } from "../../authorization/AuthAPI";
     import { appendMimeType } from "../../utils";
     import ConfirmDialog from "../../utils/Components/Dialog.vue"
+    import MessageToEmployee from "./MessageToEmployee.vue";
 
     const visitTypes = [
         "planned",
@@ -143,7 +155,8 @@
     export default {
         name: "",
         components: {
-            ConfirmDialog
+            ConfirmDialog,
+            MessageToEmployee,
         },
         props: {
             
@@ -153,6 +166,8 @@
             visits: [],
             confirmationDialog: false,
             selectedVisit: null,
+            showMessageDialog: false,
+            componentDims: null,
         }),
         inject: ["screenSize"],
         computed: {
@@ -162,6 +177,36 @@
             await this.getVisits();
         },
         methods: {
+            async sendMessage(message){
+                await AUTH_API.post("/api/v1/client/message/", { 
+                    employee_mail: this.selectedVisit.employee_mail,
+                    employee_full_name: `${this.selectedVisit.employee_name} ${this.selectedVisit.employee_last_name}`,
+                    date: this.selectedVisit.appointment_date,
+                    duration: `${this.selectedVisit.appointment_start_time} - ${this.selectedVisit.appointment_end_time}`,
+                    message: message,
+                })
+                .then(() => {
+                    alert("Wysłano wiadomość");
+                    this.setMessageDialog(false);
+                })
+                .catch(() => {
+                    alert("Coś poszło nie tak");
+                    this.setMessageDialog(false);
+                })
+            },
+            setComponentDims(){
+                this.componentDims = {
+                    height: `${document.getElementById('visits').offsetHeight - 200}px`,
+                    width: `${document.getElementById('visits').offsetWidth}px`,
+                }
+            },
+            setMessageDialog(dialog, selectedVisit){
+                if(dialog) {
+                    this.setComponentDims();
+                    this.selectedVisit = selectedVisit;
+                }
+                this.showMessageDialog = dialog;
+            },
             openConfirmationDialog(selectedVisit){
                 this.selectedVisit = selectedVisit;
                 this.setConfirmationDialog(true);
@@ -170,7 +215,18 @@
                 this.selectedVisit = value;
             },
             async deleteVisit(){
-                console.log("hello")
+                await AUTH_API.delete(`/api/v1/client/my-visits/?appointment_id=${this.selectedVisit.appointment_id}`, {
+                    data: this.selectedVisit 
+                })
+                .then( async () => {
+                    alert("Twoja wizyta została usunięta");
+                    this.setConfirmationDialog(false);
+                    await this.getVisits();
+                })
+                .catch(() => {
+                    alert("Coś poszło nie tak");
+                    this.setConfirmationDialog(false);
+                })
             },
             setConfirmationDialog(val){
                 this.confirmationDialog = val;

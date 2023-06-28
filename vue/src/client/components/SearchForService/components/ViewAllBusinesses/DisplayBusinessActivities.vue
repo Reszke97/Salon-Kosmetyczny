@@ -50,7 +50,7 @@
                         {{ `${business.city} ${business.post_code}` }}
                     </div>
                     <div class="mx-2" style="display: flex">
-                        {{ `ul. ${business.street} ${business.house_number}` }}
+                        {{ `ul. ${business.street} ${business.house_number}${business.apartment_number ? "/" + business.apartment_number : "" }` }}
                     </div>
                     
                 </div>
