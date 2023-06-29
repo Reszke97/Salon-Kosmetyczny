@@ -11,8 +11,10 @@ from .utils.non_working_days import NonWorkingDays
 from rest_framework.response import Response
 from django.http import HttpResponse
 from rest_framework import status
+from django.db import connection
+from .utils.cursor_to_array_of_dicts import cursor_to_array_of_dicts
+from .utils.weekdays import weekdays
 import datetime as dt
-import calendar
 
 class Holidays(APIView):
     # permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
@@ -31,202 +33,187 @@ class HolidaysForThreeYears(APIView):
         non_working_days_next_year = NonWorkingDays(str(int(request.query_params.get("year")) +1)).non_working_days_with_year
         non_working_days = non_working_days_prev_year + non_working_days_current_year + non_working_days_next_year
         return Response(data=non_working_days, status=status.HTTP_200_OK)
-
-class GetMonthDays(APIView):
+    
+class EmployeeApointmentsApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
-    def __init__(self):
-        self.monthly_calendar = {
-            "days": {
-                "Poniedziałek": [],
-                "Wtorek": [],
-                "Środa": [],
-                "Czwartek": [],
-                "Piątek": [],
-                "Sobota": [],
-                "Niedziela": []
-            },
-            "day_count": 0,
-            "dayOfMonth": 0,
-            "week":0,
-            "year":0,
-            "next_month_days": 0,
-            "last_month_days": 0,
-            "current_month_days": 0,
-            "week_start": "",
-            "week_end":""
-        }
-    
-    def assignBaseData(self, month = None, year = None, dayOfMonth = None):
-        date_now = dt.datetime.now()
-        self.today = date_now.day
-        self.dayOfMonth = int(dayOfMonth) if dayOfMonth else self.today
-        self.month = int(month) if month else date_now.month
-        self.year = int(year) if year else date_now.year
-        self.week = (
-            dt.datetime(month = self.month, day = self.dayOfMonth, year = self.year).isocalendar().week 
-            if dayOfMonth and month and year
-            else date_now.isocalendar().week
-        )
-        self.monthly_calendar["month"] = {
-            "number": self.month,
-            "name": self.get_month_name(self.month)
-        }
-        self.monthly_calendar["year"] = self.year
-        self.always_day_one = 1
-        self.last_day_current_month = calendar.monthrange(self.year, self.month)
-        self.first_week_day_current_month = dt.datetime(self.year,self.month,self.always_day_one).weekday()
-        self.last_month = self.month - 1 if self.month > 1 else 12
-        self.last_year = self.year - 1
-        self.next_year = self.year + 1
+    earliest_date = None
+    latest_date = None
+    user = None
 
-        if self.last_month < 12:
-            self.last_month_last_day = (
-                calendar.monthrange(self.year, self.last_month)[1] - (self.first_week_day_current_month - 1) 
-            )
-            self.last_month_days = calendar.monthrange(self.year, self.last_month)[1]
-        else:
-            self.last_month_last_day = (
-                calendar.monthrange(self.last_year, self.last_month)[1] - (self.first_week_day_current_month - 1)
-            )
-            self.last_month_days = calendar.monthrange(self.last_year, self.last_month)[1]
+    def set_earliest_and_latest_date(self, data):
+        self.earliest_date = data[0]["date"]
+        self.latest_date = data[len(data) -1]["date"]
 
-        if self.month < 12:
-            self.next_month = self.month + 1
-            self.next_month_days = calendar.monthrange(self.year, self.next_month)[1]
-        else:
-            self.next_month = 1
-            self.next_month_days = calendar.monthrange(self.next_year, self.next_month)[1]
-
-        self.first_week_day_next_month = dt.datetime(
-            self.next_year if self.month == 12 else self.year,
-            self.next_month,
-            self.always_day_one
-        ).weekday()
-    
-    def getDay(self,day):
-        return {
-            0: 'Poniedziałek',
-            1: 'Wtorek',
-            2: 'Środa',
-            3: 'Czwartek',
-            4: 'Piątek',
-            5: 'Sobota',
-            6: 'Niedziela',
-        }[day]
-
-    def get_month_name(self, month):
-        return {
-            1: 'Styczeń',
-            2: 'Luty',
-            3: 'Marzec',
-            4: 'Kwiecień',
-            5: 'Maj',
-            6: 'Czerwiec',
-            7: 'Lipiec',
-            8: 'Sierpień',
-            9: 'Wrzesień',
-            10: 'Październik',
-            11: 'Listopad',
-            12: 'Grudzień',
-        }[month]
-
-    def assign_days(self, next_day, day_number, month):
-        dayOfMonth = {
-            "week_day": self.getDay(next_day),
-            "day_number": day_number,
-        }
-        self.monthly_calendar["days"][dayOfMonth["week_day"]].append(
-            {
-                "number": dayOfMonth["day_number"],
-                "month": month,
-                "month_in_words": self.get_month_name(month),
-                "holiday": self.non_working_days.checkForHoliday(day_number, month)
+    def group_non_default_availability(self, availability, dates):
+        days = []
+        for day in dates:
+            day_items = {
+                "date": day["date"],
+                "weekday": str(dt.datetime.strptime(day["date"], "%Y-%m-%d").date().strftime("%A")).lower(),
+                "is_default": False,
+                "is_appointment": False,
+                "breaks": [],
+                "work_time": {
+                    "start_time": None,
+                    "end_time": None,
+                    "is_free": False,
+                }
             }
-        )
-        self.monthly_calendar["day_count"] += 1
-        return({
-            "next_day": next_day + 1 if next_day < 6 else 0,
-            "day_number": day_number + 1
-        })
+            exists = False
+            for avail in availability:
+                if avail["date"] == day["date"]:
+                    exists = True
+                    if avail["is_break"] == 1:
+                        day_items["breaks"].append({
+                            "start_time": avail["start_time"],
+                            "end_time": avail["end_time"],
+                        })
+                    elif avail["is_free"] == 1:
+                        day_items["work_time"]["is_free"] = 1
+                        break
+                    else:
+                        day_items["work_time"]["start_time"] = avail["start_time"]
+                        day_items["work_time"]["end_time"] = avail["end_time"]
+            if exists:
+                days.append(day_items)
+        return days
+
+
+    def group_default_availability(self, data):
+        days = []
+        for day in weekdays:
+            day_items = {
+                "weekday": day,
+                "is_default": True,
+                "is_appointment": False,
+                "breaks": [],
+                "work_time": {
+                    "start_time": None,
+                    "end_time": None,
+                    "is_free": False,
+                }
+            }
+            for avail in data:
+                if avail["weekday"] == day:
+                    if avail["is_break"] == 1:
+                        day_items["breaks"].append({
+                            "start_time": avail["start_time"],
+                            "end_time": avail["end_time"],
+                        })
+                    elif avail["is_free"] == 1:
+                        day_items["work_time"]["is_free"] = 1
+                        break
+                    else:
+                        day_items["work_time"]["start_time"] = avail["start_time"]
+                        day_items["work_time"]["end_time"] = avail["end_time"]
+            days.append(day_items)
+        return days
+
+    def get_employee_non_default_availability(self, dates):
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+                SELECT 
+                    sea.start_time, sea.end_time, sea.is_default, sea.is_free,
+                    sea.is_break, sea.`weekday`, 0 AS 'is_appointment', sea.`date`
+                FROM salon_user su
+                JOIN salon_employee se ON se.user_id = su.id
+                JOIN salon_employeeavailabilityconfiguration seac ON seac.employee_id = se.id
+                JOIN salon_employeeavailability sea ON sea.availability_config_id = seac.id
+                WHERE su.id = %s
+                    AND sea.is_default = 0
+                    AND sea.`date` >= %s
+                    AND sea.`date` <= %s
+            """
+        , [self.user.pk, self.earliest_date, self.latest_date])
+        return(self.group_non_default_availability(cursor_to_array_of_dicts(cursor), dates))
+
+    def get_employee_default_availability(self):
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+                SELECT 
+                    sea.start_time, sea.end_time, sea.is_default, sea.is_free,
+                    sea.is_break, sea.`weekday`, 0 AS 'is_appointment'
+                FROM salon_user su
+                JOIN salon_employee se ON se.user_id = su.id
+                JOIN salon_employeeavailabilityconfiguration seac ON seac.employee_id = se.id
+                JOIN salon_employeeavailability sea ON sea.availability_config_id = seac.id
+                WHERE su.id = %s
+                    AND sea.is_default = 1
+            """
+        , [self.user.pk])
+        return(self.group_default_availability(cursor_to_array_of_dicts(cursor)))
     
-    def get_days(
-        self, action_type = "current", 
-        month = None, year = None, calendar_type = "monthly", dayOfMonth = None,
-        week = None
-    ):
-        self.assignBaseData(month, year, dayOfMonth)
-        day_info = {}
-        if calendar_type == "monthly":
-            if action_type == "next":
-                day_info["next_day"] = self.first_week_day_next_month
-                day_info["day_number"] = 1
-                while self.monthly_calendar["day_count"] < 42:
-                    day_info = self.assign_days(day_info["next_day"], day_info["day_number"], self.next_month)
-            elif action_type == "prev":
-                day_info["next_day"] = 0
-                day_info["day_number"] = self.last_month_last_day
-                while day_info["next_day"] < self.first_week_day_current_month:
-                    day_info = self.assign_days(day_info["next_day"], day_info["day_number"], self.last_month)
-            else:
-                day_info["next_day"] = self.first_week_day_current_month
-                day_info["day_number"] = 1
-                while day_info["day_number"] <= self.last_day_current_month[1]:
-                    day_info = self.assign_days(day_info["next_day"], day_info["day_number"], self.month)
-                    
-        elif calendar_type == "weekly":
-            year = self.year
-            if self.month == 1 and self.week >= 52:
-                year -= 1
-            if self.month == 12 and self.week == 1:
-                year += 1
-            given_year_week = str(year) + '-' + 'W' + str(self.week)
-            date = dt.datetime.strptime(given_year_week + '-1', "%G-W%V-%u")
-            ## zwraca pierwszy dzień tygodnia na podstawie podanych danych
-            day_info["next_day"] = 0
-            day_info["day_number"] = date.day
-            month_days = self.last_day_current_month[1]
-            if self.month > date.month:
-                month_days = self.last_month_days
+    def group_appointments(self, appointments, dates):
+        days = []
+        for day in dates:
+            day_items = {
+                "date": day["date"],
+                "weekday": str(dt.datetime.strptime(day["date"], "%Y-%m-%d").date().strftime("%A")).lower(),
+                "is_appointment": True,
+                "day_appointments": [],
+            }
+            exists = False
+            for appointment in appointments:
+                if appointment["date"] == day["date"]:
+                    exists = True
+                    day_items["day_appointments"].append(appointment)
+            if exists:
+                days.append(day_items)
+        return days
+    
+    def get_employee_appointments(self, dates):
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+                SELECT 
+                    suc.first_name AS 'client_name', suc.last_name AS 'client_last_name', suc.email AS 'client_mail',
+                    ss.duration, ss.`name` AS 'service_name', ss.price, sa.`date`, LOWER(DAYNAME(sa.`date`)) AS 'day_name', sa.time_start,  
+                    DATE_FORMAT((Time(sa.time_start) + INTERVAL ss.duration MINUTE), '%%H:%%i') as 'end_time', 1 AS 'is_appointment'
+                FROM salon_user su
+                JOIN salon_employee se ON se.user_id = su.id
+                JOIN salon_service ss ON ss.employee_id = se.id
+                JOIN salon_cosmeticprocedure scp ON scp.service_id = ss.id
+                JOIN salon_appointment sa ON scp.appointment_id = sa.id
+                JOIN salon_user suc ON scp.client_id = suc.id
+                WHERE su.id = %s
+                    AND sa.`date` >= %s
+		            AND sa.`date` <= %s
+                ORDER BY sa.date, sa.time_start
+            """
+        , [self.user.pk, self.earliest_date, self.latest_date])
+        return(self.group_appointments(cursor_to_array_of_dicts(cursor), dates))
+    
+    def combine_appointments_and_availability(self, dates, appointments, def_avail, non_def_avail):
+        non_default_dates = []
+        combined_data = []
+        for day in dates:
+            weekday = str(dt.datetime.strptime(day["date"], "%Y-%m-%d").date().strftime("%A")).lower(),
+            for appointment in appointments:
+                if appointment["date"] == day["date"]:
+                    combined_data.append(appointment)
+            for non_def_av in non_def_avail:
+                if non_def_av["date"] == day["date"]:
+                    non_default_dates.append(day["date"])
+                    combined_data.append(non_def_av)
+            for def_av in def_avail:
+                if weekday[0] == def_av["weekday"] and day["date"] not in non_default_dates:
+                    combined_data.append({**def_av, "date": day["date"]})
+        return { "events": combined_data, "def_avail":  def_avail }
+    
+    def get_employee_calendar(self, dates):
+        appointments = self.get_employee_appointments(dates)
+        default_availability = self.get_employee_default_availability()
+        non_default_availability = self.get_employee_non_default_availability(dates)
+        return self.combine_appointments_and_availability(dates, appointments, default_availability, non_default_availability)
 
-            month = date.month
-            week_start_month = date.month
-            week_start_year = date.year
-            week_end_year = date.year
-            while self.monthly_calendar["day_count"] < 7:
-                if day_info["day_number"] > month_days:
-                    month += 1
-                    if month > 12:
-                        week_end_year = date.year + 1
-                        month = 1
-                    day_info["day_number"] = 1
-                day_info = self.assign_days(day_info["next_day"], day_info["day_number"], month)
-            self.monthly_calendar["week_start"] = str(date.day) + ' ' + self.get_month_name(week_start_month) + ' ' + str(week_start_year)
-            self.monthly_calendar["week_end"] = str(day_info["day_number"] - 1) + ' ' + self.get_month_name(month) + ' ' + str(week_end_year)
-            
-        # elif calendar_type == "daily":
-
-
-
-    def get(self, request, *args, **kwargs):
-        month = request.query_params.get("month")
-        year = request.query_params.get("year")
-        dayOfMonth = request.query_params.get("dayOfMonth")
-        self.non_working_days  = NonWorkingDays(year)
-
-        if request.query_params.get("calendarType") == "weekly":
-            self.get_days(calendar_type = "weekly", year = year, dayOfMonth = dayOfMonth, month = month)
-        elif request.query_params.get("calendarType") == "monthly":
-            self.get_days("prev", month, year)
-            self.get_days("current", month, year)
-            self.get_days("next", month, year)
-            
-        # elif request.query_params.get("daily"):
-        self.monthly_calendar["week"] = self.week
-        self.monthly_calendar["dayOfMonth"] = self.dayOfMonth
-        self.monthly_calendar["year"] = self.year
-        self.monthly_calendar["next_month_days"] = self.next_month_days
-        self.monthly_calendar["last_month_days"] = self.last_month_days
-        self.monthly_calendar["current_month_days"] = self.last_day_current_month[1]    
-        return Response(self.monthly_calendar)
-
+    def post(self, request):
+        self.user = request.user
+        data = request.data
+        if type(data) is not list:
+            data = list(data.values())
+        self.set_earliest_and_latest_date(data)
+        if request.query_params.get("operation") == "get":
+            return Response(data=self.get_employee_calendar(data), status=status.HTTP_200_OK)
 

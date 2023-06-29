@@ -42,7 +42,6 @@ urlpatterns = [
     path('api/v1/user/getuserrole/', GetUserRole.as_view(), name = 'get_user_role'),
     
     path('api/v1/employee/token/', CustomTokenObtainPairViewEmployee.as_view(), name = 'token_obtain_pair_employee'),
-    path('api/v1/employee/getmonth/', GetMonthDays.as_view(), name = 'get_month'),
     path('api/v1/employee/service/', ServiceApi.as_view(), name = 'service'),
     path('api/v1/employee/images/', ImagesApi.as_view(), name = 'images'),
     path('api/v1/employee/employee-info/', EmployeeApi.as_view(), name = 'employee_info'),
@@ -58,5 +57,6 @@ urlpatterns = [
     path('api/v1/employee/non-working-days/', Holidays.as_view(), name = 'non_working_days'),
     path('api/v1/employee/non-working-days-three-years/', HolidaysForThreeYears.as_view(), name = 'non_working_days_three_years'),
     path('api/v1/employee/availability-config/', AvailabilityConfigApi.as_view(), name = 'availability_config'),
+    path('api/v1/employee/appointments/', EmployeeApointmentsApi.as_view(), name = 'employee_appointments'),
     # path('api/user/isauthenticated/', IsUserAuthenticated.as_view(), name = 'is_authenticated'),
 ]

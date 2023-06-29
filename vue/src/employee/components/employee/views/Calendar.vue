@@ -80,16 +80,16 @@
                             </v-btn>
                         </template>
                         <v-list>
-                            <v-list-item @click="type = 'day'">
+                            <v-list-item @click="setCalendarTypeAndGetAppointments('day')">
                                 <v-list-item-title>Dzień</v-list-item-title>
                             </v-list-item>
-                            <v-list-item @click="type = 'week'">
+                            <v-list-item @click="setCalendarTypeAndGetAppointments('week')">
                                 <v-list-item-title>Tydzień</v-list-item-title>
                             </v-list-item>
-                            <v-list-item @click="type = 'month'">
+                            <v-list-item @click="setCalendarTypeAndGetAppointments('month')">
                                 <v-list-item-title>Miesiąc</v-list-item-title>
                             </v-list-item>
-                            <v-list-item @click="type = '4day'">
+                            <v-list-item @click="setCalendarTypeAndGetAppointments('4day')">
                                 <v-list-item-title>4 dni</v-list-item-title>
                             </v-list-item>
                         </v-list>
@@ -158,6 +158,7 @@
 
 <script>
     import axios from "axios";
+    import { AUTH_API } from "../../../authorization/AuthAPI";
     import { weekdays } from '../../../../utils'
     import AvailabilityDialog from '../components/AvailabilityDialog.vue'
     import AppointmentConfigDialog from '../components/AppointmentConfigDialog.vue'
@@ -199,12 +200,22 @@
         async created(){
             await this.getNonWorkingDates();
         },
-        mounted () {
-            this.$refs.calendar.checkChange()
+        async mounted () {
+            this.$refs.calendar.checkChange();
+            await this.getAppointments(this.$refs.calendar.$children[0].days);
         },
         computed: {
         },
         methods: {
+            setCalendarType(val){
+                this.type = val;
+            },
+            async setCalendarTypeAndGetAppointments(val){
+                this.setCalendarType(val)
+                this.$nextTick( async () => {
+                    await this.getAppointments(this.$refs.calendar.$children[0].days);
+                });
+            },
             async getNonWorkingDates(){
                 const today = new Date();
                 await axios.get(`http://127.0.0.1:8000/api/v1/employee/non-working-days/?year=${today.getFullYear()}`)
@@ -212,6 +223,17 @@
                         this.nonWorkingDates = res.data;
                     })
             },
+            async getAppointments(days){
+                const API = await AUTH_API();
+                await API.post("/api/v1/employee/appointments/?operation=get", { ...days })
+                .then(res => {
+
+                })
+                .catch(err => {
+
+                })
+            },
+
             openAppointmentConfigDialog(){
                 this.appointmentConfigDialog = true;
             },
@@ -234,11 +256,17 @@
             setToday () {
                 this.focus = ''
             },
-            prev () {
-                this.$refs.calendar.prev()
+            async prev () {
+                this.$refs.calendar.prev();
+                this.$nextTick( async () => {
+                    await this.getAppointments(this.$refs.calendar.$children[0].days);
+                });
             },
-            next () {
-                this.$refs.calendar.next()
+            async next () {
+                this.$refs.calendar.next();
+                this.$nextTick( async () => {
+                    await this.getAppointments(this.$refs.calendar.$children[0].days);
+                });
             },
             showEvent ({ nativeEvent, event }) {
                 const open = () => {
@@ -256,6 +284,8 @@
                 nativeEvent.stopPropagation()
             },
             updateRange ({ start, end }) {
+                console.log(start)
+                console.log(end)
                 const events = []
 
                 const min = new Date(`${start.date}T00:00:00`)
