@@ -197,6 +197,7 @@
 </template>
 
 <script>
+    import axios from "axios";
     import { AUTH_API } from '../../../authorization/AuthAPI';
     import { days } from "../utils/days";
     import { formatDate } from "../../../../utils/formatDate"
@@ -211,7 +212,6 @@
         inject: ["screenSize"],
         props: {
             availabilityDialog: { type: Boolean, default: false },
-            nonWorkingDates: { type: Array, required: true },
         },
         data: () => ({
             availability: [],
@@ -222,6 +222,7 @@
             showEditAction: false,
             selectedActionData: {},
             itemsToDelete: [],
+            nonWorkingDates: [],
         }),
         computed: {
             today(){
@@ -235,9 +236,17 @@
         async created(){
             const _now = new Date(this.now)
             this.firstDayOfTheWeekDate = new Date(_now).substractDays(_now.getDay() - 1)
+            await this.getNonWorkingDates();
             await this.getAvailability();
         },
         methods: {
+            async getNonWorkingDates(){
+                const today = new Date();
+                await axios.get(`http://127.0.0.1:8000/api/v1/employee/non-working-days/?year=${today.getFullYear()}`)
+                    .then(res => {
+                        this.nonWorkingDates = res.data;
+                    })
+            },
             async getAvailability(){
                 this.availability = [];
                 const API = await AUTH_API();

@@ -27,12 +27,16 @@ class Holidays(APIView):
         return Response(data=non_working_days, status=status.HTTP_200_OK)
     
 class HolidaysForThreeYears(APIView):
-    def get(self, request):
-        non_working_days_current_year = NonWorkingDays(request.query_params.get("year")).non_working_days_with_year
-        non_working_days_prev_year = NonWorkingDays(str(int(request.query_params.get("year")) - 1)).non_working_days_with_year
-        non_working_days_next_year = NonWorkingDays(str(int(request.query_params.get("year")) +1)).non_working_days_with_year
+
+    def get_holidays(self, year):
+        non_working_days_current_year = NonWorkingDays(year).non_working_days_with_year
+        non_working_days_prev_year = NonWorkingDays(str(int(year) - 1)).non_working_days_with_year
+        non_working_days_next_year = NonWorkingDays(str(int(year) +1)).non_working_days_with_year
         non_working_days = non_working_days_prev_year + non_working_days_current_year + non_working_days_next_year
-        return Response(data=non_working_days, status=status.HTTP_200_OK)
+        return non_working_days
+
+    def get(self, request):
+        return Response(data=self.get_holidays(int(request.query_params.get("year"))), status=status.HTTP_200_OK)
     
 class EmployeeApointmentsApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
@@ -51,12 +55,13 @@ class EmployeeApointmentsApi(APIView):
                 "date": day["date"],
                 "weekday": str(dt.datetime.strptime(day["date"], "%Y-%m-%d").date().strftime("%A")).lower(),
                 "is_default": False,
+                "is_holiday": False,
                 "is_appointment": False,
+                "is_free": False,
                 "breaks": [],
                 "work_time": {
                     "start_time": None,
                     "end_time": None,
-                    "is_free": False,
                 }
             }
             exists = False
@@ -69,7 +74,7 @@ class EmployeeApointmentsApi(APIView):
                             "end_time": avail["end_time"],
                         })
                     elif avail["is_free"] == 1:
-                        day_items["work_time"]["is_free"] = 1
+                        day_items["is_free"] = 1
                         break
                     else:
                         day_items["work_time"]["start_time"] = avail["start_time"]
@@ -85,12 +90,13 @@ class EmployeeApointmentsApi(APIView):
             day_items = {
                 "weekday": day,
                 "is_default": True,
+                "is_holiday": False,
                 "is_appointment": False,
+                "is_free": False,
                 "breaks": [],
                 "work_time": {
                     "start_time": None,
                     "end_time": None,
-                    "is_free": False,
                 }
             }
             for avail in data:
@@ -101,7 +107,7 @@ class EmployeeApointmentsApi(APIView):
                             "end_time": avail["end_time"],
                         })
                     elif avail["is_free"] == 1:
-                        day_items["work_time"]["is_free"] = 1
+                        day_items["is_free"] = 1
                         break
                     else:
                         day_items["work_time"]["start_time"] = avail["start_time"]
@@ -114,7 +120,7 @@ class EmployeeApointmentsApi(APIView):
         cursor.execute(
             """
                 SELECT 
-                    sea.start_time, sea.end_time, sea.is_default, sea.is_free,
+                    sea.start_time, sea.end_time, sea.is_default, sea.is_free, 0 as 'is_holiday',
                     sea.is_break, sea.`weekday`, 0 AS 'is_appointment', sea.`date`
                 FROM salon_user su
                 JOIN salon_employee se ON se.user_id = su.id
@@ -134,7 +140,7 @@ class EmployeeApointmentsApi(APIView):
             """
                 SELECT 
                     sea.start_time, sea.end_time, sea.is_default, sea.is_free,
-                    sea.is_break, sea.`weekday`, 0 AS 'is_appointment'
+                    sea.is_break, sea.`weekday`, 0 AS 'is_appointment', 0 as 'is_holiday'
                 FROM salon_user su
                 JOIN salon_employee se ON se.user_id = su.id
                 JOIN salon_employeeavailabilityconfiguration seac ON seac.employee_id = se.id
@@ -152,6 +158,9 @@ class EmployeeApointmentsApi(APIView):
                 "date": day["date"],
                 "weekday": str(dt.datetime.strptime(day["date"], "%Y-%m-%d").date().strftime("%A")).lower(),
                 "is_appointment": True,
+                "is_default": False,
+                "is_holiday": False,
+                "is_free": False,
                 "day_appointments": [],
             }
             exists = False
@@ -170,7 +179,7 @@ class EmployeeApointmentsApi(APIView):
                 SELECT 
                     suc.first_name AS 'client_name', suc.last_name AS 'client_last_name', suc.email AS 'client_mail',
                     ss.duration, ss.`name` AS 'service_name', ss.price, sa.`date`, LOWER(DAYNAME(sa.`date`)) AS 'day_name', sa.time_start,  
-                    DATE_FORMAT((Time(sa.time_start) + INTERVAL ss.duration MINUTE), '%%H:%%i') as 'end_time', 1 AS 'is_appointment'
+                    DATE_FORMAT((Time(sa.time_start) + INTERVAL ss.duration MINUTE), '%%H:%%i') as 'end_time', 1 AS 'is_appointment', 0 as 'is_holiday'
                 FROM salon_user su
                 JOIN salon_employee se ON se.user_id = su.id
                 JOIN salon_service ss ON ss.employee_id = se.id
@@ -186,6 +195,8 @@ class EmployeeApointmentsApi(APIView):
         return(self.group_appointments(cursor_to_array_of_dicts(cursor), dates))
     
     def combine_appointments_and_availability(self, dates, appointments, def_avail, non_def_avail):
+        holidays = HolidaysForThreeYears()
+        non_working_dates = holidays.get_holidays(dates[0]["date"][:4])
         non_default_dates = []
         combined_data = []
         for day in dates:
@@ -197,6 +208,17 @@ class EmployeeApointmentsApi(APIView):
                 if non_def_av["date"] == day["date"]:
                     non_default_dates.append(day["date"])
                     combined_data.append(non_def_av)
+            for date in non_working_dates:
+                if date == day["date"]:
+                    non_default_dates.append(date)
+                    combined_data.append({
+                        "date": date,
+                        "is_appointment": False,
+                        "is_default": False,
+                        "is_holiday": True,
+                        "is_free": True,
+                        "weekday": weekday[0],
+                    })
             for def_av in def_avail:
                 if weekday[0] == def_av["weekday"] and day["date"] not in non_default_dates:
                     combined_data.append({**def_av, "date": day["date"]})

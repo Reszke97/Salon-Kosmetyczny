@@ -10,6 +10,10 @@ export default {
     warning: colors.pink.base,
     info: colors.red.base,
     success: colors.indigo.accent1,
-    'success--text': '#FF00FF',
+    // 'success--text': '#3f51b5',
+    // 'secondary--text': '#3f51b5',
     background: colors.indigo,
+    backgroundColor: colors.blue,
+    // 'theme--light': colors.indigo,
+    // 'v-outside': '#0844a4'
 }
