@@ -14,6 +14,7 @@ from rest_framework import status
 from django.db import connection
 from .utils.cursor_to_array_of_dicts import cursor_to_array_of_dicts
 from .utils.weekdays import weekdays
+from ..employee.utils.image_actions import map_images
 import datetime as dt
 
 class Holidays(APIView):
@@ -37,6 +38,19 @@ class HolidaysForThreeYears(APIView):
 
     def get(self, request):
         return Response(data=self.get_holidays(int(request.query_params.get("year"))), status=status.HTTP_200_OK)
+    
+class Employees(APIView):
+    permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
+
+    def get(self, request):
+        user = request.user
+        employee = Employee.objects.get(user = user)
+        if employee.is_owner:
+            employees = Employee.objects.filter(business_activity_id = employee.business_activity_id)
+            employees_serializer = OwnerEmployeesSerializer(employees, many=True)
+            return Response(data=employees_serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
     
 class EmployeeApointmentsApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
@@ -178,7 +192,8 @@ class EmployeeApointmentsApi(APIView):
             """
                 SELECT 
                     suc.first_name AS 'client_name', suc.last_name AS 'client_last_name', suc.email AS 'client_mail',
-                    ss.duration, ss.`name` AS 'service_name', ss.price, sa.`date`, LOWER(DAYNAME(sa.`date`)) AS 'day_name', sa.time_start,  
+                    ss.duration, ss.`name` AS 'service_name', ss.price,
+                    sa.`date`, LOWER(DAYNAME(sa.`date`)) AS 'day_name', sa.time_start,  
                     DATE_FORMAT((Time(sa.time_start) + INTERVAL ss.duration MINUTE), '%%H:%%i') as 'end_time', 1 AS 'is_appointment', 0 as 'is_holiday'
                 FROM salon_user su
                 JOIN salon_employee se ON se.user_id = su.id
@@ -231,7 +246,12 @@ class EmployeeApointmentsApi(APIView):
         return self.combine_appointments_and_availability(dates, appointments, default_availability, non_default_availability)
 
     def post(self, request):
-        self.user = request.user
+        user = request.user
+        chosen_employee = request.query_params.get("employee")
+        employee = Employee.objects.get(user_id=user)
+        if employee.is_owner:
+            chosen_employee = Employee.objects.get(pk=chosen_employee)
+            self.user = User.objects.get(pk=chosen_employee.user_id)
         data = request.data
         if type(data) is not list:
             data = list(data.values())
@@ -239,3 +259,100 @@ class EmployeeApointmentsApi(APIView):
         if request.query_params.get("operation") == "get":
             return Response(data=self.get_employee_calendar(data), status=status.HTTP_200_OK)
 
+class CompleteVisitInfo(APIView):
+    permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
+    employee = None
+    user = None
+
+    def map_visit_info(self, data):
+        class Img():
+            def __init__(self, content):
+                self.content = content
+        
+        service_info = {
+            "business": {
+                "business_name": data[0]["business_name"],
+                "business_house_number": data[0]["business_house_number"],
+                "business_city": data[0]["business_city"],
+                "business_post_code": data[0]["business_post_code"],
+                "business_street": data[0]["business_street"],
+                "business_apartment_number": data[0]["business_apartment_number"],
+            },
+            "employees": [],
+        }
+
+        for item in data:
+            avatar = {
+                "image_id": None,
+                "file_type": None,
+                "image_id": None,
+            }
+            if item["content"]:
+                avatar = map_images(Img(item["content"]))
+            service_info["employees"].append({
+                "avatar": avatar,
+                "business_activity_id": item["business_activity_id"],
+                "id": item["employee_id"],
+                "is_owner": item["is_owner"],
+                "service": {
+                    "category_id": item["category_id"],
+                    "category_name": item["category_name"],
+                    "duration": item["duration"],
+                    "price": item["price"],
+                    "service_id": item["service_id"],
+                    "service_name": item["service_name"],
+                },
+                "spec": {
+                    "id": item["spec_id"],
+                    "name": item["spec_name"],
+                },
+                "user": {
+                    "email": item["email"],
+                    "first_name": item["first_name"],
+                    "last_name": item["last_name"],
+                    "phone_number": item["phone_number"]
+                },
+            })
+        
+        return service_info
+
+    def get_complete_visit_info(self, data):
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+                SELECT 
+                    su.email, su.first_name, su.last_name, su.phone_number, se.id as 'employee_id',
+                    ses.id as 'spec_id', ses.name as 'spec_name', se.id as 'employee_id',
+                    se.is_owner, se.business_activity_id, sea.content,
+                    sba.name as 'business_name', sba.house_number as 'business_house_number',
+                    sba.city as 'business_city', sba.post_code as 'business_post_code',
+                    sba.street as 'business_street', sba.apartment_number as 'business_apartment_number',
+                    ss.price, ss.id as 'service_id', ss.name as 'service_name', ss.duration, ssc.id as 'category_id',
+                    ssc.name as 'category_name'
+                from salon_employee se
+                join salon_service ss on ss.employee_id = se.id
+                join salon_user su on su.id = se.user_id
+                join salon_employeespecialization ses on ses.id = se.spec_id
+                left join salon_employeeavatar sea on sea.employee_id = se.id
+                join salon_businessactivity sba on sba.id = se.business_activity_id
+                join salon_servicecategory ssc on ssc.id = ss.service_category_id
+                where se.business_activity_id = %s
+                    and ss.name = %s
+            """
+        , [self.employee.business_activity_id, data["name"]])
+        return(cursor_to_array_of_dicts(cursor))
+
+    def post(self, request):
+        operation = request.query_params.get("operation")
+        data = request.data
+        self.user = request.user
+        self.employee = Employee.objects.get(user_id=self.user.pk)
+        chosen_employee = request.query_params.get("employee")
+
+        if self.employee.is_owner:
+            chosen_employee = Employee.objects.get(pk=chosen_employee)
+            self.employee = chosen_employee
+            self.user = User.objects.get(pk=chosen_employee.user_id)
+        if operation == "get":
+            visit_info = self.map_visit_info(self.get_complete_visit_info(data))
+            return Response(data=visit_info, status=status.HTTP_200_OK)

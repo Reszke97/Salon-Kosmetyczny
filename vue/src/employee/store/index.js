@@ -7,17 +7,12 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     role: null,
-    test: false,
+    name: "",
+    last_name: "",
+    employee_id: null,
     accessToken: localStorage.getItem("employeeToken"),
     refreshToken: localStorage.getItem("employeeRefreshToken"),
     isAuthenticated: false,
-    isEditing: false,
-    dealerChosen: false,
-    basketPositionIndex: null,
-    dealerDialog: false,
-    installationDialog: false,
-    info: false,
-    userQuoteID: null,
     countries: [
       {
         // link: 'https://github.com/lipis/flag-icons/blob/main/flags/4x3/pl.svg',
@@ -88,47 +83,12 @@ export default new Vuex.Store({
       ],
     },
   },
-  getters: {
-    totalSumToPay(state) {
-      return state.basket.reduce((sum, item) => {
-        sum += (item.getters.totalPrice * item.chosenConfiguration.windowFeatures.quantity);
-        return sum
-      }, 0)
-    },
-  },
   mutations: {
-    setRole(state, value){
-      state.role = value
-    },
-    setUserQuoteID(state, value){
-      state.userQuoteID = value
-    },
-    clearBasket(state){
-      state.basket = [...basketTestData]
-    },
-    setInfo(state){
-      state.info = !state.info
-    },
-    setIsEditing(state, value){
-      state.isEditing = value
-    },
-    setInstallationDialog(state){
-      state.installationDialog = !state.installationDialog
-    },
-    setDealerDialog(state){
-      state.dealerDialog = !state.dealerDialog
-    },
-    setBasketPositionIndex(state, index){
-      state.basketPositionIndex = index
-    },
-    setBasket(state, object){
-      state.basket.push(object);
-    },
-    deleteDataFromBasket(state, index){
-      state.basket.splice(index, 1)
-    },
-    copyDataToBasket(state, index){
-      state.basket.push(state.basket[index])
+    setRole(state, data){
+      state.role = data.role;
+      state.name = data.name;
+      state.last_name = data.last_name;
+      state.employee_id = data.employee_id;
     },
     setToken (state, { access, refresh }) {
       localStorage.setItem( 'employeeToken', access );
@@ -160,17 +120,8 @@ export default new Vuex.Store({
     destroyToken (state) {
       state.accessToken = null
       state.refreshToken = null
-      state.authenticated = false;
+      state.isAuthenticated = false;
     },
 
   },
-  actions: {
-    async editBasket({state, commit}, object){
-      state.basket.splice(state.basketPositionIndex, 1, object)
-      commit("setIsEditing")
-    },
-  },
-  // modules: {
-  //   configuration
-  // }
 })

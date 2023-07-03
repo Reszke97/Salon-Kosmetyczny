@@ -496,7 +496,9 @@ class CreateEmployee(APIView):
 class GetUserRole(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
+        response = {}
+        role = ""
         try:
             if request.user.is_anonymous:
                 raise Exception()
@@ -515,8 +517,12 @@ class GetUserRole(APIView):
         response = {
             'status': 'success',
             'code': status.HTTP_200_OK,
-            'role': role
+            'role': role,
+            'name': request.user.first_name,
+            'last_name': request.user.last_name,
         }
+        if role == "owner" or role == "employee":
+            response = {**response, 'employee_id': employee.pk}
         return Response(response)
 
 def send_reset_email(user, request):

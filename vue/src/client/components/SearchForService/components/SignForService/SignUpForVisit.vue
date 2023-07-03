@@ -117,7 +117,7 @@
           signUpForVisitDialog: { type: Boolean, required: true },
           selectedService: { type: Object, required: true },
           componentDims: { type: Object, required: true },
-          closeSignUpForVisitDialog: { type: Function, required: true },
+          closeSignUpForVisitDialog: { type: Function, default: () => {} },
         },
         data: () => ({
           employees: [],

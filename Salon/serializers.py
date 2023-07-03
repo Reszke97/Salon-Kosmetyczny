@@ -343,10 +343,12 @@ class CosmeticProcedureSerializer(serializers.ModelSerializer):
             "client",
             "service",
         )
-# class EmployeeServices(serializers.ModelSerializer):
-#     service = ServiceSerializer()
-#     class Meta:
-#         model = EmployeeServiceRelation
-#         fields = (
-#             "service",
-#         )
+class OwnerEmployeesSerializer(serializers.ModelSerializer):
+    user = GetUserInfoSerializer()
+    class Meta:
+        model = Employee
+        fields = (
+            "user",
+            "pk",
+            "business_activity_id",
+        )

@@ -8,17 +8,9 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     role: null,
-    test: false,
     accessToken: localStorage.getItem("clientToken"),
     refreshToken: localStorage.getItem("clientRefreshToken"),
     isAuthenticated: false,
-    isEditing: false,
-    dealerChosen: false,
-    basketPositionIndex: null,
-    dealerDialog: false,
-    installationDialog: false,
-    info: false,
-    userQuoteID: null,
     allBusinessActivities: [],
     distinctServices: [],
     distinctEmployeeSpecs: [],
@@ -92,14 +84,6 @@ export default new Vuex.Store({
       ],
     },
   },
-  getters: {
-    totalSumToPay(state) {
-      return state.basket.reduce((sum, item) => {
-        sum += (item.getters.totalPrice * item.chosenConfiguration.windowFeatures.quantity);
-        return sum
-      }, 0)
-    },
-  },
   mutations: {
     setBusinessActivities(state, value){
       state.allBusinessActivities = value
@@ -112,36 +96,6 @@ export default new Vuex.Store({
     },
     setRole(state, value){
       state.role = value
-    },
-    setUserQuoteID(state, value){
-      state.userQuoteID = value
-    },
-    clearBasket(state){
-      state.basket = [...basketTestData]
-    },
-    setInfo(state){
-      state.info = !state.info
-    },
-    setIsEditing(state, value){
-      state.isEditing = value
-    },
-    setInstallationDialog(state){
-      state.installationDialog = !state.installationDialog
-    },
-    setDealerDialog(state){
-      state.dealerDialog = !state.dealerDialog
-    },
-    setBasketPositionIndex(state, index){
-      state.basketPositionIndex = index
-    },
-    setBasket(state, object){
-      state.basket.push(object);
-    },
-    deleteDataFromBasket(state, index){
-      state.basket.splice(index, 1)
-    },
-    copyDataToBasket(state, index){
-      state.basket.push(state.basket[index])
     },
     setToken (state, { access, refresh }) {
       localStorage.setItem( 'clientToken', access );
@@ -175,16 +129,11 @@ export default new Vuex.Store({
     destroyToken (state) {
       state.accessToken = null
       state.refreshToken = null
-      state.authenticated = false;
+      state.isAuthenticated = false;
     },
 
   },
   actions: {
-    async editBasket({state, commit}, object){
-      state.basket.splice(state.basketPositionIndex, 1, object)
-      commit("setIsEditing")
-    },
-
     async getBusinessActivitesAndServices({commit}){
       await axios.get('http://127.0.0.1:8000/api/v1/client/businessactivities/')
       .then(res => {
@@ -194,7 +143,4 @@ export default new Vuex.Store({
       })
     }
   },
-  // modules: {
-  //   configuration
-  // }
 })

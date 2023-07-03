@@ -1,6 +1,8 @@
 <template>
     <v-row class="fill-height">
-        <v-col>
+        <v-col
+            id="calendar"
+        >
             <availability-dialog
                 v-if="availabilityDialog"
                 @closeAvailabilityDialog="closeAvailabilityDialog"
@@ -12,7 +14,7 @@
                 :appointment-config-dialog="appointmentConfigDialog"
             />
             <v-sheet
-            id="calendar-header"
+                id="calendar-header"
                 height="64"
             >
                 <v-toolbar
@@ -53,6 +55,63 @@
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-menu
+                        v-if="$store.state.role === 'owner'"
+                        bottom
+                        right
+                    >
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn
+                                outlined
+                                color="white"
+                                v-bind="attrs"
+                                v-on="on"
+                                class="mr-1"
+                            >
+                                <span>{{ selectedEmployee.name }}</span>
+                                <v-icon right>
+                                    mdi-menu-down
+                                </v-icon>
+                            </v-btn>
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn 
+                                        icon
+                                        class="mr-1"
+                                        color="primary"
+                                        @click="openAppointmentConfigDialog"
+                                    >
+                                        <v-icon
+                                            v-on="on"
+                                        >mdi-cog</v-icon>     
+                                    </v-btn>
+                                </template>
+                                <span>Ustawienia wizyty</span>
+                            </v-tooltip>
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn 
+                                        icon
+                                        color="primary"
+                                        @click="openAvailabilityDialog"
+                                    >
+                                        <v-icon
+                                            v-on="on"
+                                        >mdi-clock-edit-outline</v-icon>     
+                                    </v-btn>
+                                </template>
+                                <span>Dyspozycyjność</span>
+                            </v-tooltip>
+                        </template>
+                        <v-list>
+                            <v-list-item
+                                v-for="employee of employees"
+                                @click="setEmployeeAndGetNewData(employee)"
+                            >
+                                <v-list-item-title>{{ employee.name }}</v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+                    <v-menu
                         bottom
                         right
                     >
@@ -67,18 +126,6 @@
                                 <v-icon right>
                                     mdi-menu-down
                                 </v-icon>
-                            </v-btn>
-                            <v-btn 
-                                class="mx-2" color="secondary"
-                                @click="openAppointmentConfigDialog"
-                            >
-                                Ustawienia wizyty
-                            </v-btn>
-                            <v-btn 
-                                color="secondary"
-                                @click="openAvailabilityDialog"
-                            >
-                                Dyspozycyjność
                             </v-btn>
                         </template>
                         <v-list>
@@ -108,6 +155,7 @@
                     color="success"
                     show-week
                     event-more
+                    event-more-text="więcej"
                     :short-intervals="false"
                     :weekdays="weekdays"
                     :events="events"
@@ -161,11 +209,8 @@
                             >{{ getWorkTimeForGivenDate(date)}}</div>
                         </div>
                     </template>
-                <!-- <template #event="{ event }">
-                    <h1>{{ event.name }}</h1>
-                </template> -->
                 </v-calendar>
-                <!-- <v-menu
+                <v-menu
                     v-model="selectedOpen"
                     :close-on-content-click="false"
                     :activator="selectedElement"
@@ -173,39 +218,90 @@
                 >
                     <v-card
                         color="grey lighten-4"
-                        min-width="350px"
+                        min-width="300px"
+                        max-width="350px"
                         flat
                     >
                         <v-toolbar
                             :color="selectedEvent.color"
                             dark
-                        >
-                            <v-btn icon>
-                                <v-icon>mdi-pencil</v-icon>
-                            </v-btn>
-                            <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
+                        >   <div class="flex-centered w-100">
+                                <div class="w-100">
+                                    <v-toolbar-title> {{ `${selectedEvent.name}` }} </v-toolbar-title>
+                                </div>
+                                <div>
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on, attrs }">
+                                            <v-btn
+                                                dark
+                                                icon
+                                                v-on="on"
+                                                @click="selectedOpen = false"
+                                            >
+                                                <v-icon>
+                                                    mdi-close-circle
+                                                </v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <span>Zamknij</span>
+                                    </v-tooltip>
+                                </div>
+                            </div>
                             <v-spacer></v-spacer>
-                            <v-btn icon>
-                                <v-icon>mdi-heart</v-icon>
-                            </v-btn>
-                            <v-btn icon>
-                                <v-icon>mdi-dots-vertical</v-icon>
-                            </v-btn>
                         </v-toolbar>
-                        <v-card-text>
-                            <span v-html="selectedEvent.details"></span>
+                        <v-card-text class="bg-color" style="color:white!important">
+                            <div class="d-flex flex-column">
+                                <template v-if="!selectedEvent.is_holiday && !selectedEvent.is_free">
+                                    <span>
+                                        <span style="color: orange!important" class="font-bold">Data: </span><span>{{ `${selectedEvent.date}` }}</span>
+                                    </span>
+                                    <span>
+                                        <span style="color: orange!important" class="font-bold">Godzina: </span><span>{{ `${selectedEvent.time}` }}</span>
+                                    </span>
+                                    <template v-if="selectedEvent.is_appointment">
+                                        <span>
+                                            <span style="color: orange!important" class="font-bold">Imię klienta: </span><span>{{ `${selectedEvent.client_name} ${selectedEvent.client_last_name}` }}</span>
+                                        </span>
+                                        <span>
+                                            <span style="color: orange!important" class="font-bold">E-mail klienta: </span><span>{{ `${selectedEvent.client_mail}` }}</span>
+                                        </span>
+                                    </template>
+                                </template>
+                            </div>
                         </v-card-text>
-                        <v-card-actions>
-                            <v-btn
-                                text
-                                color="secondary"
-                                @click="selectedOpen = false"
-                            >
-                                Cancel
-                            </v-btn>
+                        <v-card-actions class="bg-color">
+                            <v-tooltip bottom v-if="selectedEvent.is_appointment">
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn 
+                                        dark
+                                        v-on="on"
+                                        icon
+                                        @click="openAppointmentDialogAndSetSelectedAppointment(selectedEvent)"
+                                    >
+                                        <v-icon
+                                        >mdi-pencil</v-icon>
+                                    </v-btn>
+                                </template>
+                                <span>Przenieś wizytę</span>
+                            </v-tooltip>
+                            <v-tooltip bottom v-if="selectedEvent.is_appointment">
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn 
+                                        dark
+                                        v-on="on"
+                                        icon
+                                        @click="openAppointmentDialogAndSetSelectedAppointment(selectedEvent)"
+                                    >
+                                        <v-icon
+                                            color="red"
+                                        >mdi-trash-can</v-icon>
+                                    </v-btn>
+                                </template>
+                                <span>Usuń wizytę</span>
+                            </v-tooltip>
                         </v-card-actions>
                     </v-card>
-                </v-menu> -->
+                </v-menu>
             </v-sheet>
         </v-col>
     </v-row>
@@ -233,32 +329,94 @@
             },
         },
         data: () => ({
+            componentDims: { height: 0, width: 0 },
             weekdays: weekdays,
             availabilityDialog: false,
             appointmentConfigDialog: false,
             focus: '',
             type: 'month',
+            employees: [],
             typeToLabel: {
                 "month": 'Miesiąc',
                 "week": 'Tydzień',
                 "day": 'Dzień',
                 "4day": "4 Dni",
             },
+            selectedEmployee: { name: "", employee_id: null },
             selectedEvent: {},
             selectedElement: null,
             selectedOpen: false,
             categorizedEvents: [],
             events: [],
-            colors: ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey darken-1'],
-            names: ['Meeting', 'Holiday', 'PTO', 'Travel', 'Event', 'Birthday', 'Conference', 'Party'],
+            appointmentDialog: false,
+            selectedAppointment: {},
+            changeVisitDialog: false,
         }),
         inject: ["screenSize"],
         async mounted () {
             this.$refs.calendar.checkChange();
+            this.setComponentDims();
+        },
+        async created(){
+            if(this.$store.state.role === "owner"){
+                this.selectedEmployee = { 
+                    name: `${this.$store.state.name} ${this.$store.state.last_name}`, 
+                    employee_id: this.$store.state.employee_id 
+                };
+                const API = await AUTH_API();
+                await API.get("/api/v1/employee/owner-employees/")
+                .then(res => {
+                    this.employees = res.data.map(el => {
+                        return {
+                            employee_id: el.pk,
+                            user_id: el.user.id,
+                            name: `${el.user.first_name} ${el.user.last_name}`,
+                        }
+                    })
+                })
+            }
         },
         computed: {
         },
         methods: {
+            async getCompleteServiceInfo(appointmentInfo){
+                const API = await AUTH_API();
+                API.post(`/api/v1/employee/change-visit/?operation=get&employee=${this.selectedEmployee.employee_id}`, {...appointmentInfo})
+                .then(res => {
+                    
+                })
+            },
+            setComponentDims(){
+                const minW = 600;
+                const width = document.getElementById('calendar').offsetWidth/2;
+                this.componentDims = {
+                    height: `${document.getElementById('calendar').offsetHeight - 200}px`,
+                    width: width < minW ? minW + "px" : width + "px",
+                }
+            },
+            openChangeVisitDialog(){
+                this.changeVisitDialog = true;
+            },
+            closeChangeVisitDialog(){
+                this.changeVisitDialog = false;
+            },
+            async openAppointmentDialogAndSetSelectedAppointment(appointment){
+                this.openAppointmentDialog();
+                await this.getCompleteServiceInfo(appointment);
+            },
+            openAppointmentDialog(){
+                this.appointmentDialog = true;
+            },
+            closeAppointmentDialog(){
+                this.appointmentDialog = false;
+            },
+            setEmployee(employee){
+                this.selectedEmployee = employee;
+            },
+            async setEmployeeAndGetNewData(employee){
+                this.setEmployee(employee);
+                await this.getAppointments();
+            },
             getDayName(day, month){
                 if(day === 1){
                     return getShortMonthName(month) + ' ' + day;
@@ -293,7 +451,7 @@
                 this.$nextTick( async () => {
                     const days = this.$refs.calendar.$children[0].days;
                     const API = await AUTH_API();
-                    await API.post("/api/v1/employee/appointments/?operation=get", { ...days })
+                    await API.post(`/api/v1/employee/appointments/?operation=get&employee=${this.selectedEmployee.employee_id}`, { ...days })
                     .then(res => {
                         this.categorizedEvents = res.data.events
                         this.events = res.data.events.reduce((prev, el) => {
@@ -302,14 +460,20 @@
                                     name: "Wolne",
                                     start: el.date,
                                     end: el.date,
-                                    color: "grey"
+                                    color: "grey",
+                                    is_appointment: false,
+                                    is_free: true,
+                                    is_holiday: false,
                                 })
                             } else if(el.is_free && el.is_holiday){
                                 prev.push({
                                     name: "Święto",
                                     start: el.date,
                                     end: el.date,
-                                    color: "red"
+                                    color: "red",
+                                    is_appointment: false,
+                                    is_free: false,
+                                    is_holiday: true,
                                 })
                             } else if(!el.is_free && el.is_default){
                                 el.breaks.forEach(el2 => {
@@ -318,15 +482,28 @@
                                         start: el.date + ' ' + el2.start_time,
                                         end: el.date + ' ' + el2.end_time,
                                         color: "green",
+                                        is_appointment: false,
+                                        is_free: false,
+                                        is_holiday: false,
+                                        time: `${el2.start_time} - ${el2.end_time}`,
+                                        date: el.date,
                                     })
                                 })
                             } else if(el.is_appointment){
                                 el.day_appointments.forEach(el2 => {
                                     prev.push({
-                                        name: "Usługa",
+                                        name: el2.service_name,
                                         start: el.date + ' ' + el2.time_start,
                                         end: el.date + ' ' + el2.end_time,
                                         color: "blue",
+                                        client_name: el2.client_name,
+                                        client_last_name: el2.client_last_name,
+                                        client_mail: el2.client_mail,
+                                        time: `${el2.time_start} - ${el2.end_time}`,
+                                        date: el.date,
+                                        is_appointment: true,
+                                        is_free: false,
+                                        is_holiday: false,
                                     })
                                 })
                             } else if(!el.is_default && el.is_free && !el.is_holiday && !el.is_appointment){
@@ -334,6 +511,9 @@
                                     name: "Wolne",
                                     start: el.date,
                                     end: el.date,
+                                    is_appointment: false,
+                                    is_free: true,
+                                    is_holiday: false,
                                 })
                             } else {
                                 el.breaks.forEach(el2 => {
@@ -342,6 +522,11 @@
                                         start: el.date + ' ' + el2.start_time,
                                         end: el.date + ' ' + el2.end_time,
                                         color: "green",
+                                        is_appointment: false,
+                                        is_free: false,
+                                        is_holiday: false,
+                                        time: `${el2.start_time} - ${el2.end_time}`,
+                                        date: el.date,
                                     })
                                 })
                             }
@@ -366,8 +551,7 @@
             closeAvailabilityDialog(){
                 this.availabilityDialog = false;
             },
-            viewDay ({ date }) {
-                console.log(date)
+            viewDay (date) {
                 this.focus = date
                 this.type = "day"
             },
@@ -398,47 +582,20 @@
                 }
                 nativeEvent.stopPropagation()
             },
-            // updateRange ({ start, end }) {
-            //     // console.log(start)
-            //     // console.log(end)
-            //     const events = []
-
-            //     const min = new Date(`${start.date}T00:00:00`)
-            //     const max = new Date(`${end.date}T23:59:59`)
-            //     const days = (max.getTime() - min.getTime()) / 86400000
-            //     const eventCount = this.rnd(days, days + 20)
-
-            //     for (let i = 0; i < eventCount; i++) {
-            //         const allDay = this.rnd(0, 3) === 0
-            //         const firstTimestamp = this.rnd(min.getTime(), max.getTime())
-            //         const first = new Date(firstTimestamp - (firstTimestamp % 900000))
-            //         const secondTimestamp = this.rnd(2, allDay ? 288 : 8) * 900000
-            //         const second = new Date(first.getTime() + secondTimestamp)
-
-            //         events.push({
-            //             name: this.names[this.rnd(0, this.names.length - 1)],
-            //             start: first,
-            //             end: second,
-            //             color: this.colors[this.rnd(0, this.colors.length - 1)],
-            //             timed: !allDay,
-            //         })
-            //     }
-            //     this.events = events
-            // },
-            rnd (a, b) {
-                return Math.floor((b - a + 1) * Math.random()) + a
-            },
         }
     }
 </script>
 
 <style>
+    .v-event-more.pl-1{
+        color: black!important;
+    }
+    .theme--light.v-calendar-weekly .v-calendar-weekly__head-weekday.v-outside {
+        background-color: rgb(63, 81, 181)!important;
+    }
     .theme--light.v-calendar-weekly .v-calendar-weekly__head-weeknumber{
         background-color: rgb(42, 99, 255)!important;
         border-right: 1px solid rgb(70, 139, 255)!important;
-    }
-    .v-calendar-weekly__head-weekday.v-present.v-outside.success--text{
-        background-color: rgb(40, 53, 147)!important;
     }
     .v-calendar-weekly__day.v-present.v-outside{
         background-color: rgb(40, 53, 147)!important;

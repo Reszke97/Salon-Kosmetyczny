@@ -154,7 +154,7 @@ async function authenticate(){
           const API = await AUTH_API();
           await API.get('/api/v1/user/getuserrole/')
           .then(response=>{
-            store.commit('setRole', response.data.role)
+            store.commit('setRole', response.data)
           })
         })
         .catch(error => {
