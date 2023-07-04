@@ -265,6 +265,10 @@ class BusinessActivities(APIView):
             }
             unique_categories = set(b_info['category_id'] for b_info in items_for_b_activity)
             for unique_category in unique_categories:
+                min_max_values = {
+                    "duration": [],
+                    "price": [],
+                }
                 services = list(filter(lambda x: (x["category_id"] == unique_category),items_for_b_activity))
                 unique_services = set(b_info['service_id'] for b_info in services)
                 category_name = services[0]["category_name"]
@@ -277,7 +281,16 @@ class BusinessActivities(APIView):
                     service = list(filter(lambda x: (x["service_id"] == unique_service),services))
                     employee_avatar = list(filter(lambda x: (x["employee_id"] == service[0]["employee_id"]),employees))
                     if i == 0:
-                        return_list[business_name]["categories"][category_name][i]["service_id"] = service[0]["service_id"]
+                        min_max_values["duration"].append({
+                            "service:": service[0]["service_name"],
+                            "idx": i,
+                            "values": [service[0]["duration"]],
+                        })
+                        min_max_values["price"].append({
+                            "service:": service[0]["service_name"],
+                            "values": [service[0]["price"]],
+                            "idx": i,
+                        })
                         return_list[business_name]["categories"][category_name][i]["service_name"] = service[0]["service_name"]
                         return_list[business_name]["categories"][category_name][i]["duration"] = service[0]["duration"]
                         return_list[business_name]["categories"][category_name][i]["price"] = service[0]["price"]
@@ -286,6 +299,14 @@ class BusinessActivities(APIView):
                             "business_activity_id": return_list[business_name]["id"],
                             "id": service[0]["employee_id"],
                             "is_owner": service[0]["is_owner"],
+                            "service": {
+                                "category_id": service[0]["category_id"],
+                                "category_name": service[0]["category_name"],
+                                "duration": service[0]["duration"],
+                                "price": service[0]["price"],
+                                "service_id": service[0]["service_id"],
+                                "service_name": service[0]["service_name"],
+                            },
                             "spec": {
                                 "id": service[0]["spec_id"],
                                 "name": service[0]["spec_name"],
@@ -307,12 +328,23 @@ class BusinessActivities(APIView):
                             , None
                         )
                         if found_idx is not None:
+                            min_max_values["duration"][found_idx]["values"].append(service[0]["duration"])
+                            min_max_values["price"][found_idx]["values"].append(service[0]["price"])
+
                             return_list[business_name]["categories"][category_name][found_idx]["employees"].append(
                                 {
                                     "avatar": employee_avatar[0]["avatar"],
                                     "business_activity_id": return_list[business_name]["id"],
                                     "id": service[0]["employee_id"],
                                     "is_owner": service[0]["is_owner"],
+                                    "service": {
+                                        "category_id": service[0]["category_id"],
+                                        "category_name": service[0]["category_name"],
+                                        "duration": service[0]["duration"],
+                                        "price": service[0]["price"],
+                                        "service_id": service[0]["service_id"],
+                                        "service_name": service[0]["service_name"],
+                                    },
                                     "spec": {
                                         "id": service[0]["spec_id"],
                                         "name": service[0]["spec_name"],
@@ -326,10 +358,19 @@ class BusinessActivities(APIView):
                                 }
                             )
                         else:
+                            min_max_values["duration"].append({
+                                "service:": service[0]["service_name"],
+                                "values": [service[0]["duration"]],
+                                "idx": i,
+                            })
+                            min_max_values["price"].append({
+                                "service:": service[0]["service_name"],
+                                "values": [service[0]["price"]],
+                                "idx": i,
+                            })
                             return_list[business_name]["categories"][category_name].append({
                                 "category_id": return_list[business_name]["categories"][category_name][0]["category_id"],
                                 "category_name": return_list[business_name]["categories"][category_name][0]["category_name"],
-                                "service_id": service[0]["service_id"],
                                 "service_name": service[0]["service_name"],
                                 "duration": service[0]["duration"],
                                 "price": service[0]["price"],
@@ -338,6 +379,14 @@ class BusinessActivities(APIView):
                                     "business_activity_id": return_list[business_name]["id"],
                                     "id": service[0]["employee_id"],
                                     "is_owner": service[0]["is_owner"],
+                                    "service": {
+                                        "category_id": service[0]["category_id"],
+                                        "category_name": service[0]["category_name"],
+                                        "duration": service[0]["duration"],
+                                        "price": service[0]["price"],
+                                        "service_id": service[0]["service_id"],
+                                        "service_name": service[0]["service_name"],
+                                    },
                                     "spec": {
                                         "id": service[0]["spec_id"],
                                         "name": service[0]["spec_name"],
@@ -351,6 +400,19 @@ class BusinessActivities(APIView):
                                 }]
                             })
                     i += 1
+                for (idx, val) in enumerate(min_max_values["duration"]):
+                    min_price = min(min_max_values["price"][idx]["values"])
+                    max_price = max(min_max_values["price"][idx]["values"])
+                    min_duration = min(min_max_values["duration"][idx]["values"])
+                    max_duration = max(min_max_values["duration"][idx]["values"])
+                    if min_duration != max_duration:
+                        return_list[business_name]["categories"][category_name][val["idx"]]["duration"] = str(min_duration) + ' - ' + str(max_duration)
+                    else:
+                        return_list[business_name]["categories"][category_name][val["idx"]]["duration"] = min_duration
+                    if min_price != max_price:
+                        return_list[business_name]["categories"][category_name][val["idx"]]["price"] = str(min_price) + ' - ' + str(max_price)
+                    else:
+                        return_list[business_name]["categories"][category_name][val["idx"]]["price"] = min_price
         return return_list
 
     def get(self, request):

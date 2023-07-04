@@ -276,7 +276,7 @@
                                         dark
                                         v-on="on"
                                         icon
-                                        @click="openAppointmentDialogAndSetSelectedAppointment(selectedEvent)"
+                                        @click="openChangeVisitDialogAndSetSelectedAppointment(selectedEvent)"
                                     >
                                         <v-icon
                                         >mdi-pencil</v-icon>
@@ -290,7 +290,7 @@
                                         dark
                                         v-on="on"
                                         icon
-                                        @click="openAppointmentDialogAndSetSelectedAppointment(selectedEvent)"
+                                        @click="openChangeVisitDialogAndSetSelectedAppointment(selectedEvent)"
                                     >
                                         <v-icon
                                             color="red"
@@ -304,6 +304,14 @@
                 </v-menu>
             </v-sheet>
         </v-col>
+        <SignUpForVisit
+            v-if="changeVisitDialog"
+            :signUpForVisitDialog="changeVisitDialog"
+            :selectedService="selectedAppointment"
+            :componentDims="componentDims"
+            :closeSignUpForVisitDialog="closeChangeVisitDialog"
+            :type="signUpForVisitType"
+        />
     </v-row>
 </template>
 
@@ -314,11 +322,14 @@
     import AppointmentConfigDialog from '../components/AppointmentConfigDialog.vue'
     import { formatDate } from "../../../../utils/formatDate";
     import { getShortMonthName } from "../utils/getShortMonthName"
+    import SignUpForVisit from "./SignForService/SignUpForVisit.vue";
+    import { appendMimeType } from "../../../../client/utils";
 
     export default {
         components: {
             AvailabilityDialog,
-            AppointmentConfigDialog
+            AppointmentConfigDialog,
+            SignUpForVisit,
         },
         mixins: [
         ],
@@ -342,6 +353,7 @@
                 "day": 'Dzień',
                 "4day": "4 Dni",
             },
+            signUpForVisitType: "swap",
             selectedEmployee: { name: "", employee_id: null },
             selectedEvent: {},
             selectedElement: null,
@@ -380,17 +392,32 @@
         },
         methods: {
             async getCompleteServiceInfo(appointmentInfo){
+                console.log(appointmentInfo)
                 const API = await AUTH_API();
-                API.post(`/api/v1/employee/change-visit/?operation=get&employee=${this.selectedEmployee.employee_id}`, {...appointmentInfo})
+                await API.post(`/api/v1/employee/change-visit/?operation=get&employee=${this.selectedEmployee.employee_id}`, {...appointmentInfo})
                 .then(res => {
-                    
+                    this.selectedAppointment = {
+                        ...res.data,
+                        date: appointmentInfo.date,
+                        time: appointmentInfo.time,
+                        service_name: appointmentInfo.name,
+                        client_name: appointmentInfo.client_name,
+                        client_last_name: appointmentInfo.client_last_name,
+                    }
+                    this.selectedAppointment.employees.forEach((el, idx) =>{
+                        let img = this.selectedAppointment.employees[idx].avatar;
+                        if(Object.hasOwn(this.selectedAppointment.employees[idx].avatar, "image")){
+                            img = appendMimeType(el.avatar)
+                        }
+                        this.selectedAppointment.employees[idx].avatar = {...img};
+                    })
                 })
             },
             setComponentDims(){
                 const minW = 600;
-                const width = document.getElementById('calendar').offsetWidth/2;
+                const width = document.getElementById('calendar').offsetWidth/2.5;
                 this.componentDims = {
-                    height: `${document.getElementById('calendar').offsetHeight - 200}px`,
+                    height: `${document.getElementById('calendar').offsetHeight - 350}px`,
                     width: width < minW ? minW + "px" : width + "px",
                 }
             },
@@ -400,9 +427,13 @@
             closeChangeVisitDialog(){
                 this.changeVisitDialog = false;
             },
-            async openAppointmentDialogAndSetSelectedAppointment(appointment){
-                this.openAppointmentDialog();
+            setSignUpForVisitType(type){
+                this.signUpForVisitType = type;
+            },
+            async openChangeVisitDialogAndSetSelectedAppointment(appointment){
                 await this.getCompleteServiceInfo(appointment);
+                this.setSignUpForVisitType("swap");
+                this.openChangeVisitDialog();
             },
             openAppointmentDialog(){
                 this.appointmentDialog = true;

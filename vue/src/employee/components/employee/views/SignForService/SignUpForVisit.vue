@@ -7,20 +7,34 @@
   >
     <v-row 
       class="bg-color white-text"
-      :style="{ minHeight: `400px` }"
     >
       <v-col
         cols="12"
       >
-        <div class="flex-centered">
-          <h3>
-            <span>
-              Zapis na usługę 
-            </span>
-            <span style="color: orange!important">
-              {{ selectedService.service_name }}
-            </span>
-          </h3>
+        <div class="flex-centered flex-column">
+          <template v-if="type === 'new'">
+            <h3>
+              <span>
+                Zapis na usługę 
+              </span>
+              <span style="color: orange!important">
+                {{ selectedService.service_name }}
+              </span>
+            </h3>
+          </template>
+          <template
+            v-else-if="type === 'swap'"
+          >
+            
+            <h4>
+              <span>
+                Przełożenie wizyty z dnia 
+              </span>
+              <span style="color: orange!important">
+                {{ `${selectedService.date} ${selectedService.time}` }}
+              </span>
+            </h4>
+          </template>
         </div>
         <div class="d-flex flex-column">
           <div
@@ -118,6 +132,7 @@
           selectedService: { type: Object, required: true },
           componentDims: { type: Object, required: true },
           closeSignUpForVisitDialog: { type: Function, default: () => {} },
+          type: { type: String, default: "new" },
         },
         data: () => ({
           employees: [],
@@ -129,8 +144,10 @@
             
         },
         async created(){
-          this.setEmployees();
-          await this.getAvailableDateTime();
+          this.$nextTick( async () => {
+            this.setEmployees();
+            await this.getAvailableDateTime();
+          })
         },
         methods: {
           setEmployees(){
@@ -146,7 +163,7 @@
             this.employeeSchedule = [];
             await axios.get(`http://127.0.0.1:8000/api/v1/client/employee-availability/?${
               this.employees.map((employee, idx) => `employee-${idx}=${employee.emp_id}`).join('&')
-            }&service_name=${this.selectedService.service_name}&type=new`)
+            }&service_name=${this.selectedService.service_name}&type=${this.type}`)
             .then(res => {
               res.data.forEach(item => {
                 const employee = this.selectedService.employees.find(emp => emp.id === item.employee)

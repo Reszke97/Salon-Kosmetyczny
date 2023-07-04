@@ -82,8 +82,8 @@
                                 style="display: flex; flex-direction: column"
                             >
                                 <h4>{{ item.service_name }}</h4>
-                                <span>{{ `Czas trwania - ${item.duration} min` }}</span>
-                                <span>{{ `Cena - ${item.price} PLN` }}</span>
+                                <span>{{ `Czas trwania: ${item.duration} min` }}</span>
+                                <span>{{ `Cena: ${item.price} PLN` }}</span>
                                 <div
                                     style="display: flex; flex-direction: row"
                                 >

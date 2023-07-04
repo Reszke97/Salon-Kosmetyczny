@@ -192,6 +192,7 @@ class ClientEmployeeAvailability(APIView):
     def get(self, request):
         data = request.query_params.dict()
         service_name = data.pop("service_name")
+        action_type = data.pop("type")
         date_now = dt.datetime.now()
         holidays = Holidays().get_holidays(str(date_now.year))
 

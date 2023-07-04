@@ -109,7 +109,7 @@
 </template>
 
 <script>
-  import ConfirmDialog from "../../../../utils/Components/Dialog.vue"
+  import ConfirmDialog from "../../../../../client/utils/Components/Dialog.vue"
   import VisitSummary from "./VisitSummary.vue"
   import { AUTH_API } from "../../../../authorization/AuthAPI"
 
@@ -168,7 +168,8 @@
             ...this.selectedTime,
           }
         }
-        await AUTH_API.post("/api/v1/client/visit/", { ...this.summary })
+        const API = await AUTH_API();
+        await API.post("/api/v1/client/visit/", { ...this.summary })
         .then(res => {
           resolve(res)
         })

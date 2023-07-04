@@ -338,8 +338,9 @@ class CompleteVisitInfo(APIView):
                 join salon_servicecategory ssc on ssc.id = ss.service_category_id
                 where se.business_activity_id = %s
                     and ss.name = %s
+                    and se.id = %s
             """
-        , [self.employee.business_activity_id, data["name"]])
+        , [self.employee.business_activity_id, data["name"], self.employee.pk])
         return(cursor_to_array_of_dicts(cursor))
 
     def post(self, request):
