@@ -6,7 +6,7 @@
   >
   <v-card class="indigo">
     <v-card-title class="text-h5 blue darken-4">
-      Pomyślnie zapisano twoją wizytę.
+      {{ summary.type === "swap" ? "Pomyślnie przełożono wizytę." : "Pomyślnie zapisano twoją wizytę." }}
     </v-card-title>
     <v-card-text>
       <div class="d-flex flex-column pt-3">

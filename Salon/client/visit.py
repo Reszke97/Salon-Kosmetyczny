@@ -203,6 +203,36 @@ class VisitApi(APIView):
         email.mixed_subtype = "related"
         email.attach_alternative(email_body, "text/html")
         EmailThread(email).start()
+    
+    def send_visit_swap_notification(self, employee, data):
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+                select su.email
+                from salon_appointment sa
+                join salon_cosmeticprocedure scp on scp.appointment_id = sa.id
+                join salon_user su on su.id = scp.client_id
+                    where sa.id = %s
+            """
+        , [data["swappedVisit"]["appointment_id"]])
+        client_mail = cursor_to_array_of_dicts(cursor)[0]["email"]
+
+        subject = "Przełożenie wizyty"
+        email_body = render_to_string('client/swap_visit.html', {
+            "full_client_name": data["swappedVisit"]["client_name"] + ' ' + data["swappedVisit"]["client_last_name"] ,
+            "appointment_date": data["dateTime"]["date"],
+            "appointment_start_time": data["dateTime"]["start_time"][:5],
+            "appointment_end_time": data["dateTime"]["end_time"][:5],
+            "service_name": data["service_name"],
+            "old_appointment_date": data["swappedVisit"]["date"],
+            "old_appointment_time": data["swappedVisit"]["time"],
+            "full_employee_name": employee.first_name + ' ' + employee.last_name
+        })
+        from_email = settings.EMAIL_FROM_USER
+        email = EmailMultiAlternatives( subject, email_body, from_email, to=[client_mail])
+        email.mixed_subtype = "related"
+        email.attach_alternative(email_body, "text/html")
+        EmailThread(email).start()
             
     def post(self, request):
         data = request.data
@@ -238,6 +268,28 @@ class VisitApi(APIView):
             return Response(cosmetic_procedure_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         self.send_notification_to_employee(request.user, data)
         return Response(status=status.HTTP_201_CREATED)
+    
+    def put(self, request):
+        appointment_id = request.data["swappedVisit"]["appointment_id"]
+        employee_id = request.data["swappedVisit"]["employees"][0]["id"]
+        appointment = Appointment.objects.get(pk=appointment_id)
+        appointment_serializer = ApointmentSerializer(appointment, data={
+            "date": request.data["dateTime"]["date"],
+            "time_start": request.data["dateTime"]["start_time"][:5]
+        })
+        if appointment_serializer.is_valid():
+            if self.check_if_visit_still_available(
+                request.data["dateTime"]["start_time"], 
+                request.data["dateTime"]["end_time"],
+                request.data["dateTime"]["date"],
+                employee_id
+            ):
+                appointment_serializer.save()
+            else:
+                return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+            self.send_visit_swap_notification(request.user, request.data)
+        return Response(status=status.HTTP_200_OK)
+
         
 class ClientVisitApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]

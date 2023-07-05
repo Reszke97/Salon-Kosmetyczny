@@ -189,7 +189,8 @@ class EmployeeServiceConfiguration(models.Model):
 class CosmeticProcedure(models.Model):
     appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
-    client = models.ForeignKey(User, on_delete=models.CASCADE)
+    client = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    non_user_client = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

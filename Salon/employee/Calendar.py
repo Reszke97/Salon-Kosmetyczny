@@ -192,7 +192,7 @@ class EmployeeApointmentsApi(APIView):
             """
                 SELECT 
                     suc.first_name AS 'client_name', suc.last_name AS 'client_last_name', suc.email AS 'client_mail',
-                    ss.duration, ss.`name` AS 'service_name', ss.price,
+                    ss.duration, ss.`name` AS 'service_name', ss.price, sa.id as 'appointment_id',
                     sa.`date`, LOWER(DAYNAME(sa.`date`)) AS 'day_name', sa.time_start,  
                     DATE_FORMAT((Time(sa.time_start) + INTERVAL ss.duration MINUTE), '%%H:%%i') as 'end_time', 1 AS 'is_appointment', 0 as 'is_holiday'
                 FROM salon_user su

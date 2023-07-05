@@ -113,8 +113,10 @@
       :selected-date="selectedDate"
       :component-dims="componentDims"
       :selected-service="selectedService"
+      :type="type"
       @closeDialog="closeVisitTimeDialog"
       @successSave="closeVisitTimeDialogAndGetNewData"
+      @successSwap="closeDialogAndRefreshCalendar"
     />
   </v-dialog>
 </template>
@@ -133,6 +135,7 @@
           componentDims: { type: Object, required: true },
           closeSignUpForVisitDialog: { type: Function, default: () => {} },
           type: { type: String, default: "new" },
+          appointmentId: { type: Number, default: null },
         },
         data: () => ({
           employees: [],
@@ -203,6 +206,10 @@
             this.closeVisitTimeDialog();
             await this.getAvailableDateTime();
           },
+          async closeDialogAndRefreshCalendar(){
+            this.$emit("refreshData");
+            this.closeSignUpForVisitDialog()
+          }
         }
     }
 </script>

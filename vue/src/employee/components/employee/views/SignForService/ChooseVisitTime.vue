@@ -40,7 +40,7 @@
                 v-for="jdx of 7"
               >
                 <div
-                  v-if="mappedDateItems.items[(idx * 7) - (8 - jdx)]"
+                  v-if="mappedDateItems.items[(idx * 7) - (8 - jdx)] && !(mappedDateItems.date === dateNow && mappedDateItems.items[(idx * 7) - (8 - jdx)].start_time < timeNow)"
                 >
                   <v-chip
                     class="ma-1"
@@ -112,6 +112,7 @@
   import ConfirmDialog from "../../../../../client/utils/Components/Dialog.vue"
   import VisitSummary from "./VisitSummary.vue"
   import { AUTH_API } from "../../../../authorization/AuthAPI"
+  import { formatDate } from "../../../../../utils/formatDate"
 
   export default {
     name: "",
@@ -124,6 +125,7 @@
       selectedDate: { type: Object, required: true },
       componentDims: { type: Object, required: true },
       selectedService: { type: Object, required: true },
+      type: { type: String, required: true },
     },
     emits: [ "closeDialog", "successSave" ],
     data: () => ({
@@ -131,6 +133,8 @@
       confirmationDialog: false,
       summaryDialog: false,
       summary: null,
+      dateNow: "",
+      timeNow: ""
     }),
     computed: {
       mappedDateItems(){
@@ -148,6 +152,11 @@
         }
       }
     },
+    created(){
+      const now = new Date();
+      this.dateNow = formatDate(now);
+      this.timeNow = `${now.getHours() < 10 ? "0" + now.getHours() : now.getHours()}:${now.getMinutes() < 10 ? "0" + now.getMinutes() : now.getMinutes()}`;
+    },
     methods: {
       setSelectedTime(time){
         this.selectedTime = { ...time }
@@ -163,6 +172,8 @@
           employee_last_name: this.selectedDate.employee.employee_last_name,
           service_name: this.selectedService.service_name,
           business: this.selectedService.business,
+          type: this.type,
+          user: "employee",
           dateTime: {
             date: this.selectedDate.date,
             ...this.selectedTime,
@@ -177,9 +188,38 @@
           reject(err)
         })
       },
+      async swapVisit(resolve, reject){
+        this.summary = {
+          service_id: this.selectedDate.service.service_id,
+          employee_id: this.selectedDate.employee.employee_id,
+          employee_first_name: this.selectedDate.employee.employee_first_name,
+          employee_last_name: this.selectedDate.employee.employee_last_name,
+          service_name: this.selectedService.service_name,
+          business: this.selectedService.business,
+          type: this.type,
+          user: "employee",
+          swappedVisit: {...this.selectedService},
+          dateTime: {
+            date: this.selectedDate.date,
+            ...this.selectedTime,
+          }
+        }
+        const API = await AUTH_API();
+        await API.put("/api/v1/client/visit/", { ...this.summary })
+        .then(res => {
+          resolve(res)
+        })
+        .catch(err => {
+          reject(err)
+        })
+      },
       async saveVisitAndOpenSummaryDialog(){
         new Promise( async (resolve, reject) => {
-          await this.saveVisit(resolve, reject);
+          if(this.type === "new"){
+            await this.saveVisit(resolve, reject);
+          } else if(this.type === "swap"){
+            await this.swapVisit(resolve, reject);
+          }
         })
         .then(() => {
           this.setConfirmationDialog(false);
@@ -194,7 +234,11 @@
       },
       closeSummaryDialog(){
         this.summaryDialog = false;
-        this.$emit("successSave");
+        if(this.type === "swap"){
+          this.$emit("successSwap")
+        } else{
+          this.$emit("successSave");
+        }
       },
     }
   }

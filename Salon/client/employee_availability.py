@@ -17,7 +17,7 @@ from ..employee.utils.cursor_to_array_of_dicts import cursor_to_array_of_dicts
 from ..employee.Calendar import Holidays
 
 class ClientEmployeeAvailability(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
     weekdays = [
         "monday",
         "tuesday",
@@ -27,6 +27,7 @@ class ClientEmployeeAvailability(APIView):
         "saturday",
         "sunday"
     ]
+    action_type = ""
 
     def get_appointments(self, employee):
         cursor = connection.cursor()
@@ -187,12 +188,10 @@ class ClientEmployeeAvailability(APIView):
                         break
         return dates
 
-    
-                
     def get(self, request):
         data = request.query_params.dict()
         service_name = data.pop("service_name")
-        action_type = data.pop("type")
+        self.action_type = data.pop("type")
         date_now = dt.datetime.now()
         holidays = Holidays().get_holidays(str(date_now.year))
 
@@ -206,6 +205,8 @@ class ClientEmployeeAvailability(APIView):
             appointments = self.get_appointments(employee)
             default_availabilities = self.get_default_emp_availability(employee)
             days_left_to_check = availability_config["max_weeks_for_registration"] * 7
+            if self.action_type == "newEmployee":
+                days_left_to_check = 1
             dates = []
             default_availabilities = self.calc_time_from_default_availability(default_availabilities)
 
@@ -227,7 +228,9 @@ class ClientEmployeeAvailability(APIView):
                         "default": day_default_availability[0],
                         "non_default": day_non_default_availability
                     }
-                    earliest_date = date_now + timedelta(days=1)
+                    earliest_date = date_now
+                    if self.action_type == "new":
+                        earliest_date += timedelta(days=1)
                     if day_non_default_availability["is_free"] == False:
                         if (  
                             (day_non_default_availability["not_assigned"] == True
@@ -271,6 +274,8 @@ class ClientEmployeeAvailability(APIView):
             })
         return Response(status=200, data=employee_available_visits)
 
-    def put(self, request):
+class DailyWorkHours(APIView):
+    permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
+
+    def get(self, request):
         pass
-        # data = User.objects.get(pk = request.user.pk)

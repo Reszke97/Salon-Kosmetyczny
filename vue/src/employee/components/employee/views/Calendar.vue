@@ -184,7 +184,22 @@
                             </div>
                             <div 
                                 style="color:white!important; font-size:small;"
-                            >{{ getWorkTimeForGivenDate(date)}}</div>
+                                class="flex-centered"
+                            >
+                                {{ getWorkTimeForGivenDate(date)}}
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-icon
+                                            v-on="on"
+                                            color="success"
+                                            @click="openNewVisitDialog(date)"
+                                        >
+                                            mdi-plus-circle
+                                        </v-icon>
+                                    </template>
+                                    <span>Dodaj wizytę</span>
+                                </v-tooltip>
+                            </div>
                         </div>
                     </template>
                     <!-- else than monthly -->
@@ -311,6 +326,15 @@
             :componentDims="componentDims"
             :closeSignUpForVisitDialog="closeChangeVisitDialog"
             :type="signUpForVisitType"
+            @refreshData="getAppointments"
+        />
+        <NewVisitDialog
+            v-if="newVisitDialog"
+            :componentDims="componentDims"
+            :newVisitDialog="newVisitDialog"
+            :newVisitData="newVisitData"
+            @closeNewVisitDialog="closeNewVisitDialog"
+            @updateNewVisitData="updateNewVisitData"
         />
     </v-row>
 </template>
@@ -318,18 +342,33 @@
 <script>
     import { AUTH_API } from "../../../authorization/AuthAPI";
     import { weekdays } from '../../../../utils'
-    import AvailabilityDialog from '../components/AvailabilityDialog.vue'
-    import AppointmentConfigDialog from '../components/AppointmentConfigDialog.vue'
     import { formatDate } from "../../../../utils/formatDate";
     import { getShortMonthName } from "../utils/getShortMonthName"
-    import SignUpForVisit from "./SignForService/SignUpForVisit.vue";
     import { appendMimeType } from "../../../../client/utils";
+    import AvailabilityDialog from '../components/AvailabilityDialog.vue'
+    import AppointmentConfigDialog from '../components/AppointmentConfigDialog.vue'
+    import SignUpForVisit from "./SignForService/SignUpForVisit.vue";
+    import NewVisitDialog from "./SignForService/NewVisitDialog.vue"
+
+    const _newVisitData = {
+        date: "", 
+        user_does_not_exists: false,
+        employee_id: null,
+        client_id: null,
+        non_existent_user: "",
+        service_id: null,
+        chosen_time: {
+            start: "",
+            end: ""
+        }
+    }
 
     export default {
         components: {
             AvailabilityDialog,
             AppointmentConfigDialog,
             SignUpForVisit,
+            NewVisitDialog,
         },
         mixins: [
         ],
@@ -340,6 +379,8 @@
             },
         },
         data: () => ({
+            newVisitData: {..._newVisitData},
+            newVisitDialog: false,
             componentDims: { height: 0, width: 0 },
             weekdays: weekdays,
             availabilityDialog: false,
@@ -391,8 +432,21 @@
         computed: {
         },
         methods: {
+            updateNewVisitData({ key, val }){
+                this.newVisitData[key] = val;
+            },
+            refreshNewVisitDialog(){
+                this.newVisitData = {..._newVisitData};
+            },
+            openNewVisitDialog(date){
+                this.refreshNewVisitDialog();
+                this.newVisitData.date = date;
+                this.newVisitDialog = true;
+            },
+            closeNewVisitDialog(){
+                this.newVisitDialog = false;
+            },
             async getCompleteServiceInfo(appointmentInfo){
-                console.log(appointmentInfo)
                 const API = await AUTH_API();
                 await API.post(`/api/v1/employee/change-visit/?operation=get&employee=${this.selectedEmployee.employee_id}`, {...appointmentInfo})
                 .then(res => {
@@ -403,6 +457,7 @@
                         service_name: appointmentInfo.name,
                         client_name: appointmentInfo.client_name,
                         client_last_name: appointmentInfo.client_last_name,
+                        appointment_id: appointmentInfo.appointment_id,
                     }
                     this.selectedAppointment.employees.forEach((el, idx) =>{
                         let img = this.selectedAppointment.employees[idx].avatar;
@@ -523,6 +578,7 @@
                             } else if(el.is_appointment){
                                 el.day_appointments.forEach(el2 => {
                                     prev.push({
+                                        appointment_id: el2.appointment_id,
                                         name: el2.service_name,
                                         start: el.date + ' ' + el2.time_start,
                                         end: el.date + ' ' + el2.end_time,
