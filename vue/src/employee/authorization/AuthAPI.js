@@ -75,7 +75,8 @@ const AUTH_API = async () => {
 					}
 					else{
 						// window.location.href = 'http://localhost:8080/login';
-						alert('Token się wysypał, zaloguj się ponownie')
+						alert(error)
+						// alert('Token się wysypał, zaloguj się ponownie')
 						store.commit('setIsAuthenticated', false)
 						return Promise.reject(error);
 					}
