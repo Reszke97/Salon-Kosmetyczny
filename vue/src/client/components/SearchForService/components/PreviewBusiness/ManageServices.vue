@@ -294,12 +294,7 @@
     },
 
     methods: {
-      async deleteComment(service_id, comment_id){
-        const API = await AUTH_API();
-        await API.delete(`/api/v1/employee/comment/?service_id=${service_id}&comment_id=${comment_id}`)
-        .then( async () => {
-          await this.closeComment()
-        })
+      async deleteComment(){
       },
       async closeComment(){
         this.dialog = false;

@@ -178,7 +178,8 @@
         },
         methods: {
             async sendMessage(message){
-                await AUTH_API.post("/api/v1/client/message/", { 
+                const API = await AUTH_API()
+                await API.post("/api/v1/client/message/", { 
                     employee_mail: this.selectedVisit.employee_mail,
                     employee_full_name: `${this.selectedVisit.employee_name} ${this.selectedVisit.employee_last_name}`,
                     date: this.selectedVisit.appointment_date,
@@ -215,7 +216,8 @@
                 this.selectedVisit = value;
             },
             async deleteVisit(){
-                await AUTH_API.delete(`/api/v1/client/my-visits/?appointment_id=${this.selectedVisit.appointment_id}`, {
+                const API = await AUTH_API();
+                await API.delete(`/api/v1/client/my-visits/?appointment_id=${this.selectedVisit.appointment_id}`, {
                     data: this.selectedVisit 
                 })
                 .then( async () => {
@@ -232,7 +234,8 @@
                 this.confirmationDialog = val;
             },
             async getVisits(){
-                await AUTH_API.get(`/api/v1/client/my-visits/?visitType=${this.selectedVisitType}`)
+                const API = await AUTH_API();
+                await API.get(`/api/v1/client/my-visits/?visitType=${this.selectedVisitType}`)
                 .then(res => {
                     this.visits = res.data.map(el =>{
                         const business_img = appendMimeType(el.business_img)

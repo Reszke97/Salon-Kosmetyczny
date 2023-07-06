@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { AUTH_API } from '../authorization/AuthAPI'
 import axios from "axios"
 
 Vue.use(Vuex)
@@ -16,7 +15,6 @@ export default new Vuex.Store({
     distinctEmployeeSpecs: [],
     countries: [
       {
-        // link: 'https://github.com/lipis/flag-icons/blob/main/flags/4x3/pl.svg',
         label: 'Polska',
         phone: '+48',
         countryCode: "PL",
@@ -26,7 +24,6 @@ export default new Vuex.Store({
         ],
       },
       {
-        // link: 'https://github.com/lipis/flag-icons/blob/main/flags/4x3/de.svg',
         label: 'Niemcy',
         phone: '+49',
         countryCode: "DE",
@@ -36,7 +33,6 @@ export default new Vuex.Store({
         ],
       },
       {
-        // link: 'https://github.com/lipis/flag-icons/blob/main/flags/4x3/gb.svg',
         label: 'Wielka Brytania',
         phone: '+44',
         countryCode: "GB",
@@ -97,10 +93,9 @@ export default new Vuex.Store({
     setRole(state, value){
       state.role = value
     },
-    setToken (state, { access, refresh }) {
+    async setToken (state, { access, refresh }) {
       localStorage.setItem( 'clientToken', access );
       localStorage.setItem( 'clientRefreshToken', refresh );
-      AUTH_API.defaults.headers['Authorization'] = 'JWT ' + access;
       state.accessToken = access
       state.refreshToken = refresh
     },
@@ -118,7 +113,6 @@ export default new Vuex.Store({
         state.accessToken = null
         state.refreshToken = null
         state.isAuthenticated = false;
-        AUTH_API.defaults.headers['Authorization'] = null;
       }
     },
 

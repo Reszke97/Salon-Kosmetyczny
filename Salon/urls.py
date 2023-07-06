@@ -61,5 +61,6 @@ urlpatterns = [
     path('api/v1/employee/owner-employees/', Employees.as_view(), name = 'owner_employees'),
     path('api/v1/employee/change-visit/', CompleteVisitInfo.as_view(), name = 'change_visit'),
     path('api/v1/employee/new-visit/', DailyWorkHours.as_view(), name = 'employee_new_visit'),
+    path('api/v1/employee/services-clients/', EmployeeServicesAndClients.as_view(), name = 'employee_services_with_clients'),
     # path('api/user/isauthenticated/', IsUserAuthenticated.as_view(), name = 'is_authenticated'),
 ]

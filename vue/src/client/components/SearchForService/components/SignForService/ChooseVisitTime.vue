@@ -161,6 +161,7 @@
           employee_id: this.selectedDate.employee.employee_id,
           employee_first_name: this.selectedDate.employee.employee_first_name,
           employee_last_name: this.selectedDate.employee.employee_last_name,
+          user: "client",
           service_name: this.selectedService.service_name,
           business: this.selectedService.business,
           dateTime: {

@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { AUTH_API } from '../authorization/AuthAPI'
 
 Vue.use(Vuex)
 
@@ -15,7 +14,6 @@ export default new Vuex.Store({
     isAuthenticated: false,
     countries: [
       {
-        // link: 'https://github.com/lipis/flag-icons/blob/main/flags/4x3/pl.svg',
         label: 'Polska',
         phone: '+48',
         countryCode: "PL",
@@ -25,7 +23,6 @@ export default new Vuex.Store({
         ],
       },
       {
-        // link: 'https://github.com/lipis/flag-icons/blob/main/flags/4x3/de.svg',
         label: 'Niemcy',
         phone: '+49',
         countryCode: "DE",
@@ -35,7 +32,6 @@ export default new Vuex.Store({
         ],
       },
       {
-        // link: 'https://github.com/lipis/flag-icons/blob/main/flags/4x3/gb.svg',
         label: 'Wielka Brytania',
         phone: '+44',
         countryCode: "GB",

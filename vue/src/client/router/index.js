@@ -11,6 +11,8 @@ import PasswordResetEmail from '../components/authentication/ResetPasswordEmail.
 import AllBusinesses from '../components/SearchForService/views/AllBusinesses.vue';
 import SettingsPanel from '../components/Settings/views/SettingsPanel.vue';
 import DisplayVisits from "../components/Visits/DisplayVisits.vue";
+import store from "../store/index";
+import { AUTH_API } from '../authorization/AuthAPI';
 
 Vue.use(VueRouter)
 
@@ -92,45 +94,79 @@ const routes = [
     name: 'Visits',
     component: DisplayVisits
   },
-
-  // {
-  //   path: '/calendar/monthly',
-  //   name: 'CalendarMonthly',
-  //   component: Calendar,
-  //   props: {
-  //     calendarType: "monthly"
-  //   },
-  // },
-  // {
-  //   path: '/calendar/weekly',
-  //   name: 'CalendarWeekly',
-  //   component: Calendar,
-  //   props: {
-  //     calendarType: "weekly"
-  //   },
-  // },
-  // {
-  //   path: '/calendar/daily',
-  //   name: 'CalendarDaily',
-  //   component: Calendar,
-  //   props: {
-  //     calendarType: "daily"
-  //   },
-  // },
-  // {
-  //   path: "/defineservice",
-  //   name: "Service",
-  //   component: Service,
-  //   // props: {
-  //   //   calendarType: "daily"
-  //   // },
-  // },
 ]
+
+async function authenticate(){
+  // sprawdzenie czy refresh token istnieje
+  if(localStorage.getItem('clientRefreshToken')){
+    try {
+      const NOW = Math.ceil(Date.now() / 1000);
+      const REFRESH_TOKEN_PARTS = JSON.parse(atob(localStorage.getItem('clientRefreshToken').split('.')[1]));
+      // sprawdź czy refresh token wygasł
+      if(REFRESH_TOKEN_PARTS.exp < NOW ){
+        const API = await AUTH_API();
+        await API.post('/api/v1/token/refresh/', {
+          refresh: localStorage.getItem('clientRefreshToken')
+        })
+        .then(response => {
+          store.commit('setToken', {
+            access: response.data.access,
+            refresh: response.data.refresh
+          })
+          store.commit('setIsAuthenticated', true)
+        })
+        .catch(error => {
+          console.log(error)
+        })
+      }
+      // sprawdzenie czy token jest legitny
+      else{
+        const API = await AUTH_API();
+        await API.post('/api/v1/token/verify/', {
+          token: localStorage.getItem('clientRefreshToken')
+        })
+        .then(() => {
+          store.commit('setRefreshToken')
+          store.commit('setIsAuthenticated', true)
+        })
+        .then( async () => {
+          const API = await AUTH_API();
+          await API.get('/api/v1/user/getuserrole/')
+          .then(response=>{
+            store.commit('setRole', response.data.role)
+          })
+        })
+        .catch(error => {
+          console.log(error)
+        })
+      }
+      return
+    } catch( error ){
+      console.log(error)
+      return
+    }
+  }
+}
 
 const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL + 'client/',
   routes
+})
+
+router.beforeEach( async (to, from, next) => {
+  await authenticate();
+  if(store.state.isAuthenticated){
+    next();
+  } else {
+    if(["/register", "/passwordreset", "/passwordresetemailsend"].includes(to.path)){
+      next();
+    } else if(["/visits", "/settings"].includes(to.path)){
+      window.location.assign("/client/login");
+    } else {
+      next();
+    }
+  }
 })
 
 export default router

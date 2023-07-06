@@ -80,7 +80,6 @@
 </template>
 
 <script>
-    import { AUTH_API } from "../../../authorization/AuthAPI"
     import UserInfo from "../components/UserInfo.vue"
     import PasswordChange from "../components/PasswordChange.vue"
     

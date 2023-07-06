@@ -126,6 +126,7 @@
       componentDims: { type: Object, required: true },
       selectedService: { type: Object, required: true },
       type: { type: String, required: true },
+      userInfo: { type: Object, default: () => {{}} }
     },
     emits: [ "closeDialog", "successSave" ],
     data: () => ({
@@ -174,6 +175,9 @@
           business: this.selectedService.business,
           type: this.type,
           user: "employee",
+          userInfo: {
+            ...this.userInfo
+          },
           dateTime: {
             date: this.selectedDate.date,
             ...this.selectedTime,

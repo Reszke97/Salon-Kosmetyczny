@@ -90,7 +90,10 @@
                                     <div style="display: flex; width:100%; color: orange">
                                         Umów wizytę
                                     </div>
-                                    <div style="display: flex; width:100%; justify-content: end;">
+                                    <div 
+                                        v-if="$store.state.isAuthenticated"
+                                        style="display: flex; width:100%; justify-content: end;"
+                                    >
                                         <v-tooltip top color="success">
                                             <template v-slot:activator="{ on, attrs }">
                                                 <v-icon

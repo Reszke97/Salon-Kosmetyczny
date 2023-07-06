@@ -187,7 +187,7 @@
                                 class="flex-centered"
                             >
                                 {{ getWorkTimeForGivenDate(date)}}
-                                <v-tooltip bottom>
+                                <v-tooltip bottom v-if="!isHolidayOrFree(date)">
                                     <template v-slot:activator="{ on, attrs }">
                                         <v-icon
                                             v-on="on"
@@ -221,7 +221,22 @@
                             </div>
                             <div 
                                 style="color:white!important; font-size:small;"
-                            >{{ getWorkTimeForGivenDate(date)}}</div>
+                                class="flex-centered"
+                            >
+                                {{ getWorkTimeForGivenDate(date)}}
+                                <v-tooltip bottom v-if="!isHolidayOrFree(date)">
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-icon
+                                            v-on="on"
+                                            color="success"
+                                            @click="openNewVisitDialog(date)"
+                                        >
+                                            mdi-plus-circle
+                                        </v-icon>
+                                    </template>
+                                    <span>Dodaj wizytę</span>
+                                </v-tooltip>
+                            </div>
                         </div>
                     </template>
                 </v-calendar>
@@ -275,10 +290,10 @@
                                     </span>
                                     <template v-if="selectedEvent.is_appointment">
                                         <span>
-                                            <span style="color: orange!important" class="font-bold">Imię klienta: </span><span>{{ `${selectedEvent.client_name} ${selectedEvent.client_last_name}` }}</span>
+                                            <span style="color: orange!important" class="font-bold">Imię klienta: </span><span>{{ `${selectedEvent.client_name ? selectedEvent.client_name : selectedEvent.non_user_client} ${selectedEvent.client_last_name ? selectedEvent.client_last_name : ""}` }}</span>
                                         </span>
                                         <span>
-                                            <span style="color: orange!important" class="font-bold">E-mail klienta: </span><span>{{ `${selectedEvent.client_mail}` }}</span>
+                                            <span style="color: orange!important" class="font-bold">E-mail klienta: </span><span>{{ `${selectedEvent.client_mail ? selectedEvent.client_mail : "-"}` }}</span>
                                         </span>
                                     </template>
                                 </template>
@@ -305,7 +320,7 @@
                                         dark
                                         v-on="on"
                                         icon
-                                        @click="openChangeVisitDialogAndSetSelectedAppointment(selectedEvent)"
+                                        @click="openReasonDialog(selectedEvent)"
                                     >
                                         <v-icon
                                             color="red"
@@ -335,7 +350,35 @@
             :newVisitData="newVisitData"
             @closeNewVisitDialog="closeNewVisitDialog"
             @updateNewVisitData="updateNewVisitData"
+            @closeNewVisitDialogAndGetNewData="closeNewVisitDialogAndGetNewData"
         />
+        <v-dialog
+            v-model="reasonDialog"
+            persistent
+            dark
+            :width="'300px'"
+        >   
+            <div class="bg-color px-4">
+                <v-text-field
+                    v-model="reason"
+                    label="Podaj powód"
+                />
+                <div class="d-flex pb-2">
+                    <v-btn
+                        @click="deleteVisit"
+                        class="mr-2 indigo"
+                    >
+                        Usuń wizytę
+                    </v-btn>
+                    <v-btn
+                        class="indigo"
+                        @click="closeReasonDialog"
+                    >
+                        Zamknij
+                    </v-btn>
+                </div>
+            </div>
+        </v-dialog>
     </v-row>
 </template>
 
@@ -404,6 +447,9 @@
             appointmentDialog: false,
             selectedAppointment: {},
             changeVisitDialog: false,
+            deleteData: {},
+            reason: "",
+            reasonDialog: false,
         }),
         inject: ["screenSize"],
         async mounted () {
@@ -432,6 +478,32 @@
         computed: {
         },
         methods: {
+            async deleteVisit(){
+                const API = await AUTH_API();
+                if(this.reason){
+                    API.delete(`/api/v1/client/visit/?appointment_id=${this.deleteData.appointment_id}`, { data: { reason: this.reason } })
+                    .then( async () => {
+                        this.reason = "";
+                        this.deleteData = {};
+                        this.closeReasonDialog();
+                        alert("Usunięto wizytę")
+                        await this.getAppointments();
+                    })
+                } else {
+                    alert("Podaj powód")
+                }
+            },
+            openReasonDialog(data){
+                this.deleteData.appointment_id = data.appointment_id;
+                this.reasonDialog = true;
+            },
+            closeReasonDialog(){
+                this.reasonDialog = false;
+            },
+            async closeNewVisitDialogAndGetNewData(){
+                this.closeNewVisitDialog();
+                await this.getAppointments();
+            },
             updateNewVisitData({ key, val }){
                 this.newVisitData[key] = val;
             },
@@ -441,6 +513,7 @@
             openNewVisitDialog(date){
                 this.refreshNewVisitDialog();
                 this.newVisitData.date = date;
+                this.newVisitData.employee_id = this.selectedEmployee.employee_id;
                 this.newVisitDialog = true;
             },
             closeNewVisitDialog(){
@@ -518,6 +591,15 @@
             setCalendarType(val){
                 this.type = val;
             },
+            isHolidayOrFree(date){
+                const foundItemIdx = this.categorizedEvents.findIndex(
+                    el => el.date === date && (el.is_free || el.is_holiday)
+                );
+                if(foundItemIdx >= 0) {
+                    return true
+                }
+                return false
+            },
             getWorkTimeForGivenDate(date){
                 const foundItemIdx = this.categorizedEvents.findIndex(
                     el => el.date === date && !el.is_appointment && !el.is_free && !el.is_holiday
@@ -586,6 +668,7 @@
                                         client_name: el2.client_name,
                                         client_last_name: el2.client_last_name,
                                         client_mail: el2.client_mail,
+                                        non_user_client: el2.non_user_client,
                                         time: `${el2.time_start} - ${el2.end_time}`,
                                         date: el.date,
                                         is_appointment: true,
@@ -638,7 +721,7 @@
             closeAvailabilityDialog(){
                 this.availabilityDialog = false;
             },
-            viewDay (date) {
+            viewDay ({ date }) {
                 this.focus = date
                 this.type = "day"
             },

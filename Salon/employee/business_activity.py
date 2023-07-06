@@ -189,7 +189,9 @@ class BusinessActivities(APIView):
             }
             return encoded_image
 
-    def all_business_info_query(self):
+    def all_business_info_query(self, query_params):
+        # here
+        print(query_params)
         return  """SELECT 
             ss.id as 'service_id', ssc.id as 'category_id', se.id as 'employee_id', se.is_owner, su.first_name, su.last_name, su.phone_number, su.email, 
             ses.name as 'spec_name', ses.id as 'spec_id', ss.name as 'service_name', ss.duration, ss.price, ssc.name as 'category_name',
@@ -416,8 +418,15 @@ class BusinessActivities(APIView):
         return return_list
 
     def get(self, request):
+        query_params = {
+            "business_name": request.query_params.get("selectedBEntity"),
+            "city": request.query_params.get("selectedCity"),
+            "postcode": request.query_params.get("selectedPostCode"),
+            "service_name": request.query_params.get("selectedService"),
+            "spec_name": request.query_params.get("selectedSpec"),
+        }
         cursor = connection.cursor()
-        cursor.execute(self.all_business_info_query())
+        cursor.execute(self.all_business_info_query(query_params))
         all_businesses_info = cursor_to_array_of_dicts(cursor)
         all_businesses_info = self.group_business_activity_services(all_businesses_info)
 

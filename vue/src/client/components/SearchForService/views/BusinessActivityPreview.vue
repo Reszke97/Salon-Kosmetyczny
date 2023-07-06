@@ -345,18 +345,6 @@
                 this.mapImagesType(this.services);
                 this.services = { ...this.groupByCategory(this.services) }
             },
-            async getEmployees(){
-                const API = await AUTH_API();
-                await API.get("api/v1/employee/business-activity-employees/")
-                .then(res => {
-                    this.employees = res.data.map(el => {
-                        return {
-                            ...el,
-                            avatar: appendMimeType(el.avatar)
-                        }
-                    })
-                })
-            },
             async previewEmployee(employee, def = true){
                 await this.getServices(employee, def);
                 this.openEmployeeViewDialog();

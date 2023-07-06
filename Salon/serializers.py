@@ -342,6 +342,7 @@ class CosmeticProcedureSerializer(serializers.ModelSerializer):
             "appointment",
             "client",
             "service",
+            "non_user_client",
         )
 class OwnerEmployeesSerializer(serializers.ModelSerializer):
     user = GetUserInfoSerializer()

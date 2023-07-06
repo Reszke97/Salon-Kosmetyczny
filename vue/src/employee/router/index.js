@@ -89,7 +89,6 @@ const routes = [
   },
 
 
-  // Calendar Start
   {
     path: '/calendar',
     name: 'Calendar',
@@ -99,15 +98,11 @@ const routes = [
     },
   },
 
-  //Calendar End
-
-  //Service Start
   {
     path: "/defineservice",
     name: "Service",
     component: Service,
   },
-  //Service End
 
 ]
 

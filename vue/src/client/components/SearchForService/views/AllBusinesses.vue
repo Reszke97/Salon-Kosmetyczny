@@ -296,7 +296,17 @@
                 })
             },
             async getBusinessActivities(){
-                await axios.get('http://127.0.0.1:8000/api/v1/client/business-activities/')
+                await axios.get(`http://127.0.0.1:8000/api/v1/client/business-activities/?selectedBEntity=${
+                    this.inputVariables.selectedBEntity
+                }&selectedCity=${
+                    this.inputVariables.selectedCity
+                }&selectedPostCode=${
+                    this.inputVariables.selectedPostCode
+                }&selectedService=${
+                    this.inputVariables.selectedService
+                }&selectedSpec=${
+                    this.inputVariables.selectedSpec
+                }`)
                 .then(res => {
                     Object.keys(res.data).forEach(bActivity => {
                         Object.keys(res.data[bActivity]).forEach(el => {

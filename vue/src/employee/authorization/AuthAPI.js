@@ -17,6 +17,7 @@ Promise.prototype.delay = function(time){
 }
 
 const AUTH_API = async () => {
+	let originalRequest = null;
 	let newAxiosInstance = null;
 	await Promise.resolve()
 	.delay(100)
@@ -38,12 +39,12 @@ const AUTH_API = async () => {
 				return response;
 			},
 			async function (error) {
-				const originalRequest = error.config;
+				if (!originalRequest){
+					originalRequest = error.config;
+				}
 				if (typeof error.response === 'undefined') {
 					alert(
-						'A server/network error occurred. ' +
-							'Looks like CORS might be the problem. ' +
-							'Sorry about this - we will get it fixed shortly.'
+						"Wystąpiły problemy z serwerem. Naprawa w trakcie."
 					);
 					store.commit('setIsAuthenticated', false)
 					return Promise.reject(error);
@@ -74,9 +75,7 @@ const AUTH_API = async () => {
 						return Promise.reject(error);
 					}
 					else{
-						// window.location.href = 'http://localhost:8080/login';
 						alert(error)
-						// alert('Token się wysypał, zaloguj się ponownie')
 						store.commit('setIsAuthenticated', false)
 						return Promise.reject(error);
 					}
@@ -85,7 +84,6 @@ const AUTH_API = async () => {
 				if (
 					error.response.status === 403
 				) {
-					// window.location.href = 'http://localhost:8080/login';
 					alert('Twoje hasło niedawno zostało zmienione, zaloguj się ponownie.')
 					store.commit('setIsAuthenticated', false)
 					return Promise.reject(error);
@@ -102,8 +100,6 @@ const AUTH_API = async () => {
 					try{
 						if (employeeRefreshToken) {
 							const tokenParts = JSON.parse(atob(employeeRefreshToken.split('.')[1]));
-			
-							// exp date in token is expressed in seconds, while now() returns milliseconds:
 							const now = Math.ceil(Date.now() / 1000);
 			
 							if (tokenParts.exp > now) {
@@ -129,20 +125,16 @@ const AUTH_API = async () => {
 										return Promise.reject(error);
 									});
 							} else {
-								alert('Refresh token is expired', tokenParts.exp, now);
+								alert('Token wygasł', tokenParts.exp, now);
 								store.commit('setIsAuthenticated', false);
-								// window.location.href = 'http://localhost:8080/login';
 							}
 						} else {
 							store.commit('setIsAuthenticated', false);
-							// window.location.href = 'http://localhost:8080/login';
 						}
 					}catch( error ){
 						alert(error)
-						// return
 					}
 				}
-				// specific error handling done elsewhere
 				return Promise.reject(error);
 			}
 		);

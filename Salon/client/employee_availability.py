@@ -17,7 +17,7 @@ from ..employee.utils.cursor_to_array_of_dicts import cursor_to_array_of_dicts
 from ..employee.Calendar import Holidays
 
 class ClientEmployeeAvailability(APIView):
-    permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
+    # permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
     weekdays = [
         "monday",
         "tuesday",
@@ -205,8 +205,6 @@ class ClientEmployeeAvailability(APIView):
             appointments = self.get_appointments(employee)
             default_availabilities = self.get_default_emp_availability(employee)
             days_left_to_check = availability_config["max_weeks_for_registration"] * 7
-            if self.action_type == "newEmployee":
-                days_left_to_check = 1
             dates = []
             default_availabilities = self.calc_time_from_default_availability(default_availabilities)
 
@@ -278,4 +276,122 @@ class DailyWorkHours(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
 
     def get(self, request):
-        pass
+        employee_id = request.query_params.get("employee_id")
+        service_id = request.query_params.get("service_id")
+        given_date = request.query_params.get("date")
+        client_employee_availability = ClientEmployeeAvailability()
+        employee = Employee.objects.get(pk=employee_id)
+
+        cursor = connection.cursor()
+        cursor.execute("""SELECT su.first_name as 'employee_first_name', su.last_name as 'employee_last_name', se.id as 'employee_id'
+                from salon_employee se
+                join salon_user su on su.id = se.user_id
+                where se.id = %s
+            """
+        , [employee_id])
+        employee_info = cursor_to_array_of_dicts(cursor)
+        service = Service.objects.get(pk=service_id)
+        category = ServiceCategory.objects.get(pk=service.service_category_id)
+        serialized_service = ServiceSerializer(service)
+        appointments = client_employee_availability.get_appointments(employee)
+        default_availabilities = client_employee_availability.get_default_emp_availability(employee)
+        dates = []
+        default_availabilities = client_employee_availability.calc_time_from_default_availability(default_availabilities)
+
+        date = dt.datetime.strptime(given_date, "%Y-%m-%d")
+        day_name = date.strftime("%A")
+        day_name = day_name[0].lower() + day_name[1:]
+        day_non_default_availability = client_employee_availability.calc_time_delta_non_default_availability(str(date)[:10], employee)
+        day_default_availability = [
+            dictionary for dictionary in default_availabilities
+            if dictionary.get("weekday") == day_name
+        ]
+        availability_type = "default"
+        if day_non_default_availability["not_assigned"] == False:
+            availability_type = "non_default"
+        
+        availability_dict = {
+            "default": day_default_availability[0],
+            "non_default": day_non_default_availability
+        }
+        earliest_date = date
+        if day_non_default_availability["is_free"] == False:
+            if (  
+                (day_non_default_availability["not_assigned"] == True
+                    and day_default_availability[0]["is_free"] == False
+                ) or day_non_default_availability["not_assigned"] == False
+            ):
+                if str(earliest_date)[:10] <= str(date)[:10]:
+                    day_appointments = [
+                        dictionary for dictionary in appointments
+                        if dictionary.get("appointment_date") == str(date)[:10]
+                    ]
+                    day_appointments = client_employee_availability.calc_day_appointment_time_delta(
+                        day_appointments, "appointment_end_time", "appointment_start_time"
+                    )
+                    possible_time = availability_dict[availability_type]["time"] - day_appointments["time_delta"]
+                    service_duration = timedelta(minutes=int(serialized_service.data["duration"]))
+                    if possible_time >= service_duration:
+                        start_time = availability_dict[availability_type]["work_hours"]["start_time"]
+                        start_time = timedelta(hours=start_time.hour, minutes=start_time.minute)
+                        end_time = availability_dict[availability_type]["work_hours"]["end_time"]
+                        end_time = timedelta(hours=end_time.hour, minutes=end_time.minute)
+                        possible_visit_time_start = start_time
+
+                        found_appointments = client_employee_availability.get_possible_overlaping_visits({
+                            "reserved_activities": day_appointments["work_hours"] + availability_dict[availability_type]["break_times"],
+                            "possible_visit_time_start": possible_visit_time_start,
+                            "date": date,
+                            "service_duration": service_duration,
+                            "start_time": start_time,
+                            "end_time": end_time,
+                            "earliest_date": earliest_date,
+                        })
+                        dates.append({
+                            "date": str(date)[:10],
+                            "day_name": day_name,
+                            "items": found_appointments,
+                            "employee": employee_info[0],
+                            "service": {
+                                "category_id": service.service_category_id,
+                                "category_name": category.name,
+                                "duration": service.duration,
+                                "price": service.price,
+                                "service_id": service.pk,
+                                "service_name": service.name,
+                            },
+                        })
+        return Response(status=status.HTTP_200_OK, data=dates)
+
+
+
+
+
+
+class EmployeeServicesAndClients(APIView):
+    permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
+
+    def get(self, request):
+        employee_id = request.query_params.get("employee_id")
+        cursor = connection.cursor()
+        cursor.execute("""SELECT ss.name as 'service_name', ss.id as 'service_id'
+                from salon_service ss
+                where ss.employee_id = %s
+            """
+        , [employee_id])
+        services = cursor_to_array_of_dicts(cursor)
+
+        cursor = connection.cursor()
+        cursor.execute("""SELECT distinct concat(su.first_name, ' ', su.last_name) as 'user_name', su.id as 'user_id'
+                from salon_service ss
+                join salon_cosmeticprocedure scp on scp.service_id = ss.id
+                join salon_user su on su.id = scp.client_id
+                where ss.employee_id = %s
+            """
+        , [employee_id])
+        clients = cursor_to_array_of_dicts(cursor)
+
+        return Response(status=status.HTTP_200_OK, data={
+            "clients": clients,
+            "services": services
+        })

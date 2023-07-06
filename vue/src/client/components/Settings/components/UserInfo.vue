@@ -88,7 +88,8 @@
         },
         methods: {
             async updateInfo(){
-                await AUTH_API.put('api/v1/client/info/', this.userInfo)
+                const API = await AUTH_API();
+                await API.put('api/v1/client/info/', this.userInfo)
             },
             async onConfirmAction(value){
                 await this.updateInfo()
@@ -100,7 +101,8 @@
         },
 
         async created() {
-            await AUTH_API.get('api/v1/client/info/')
+            const API = await AUTH_API();
+            await API.get('api/v1/client/info/')
                 .then((res) => {
                     this.userInfo = res.data
                 })
