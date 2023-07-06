@@ -306,6 +306,7 @@
                 let groupedServices = {
                     avatar: employeeConfig.avatar,
                     categories: [],
+                    employee_info: employeeConfig.employee_info
                 }
                 const uniqueCategories = [
                     ...new Map(employeeConfig.service_info.map(item =>[item.category.category_id, item.category])).values()
@@ -340,7 +341,11 @@
                                 category: { ...service_category, is_new: false, category: service_category.category_id, }
                             }
                         })
-                        this.services = {... res.data };
+                        this.services = {... res.data, employee_info: {
+                            "name": employee.first_name,
+                            "last_name": employee.last_name,
+                            "spec_name": employee.spec_name,
+                        }};
                     })
                 this.mapImagesType(this.services);
                 this.services = { ...this.groupByCategory(this.services) }

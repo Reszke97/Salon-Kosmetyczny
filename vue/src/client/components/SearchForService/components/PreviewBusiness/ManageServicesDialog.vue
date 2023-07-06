@@ -16,7 +16,6 @@
                     "
                 >
                     <div
-                        class="mr-8"
                         :style="`
                             display: flex;
                         `"

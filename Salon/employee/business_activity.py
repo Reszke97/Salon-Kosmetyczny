@@ -189,9 +189,7 @@ class BusinessActivities(APIView):
             }
             return encoded_image
 
-    def all_business_info_query(self, query_params):
-        # here
-        print(query_params)
+    def all_business_info_query(self):
         return  """SELECT 
             ss.id as 'service_id', ssc.id as 'category_id', se.id as 'employee_id', se.is_owner, su.first_name, su.last_name, su.phone_number, su.email, 
             ses.name as 'spec_name', ses.id as 'spec_id', ss.name as 'service_name', ss.duration, ss.price, ssc.name as 'category_name',
@@ -204,6 +202,11 @@ class BusinessActivities(APIView):
             join salon_employeespecialization ses on ses.id = se.spec_id
             left join salon_service ss on ss.id = sesc.service_id
             left join salon_servicecategory ssc on ssc.id = ss.service_category_id
+            where sba.name like concat('%%', %s, '%%')
+                and sba.city like concat('%%', %s, '%%')
+                and sba.post_code like concat('%%', %s, '%%')
+                and ss.name like concat('%%', %s, '%%')
+                and ses.name like concat('%%', %s, '%%')
         """
 
     def all_employees_query(self):
@@ -426,7 +429,16 @@ class BusinessActivities(APIView):
             "spec_name": request.query_params.get("selectedSpec"),
         }
         cursor = connection.cursor()
-        cursor.execute(self.all_business_info_query(query_params))
+        cursor.execute(
+            self.all_business_info_query(), 
+            [
+                query_params["business_name"],
+                query_params["city"],
+                query_params["postcode"],
+                query_params["service_name"],
+                query_params["spec_name"]
+            ],
+        )
         all_businesses_info = cursor_to_array_of_dicts(cursor)
         all_businesses_info = self.group_business_activity_services(all_businesses_info)
 
