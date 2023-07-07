@@ -196,6 +196,7 @@ class AvailabilityConfigApi(APIView):
 
     def put(self, request):
         data = request.data
+        data["min_time_for_registration"] = "24h"
         user = User.objects.get(pk = request.user.pk)
         try:
             employee = Employee.objects.get(user_id = user.pk)

@@ -58,10 +58,15 @@
                     style="height:200px"
                     v-if="business.image"
                 >
-                    <img
+                    <a
+                        @click="openImg(business.image.image)"
+                    >
+                        <v-img
                         :src="business.image.image"
                         style="max-height:200px; width: 100%"
-                    />
+                        
+                        />
+                    </a>
                 </div>
                 <v-expansion-panels 
                     dark 
@@ -125,6 +130,25 @@
                     </v-expansion-panel>
                 </v-expansion-panels>
             </div>
+            <v-dialog
+                id="showImagePreview"
+                v-model="showImagePreview"
+                style="overflow: hidden!important;"
+                v-if="showImagePreview"
+            >
+                <v-img
+                    :src="selectedImg"
+                    style="width:auto;height: auto"
+                />
+                <v-btn
+                    dark
+                    color="secondary"
+                    @click="closeImg"
+                    class="mr-2"
+                >
+                    Zamknij
+                </v-btn>
+            </v-dialog>
         </v-col>
     </v-row>
 </template>
@@ -143,14 +167,21 @@
             previewBusinessActivity: { type: Function, default: () => {} },
         },
         data: () => ({
-            
+            showImagePreview: false,
+            selectedImg: "",
         }),
         inject: ["screenSize"],
         computed: {
             
         },
         methods: {
-            
+            closeImg(){
+                this.showImagePreview = false;
+            },
+            openImg(dataUrl){
+                this.selectedImg = dataUrl;
+                this.showImagePreview = true;
+            },
         }
     }
 </script>

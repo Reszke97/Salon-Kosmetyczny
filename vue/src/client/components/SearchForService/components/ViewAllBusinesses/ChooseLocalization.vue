@@ -96,6 +96,7 @@
             setInputVariable: { type: Function, default: () => {} },
             getBusinessActivities: { type: Function, default: () => {} },
             setStarted: { type: Function, default: () => {} },
+            started: { type: Boolean, required: true },
             containerHeight: { type: Number, required: true },
             containerWidth: { type: Number, required: true },
         },
@@ -107,7 +108,9 @@
         },
         methods: {
             closeDialogAndSetStarted(){
-                this.setStarted();
+                if(!this.started){
+                    this.setStarted();
+                }
                 this.getBusinessActivities();
                 this.closeLocalizationDialog();
             }

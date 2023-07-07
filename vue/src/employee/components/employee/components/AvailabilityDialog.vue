@@ -268,7 +268,7 @@
                 const API = await AUTH_API();
                 await API.post("api/v1/employee/availability/", this.availability)
                     .then( () => {
-                        alert("All good")
+                        alert("Zapisano zmiany");
                     })
             },
             async saveData(){

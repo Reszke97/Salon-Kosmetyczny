@@ -13,8 +13,8 @@
                             <h2>Usługa {{ service.service.name }}</h2>
                         </v-expansion-panel-header>
                         <v-expansion-panel-content>
-                            <p><b>Czas Trwania: </b>{{ service.service.duration }}</p>
-                            <p><b>Cena: </b>{{ service.service.price }}</p>
+                            <p><b>Czas Trwania: </b>{{ service.service.duration }} min</p>
+                            <p><b>Cena: </b>{{ service.service.price }} zł</p>
                             <v-btn
                                 color="red lighten-2"
                                 dark

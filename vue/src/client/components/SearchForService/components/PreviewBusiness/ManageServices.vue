@@ -8,6 +8,7 @@
         backgroundColor: '#3f51b5',
         padding: '1rem',
         color: 'white',
+        minWidth: '600px',
       }
       :
       {
@@ -16,6 +17,8 @@
         width: '100%', 
         backgroundColor: '#3f51b5',
         color: 'white',
+        padding: '1rem',
+        minWidth: '600px',
       }
     "
   >
@@ -65,7 +68,7 @@
             :key="jdx + 'i'"
           >
             <div class="pb-3">
-              <h3> Usługa - {{ service.service.name }} </h3>
+              <h4> Usługa - {{ service.service.name }} </h4>
               <div class="d-flex flex-column ">
                 <span style="color:orange"> Cena - {{ service.service.price }} PLN</span>
                 <span style="color:orange"> Czas trwania - {{ service.service.duration }} </span>
@@ -77,18 +80,23 @@
                   v-for="(image, jdx) of service.employee_image"
                   :key="jdx + 'i'"
                 >
-                  <img
-                    :src="image.image"
-                    :style="{
-                      height: 'auto',
-                      maxHeight: screenSize.screenWidth <= 680 ? '80px' : '100px',
-                      maxWidth: screenSize.screenWidth <= 680 ? '80px' : '100px',
-                    }"
-                  />
+                  <a
+                    @click="openImg(image.image)"
+                  >
+                    <v-img
+                      :src="image.image"
+                      :style="{
+                        height: 'auto',
+                        maxHeight: '80px',
+                        maxWidth: '80px',
+                      }"
+                      
+                    />
+                  </a>
                 </div>
               </div>
               <div 
-                style="display: flex; flex-direction: column; border: solid 1px; border-radius: 10px;"
+                style="display: flex; flex-direction: column; border: solid 1px; border-radius: 10px;border-color:rgb(70, 139, 255);"
                 class="px-2 py-2"
               >
                 
@@ -124,6 +132,25 @@
         />
       </v-col>
     </v-row>
+    <v-dialog
+      id="showImagePreview"
+      v-model="showImagePreview"
+      style="overflow: hidden!important;"
+      v-if="showImagePreview"
+    >
+      <v-img
+        :src="selectedImg"
+        style="width:auto;height: auto"
+      />
+      <v-btn
+        dark
+        color="secondary"
+        @click="closeImg"
+        class="mr-2"
+      >
+        Zamknij
+      </v-btn>
+    </v-dialog>
   </div>
 </template>
 
@@ -141,6 +168,8 @@
       isInDialog: { type: Boolean, default: false },
     },
     data: () => ({
+      showImagePreview: false,
+      selectedImg: "",
       draggingEnabled: true,
       draggingInProgress: false,
       dialog: false,
@@ -175,6 +204,13 @@
     },
 
     methods: {
+      closeImg(){
+        this.showImagePreview = false;
+      },
+      openImg(dataUrl){
+        this.selectedImg = dataUrl;
+        this.showImagePreview = true;
+      },
       async deleteComment(){
       },
       async closeComment(){

@@ -57,6 +57,20 @@ class BusinessActivityApi(APIView):
             return BusinessActivityImageUpdateSerializer(img, data=object)
         else:
             return BusinessActivityImageCreateSerializer(data=object)
+        
+    def get_employees(self, employee):
+        cursor = connection.cursor()
+        cursor.execute(""" select
+                su.first_name, su.last_name, se.id as 'employee_id', ses.name as 'spec_name'
+                from salon_employee se
+                join salon_user su on su.id = se.user_id
+                join salon_employeespecialization ses on ses.id = se.spec_id
+                where se.business_activity_id = %s
+
+            """, [employee.business_activity_id]
+        )
+        return cursor_to_array_of_dicts(cursor)
+
 
     def get(self, request):
         user = request.user
@@ -70,6 +84,7 @@ class BusinessActivityApi(APIView):
         except BusinessActivityImage.DoesNotExist:
             pass
         b_activity_data["image"] = image_encoded
+        b_activity_data["employees"] = self.get_employees(employee)
 
         return Response(b_activity_data, status=status.HTTP_200_OK)
 

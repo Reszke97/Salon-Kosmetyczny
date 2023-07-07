@@ -1,6 +1,6 @@
 <template>
     <div class="mb-3">
-        <v-btn  @click="toggleOpenUploadDialog">Dodaj avatar</v-btn>
+        <v-btn color="success"  @click="toggleOpenUploadDialog">Dodaj avatar</v-btn>
         <my-upload field="img"
             v-model="openUploadDialog"
             langType="pl"

@@ -99,14 +99,16 @@
                             label="Cena [PLN]"
                             placeholder="Podaj cenę"
                             dark
+                            type="number"
                         ></v-text-field>
                     </v-col>
                     <v-col>
                         <v-text-field
                             v-model="serviceInfo.service.duration"
-                            label="Czas trwania"
+                            label="Czas trwania [min]"
                             placeholder="Podaj czas"
                             dark
+                            type="number"
                         ></v-text-field>
                     </v-col>
                 </v-row>
@@ -234,11 +236,28 @@
         },
         async created(){
             this.assignServiceInfoData();
-            const API = await AUTH_API();
-            const res = await API.get("/api/v1/employee/employee-category/")
-            this.availableCategories = res.data
+            await this.getCategories();
         },
         methods: {
+            async getCategories(){
+                const API = await AUTH_API();
+                const res = await API.get("/api/v1/employee/employee-category/")
+                this.availableCategories = res.data
+            },
+            resetForm(){
+                this.serviceInfo = {
+                    service: {
+                        name: "",
+                        price: 0,
+                        duration: "",
+                    },
+                    category: {
+                        is_new: true,
+                        category: "",
+                    },
+                    employee_image: []
+                }
+            },
             assignServiceInfoData(){
                 if(this.preview){
                     Object.keys(this.serviceToEdit).forEach(key => {
@@ -250,6 +269,7 @@
                 const API = await AUTH_API();
                 await API.delete(`/api/v1/employee/images/?image_id=${image_id}`)
                     .then( async () => {
+                        alert("Usunięto zdjęcie");
                         await this.getServices();
                         this.assignServiceInfoData();
                     })
@@ -316,10 +336,10 @@
                     }
                 )
                 .then(() => {
-                    console.log("hurra!")
+                    alert('Zapisano zmiany');
                 })
                 .catch((err) => {
-                    console.log(err)
+                    console.log(err);
                 })
             },
             async prepareAndPostRequest(){
@@ -328,6 +348,10 @@
                     actionType = "put"
                 }
                 await this.postData(actionType);
+                if(actionType === "post"){
+                    this.resetForm();
+                    await this.getCategories();
+                }
             }
         }
     }

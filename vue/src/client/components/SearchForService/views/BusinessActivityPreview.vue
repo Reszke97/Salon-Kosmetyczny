@@ -92,12 +92,17 @@
                                             md="10"
                                             lg="10"
                                         >
+
+                                        <a
+                                            v-if="Object.keys(businessActivityPreviewData).length && businessActivityPreviewData.image"
+                                            @click="openImg(businessActivityPreviewData.image.image)"
+                                        >
                                             <img
-                                                v-if="Object.keys(businessActivityPreviewData).length && businessActivityPreviewData.image"
                                                 id="b-activity-img"
                                                 :src="businessActivityPreviewData.image.image"
                                                 style="width:100%;height: 100%;"
                                             />
+                                        </a>
                                             <h3 style="color:white"> {{ businessActivityPreviewData.name }} </h3>
                                             <div 
                                                 style="
@@ -247,6 +252,25 @@
                         </div>
                     </div>
                 </v-col>
+                <v-dialog
+                    id="showImagePreview"
+                    v-model="showImagePreview"
+                    style="overflow: hidden!important;"
+                    v-if="showImagePreview"
+                >
+                    <v-img
+                        :src="selectedImg"
+                        style="width:auto;height: auto"
+                    />
+                    <v-btn
+                        dark
+                        color="secondary"
+                        @click="closeImg"
+                        class="mr-2"
+                    >
+                        Zamknij
+                    </v-btn>
+                </v-dialog>
             </v-row>
         </v-card>
     </v-dialog>
@@ -262,12 +286,13 @@
             ManageServicesDialog,
         },
         props: {
-            //here
             closePreview: { type: Function, default: () => {} },
             businessActivityPreview: { type: Boolean, default: () => false },
             businessActivityPreviewData: { type: Object, default: () => {{}} },
         },
         data: () => ({
+            showImagePreview: false,
+            selectedImg: "",
             employeeViewDialog: false,
             businessInfoView: true,
             services: {},
@@ -277,6 +302,13 @@
             
         },
         methods: {
+            closeImg(){
+                this.showImagePreview = false;
+            },
+            openImg(dataUrl){
+                this.selectedImg = dataUrl;
+                this.showImagePreview = true;
+            },
             appendMimeType(image){
                 let type;
                 switch (image.file_type) {
@@ -341,11 +373,20 @@
                                 category: { ...service_category, is_new: false, category: service_category.category_id, }
                             }
                         })
-                        this.services = {... res.data, employee_info: {
-                            "name": employee.first_name,
-                            "last_name": employee.last_name,
-                            "spec_name": employee.spec_name,
-                        }};
+                        if(typeof employee === "number"){
+                            const _employee = this.businessActivityPreviewData.employees.find(el => el.employee_id === employee);
+                            this.services = {... res.data, employee_info: {
+                                "name": _employee.first_name,
+                                "last_name": _employee.last_name,
+                                "spec_name": _employee.spec_name,
+                            }};
+                        } else{
+                            this.services = {... res.data, employee_info: {
+                                "name": employee.first_name,
+                                "last_name": employee.last_name,
+                                "spec_name": employee.spec_name,
+                            }};
+                        }
                     })
                 this.mapImagesType(this.services);
                 this.services = { ...this.groupByCategory(this.services) }

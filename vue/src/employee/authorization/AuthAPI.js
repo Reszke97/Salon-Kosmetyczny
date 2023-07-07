@@ -132,7 +132,7 @@ const AUTH_API = async () => {
 							store.commit('setIsAuthenticated', false);
 						}
 					}catch( error ){
-						alert(error)
+						alert("Nieprawidłowy token. Zaloguj się ponownie.")
 					}
 				}
 				return Promise.reject(error);

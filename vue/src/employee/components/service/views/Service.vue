@@ -18,7 +18,6 @@
             "
         >
             <v-toolbar 
-                v-if="!previewAllServices"
                 id="my-tab"
                 flat
                 style="
@@ -68,7 +67,7 @@
             <v-tabs-items 
                 v-model="tabs"
                 :style="`
-                    height: ${tabs == 'tab-3' ? '100%' : 'calc(100% - 112px)'} ;
+                    height: ${'calc(100% - 112px)'} ;
                     background-color:#3f51b5!important
                 `"
             >
@@ -93,56 +92,61 @@
                     id="tab-3"
                     style="height:100%;overflow:auto;"
                 >
-                    <manage-services
-                        v-if="tabs == 'tab-3'"
-                        :get-services="getServices"
-                        :services="services"
-                        :preview-all-services="previewAllServices"
-                        :edit-mode="editMode"
+                    
+                    <v-dialog
+                        :value="tabs === 'tab-3'"
                     >
-                        <template #header>
-                            <div
-                                v-if="previewAllServices"
-                                style="
-                                    display: flex;
-                                    justify-content: end;
-                                "
-                            >
+                        <manage-services
+                            v-if="tabs === 'tab-3'"
+                            :get-services="getServices"
+                            :services="services"
+                            :preview-all-services="previewAllServices"
+                            :edit-mode="editMode"
+                        >
+                            <template #header>
                                 <div
-                                    class="mr-8"
-                                    :style="`
+                                    v-if="previewAllServices"
+                                    style="
                                         display: flex;
-                                        flex-direction: ${screenSize.screenWidth <= 400 ? 'column' : 'row'}
-                                    `"
+                                        justify-content: end;
+                                    "
                                 >
-                                    <v-tooltip bottom>
-                                        <template v-slot:activator="{ on, attrs }">
-                                            <v-chip
-                                                style=" background: rgb(8, 68, 164)!important;"
-                                                class="ma-2"
-                                                color="primary"
-                                                @click="closePreviewTab('tab-1')"
-                                                v-bind="attrs"
-                                                v-on="on"
-                                            >
-                                                <v-icon left>
-                                                    mdi-keyboard-backspace 
-                                                </v-icon>
-                                                Powrót
-                                            </v-chip>
-                                        </template>
-                                        <span>Powrót</span>
-                                    </v-tooltip>
-                                    <v-checkbox
-                                        class="mt-2 ml-2"
-                                        v-model="editMode"
-                                        label="Tryb edycji"
-                                        dark
-                                    ></v-checkbox>
+                                    <div
+                                        class="mr-8"
+                                        :style="`
+                                            display: flex;
+                                            flex-direction: ${screenSize.screenWidth <= 400 ? 'column' : 'row'}
+                                        `"
+                                    >
+                                        <v-tooltip bottom>
+                                            <template v-slot:activator="{ on, attrs }">
+                                                <v-chip
+                                                    style=" background: rgb(8, 68, 164)!important;"
+                                                    class="ma-2"
+                                                    color="primary"
+                                                    @click="closePreviewTab('tab-1')"
+                                                    v-bind="attrs"
+                                                    v-on="on"
+                                                >
+                                                    <v-icon left>
+                                                        mdi-keyboard-backspace 
+                                                    </v-icon>
+                                                    Powrót
+                                                </v-chip>
+                                            </template>
+                                            <span>Powrót</span>
+                                        </v-tooltip>
+                                        <v-checkbox
+                                            class="mt-2 ml-2"
+                                            v-model="editMode"
+                                            label="Tryb edycji"
+                                            dark
+                                        ></v-checkbox>
+                                    </div>
                                 </div>
-                            </div>
-                        </template>
-                    </manage-services>
+                            </template>
+                        </manage-services>
+                    </v-dialog>
                 </v-tab-item>
             </v-tabs-items>
         </v-col>
@@ -197,6 +201,7 @@
             },
             groupByCategory(employeeConfig){
                 let groupedServices = {
+                    employee_info: employeeConfig.employee_info,
                     avatar: employeeConfig.avatar,
                     categories: [],
                 }
@@ -233,7 +238,12 @@
                                 category: { ...service_category, is_new: false, category: service_category.category_id, }
                             }
                         })
-                        this.services = {... res.data };
+                        const employee_info = {
+                            name: res.data.employee_info.first_name,
+                            last_name: res.data.employee_info.last_name,
+                            spec_name: res.data.employee_info.spec_name,
+                        }
+                        this.services = {... res.data, employee_info: {...employee_info} };
                     })
                 this.mapImagesType(this.services);
                 if(this.previewAllServices === true){

@@ -42,7 +42,7 @@
                             style="width:100%;"
                         >
                             Edycja
-                            <v-icon>mdi-phone</v-icon>
+                            <v-icon>mdi-pencil</v-icon>
                         </v-tab>
                         <v-tab
                             href="#tab-2"
@@ -58,7 +58,7 @@
                             style="width:100%;"
                         >
                             Dodaj pracownika
-                            <v-icon>mdi-phone</v-icon>
+                            <v-icon>mdi-account-plus </v-icon>
                         </v-tab>
                     </v-tabs>
                 </template>
@@ -127,6 +127,7 @@
            businessActivity: {},
            toolbarVisible: true,
            employeeServices: {},
+           employees: [],
         }),
         provide(){
         },
@@ -136,6 +137,7 @@
                 const API = await AUTH_API();
                 await API.get("api/v1/employee/business-activity/")
                     .then(res => {
+                        this.employees = res.data.employees
                         resolve(res.data)
                     })
             },
@@ -184,6 +186,7 @@
             groupByCategory(employeeConfig){
                 let groupedServices = {
                     avatar: employeeConfig.avatar,
+                    employee_info: employeeConfig.employee_info,
                     categories: [],
                 }
                 const uniqueCategories = [
@@ -220,7 +223,12 @@
                                 category: { ...service_category, is_new: false, category: service_category.category_id, }
                             }
                         })
-                        this.employeeServices = {... res.data };
+                        const _employee = this.employees.find(el => el.employee_id === employeeId);
+                        this.employeeServices = {... res.data, employee_info: {
+                            "name": _employee.first_name,
+                            "last_name": _employee.last_name,
+                            "spec_name": _employee.spec_name,
+                        }};
                     })
                 this.mapImagesType(this.employeeServices);
                 this.employeeServices = { ...this.groupByCategory(this.employeeServices) }

@@ -67,7 +67,6 @@
             newPassword:'',
             newPasswordRules: [
                 v => !!v || 'Hasło jest wymagane',
-                v => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(v) || 'Hasło musi zawierać co najmniej 8 znaków, 1 dużą literę, 1 małą literę, 1 cyfrę ',
             ],
             oldPassword:'',
             oldPasswordRules: [
@@ -76,7 +75,6 @@
             repeatPassword:'',
             repeatPasswordRules: [
                 v => !!v || 'Hasło jest wymagane',
-                v => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(v) || 'Hasło musi zawierać co najmniej 8 znaków, 1 dużą literę, 1 małą literę, 1 cyfrę',
             ],
         }),
         

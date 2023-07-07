@@ -96,14 +96,26 @@
                         </v-btn>
                     </template>
                 </v-text-field>
-                <v-text-field
-                    v-model="employeeInfo.phone_number"
-                    label="Telefon"
-                    required
-                    class="w40"
-                    type="text"
-                    dark
-                ></v-text-field>
+                <div class="d-flex">
+                    <div style="width:80px!important">
+                        <v-text-field
+                            label="Kierunkowy"
+                            dark
+                            :value="'+48'"
+                            readonly
+                        />
+                    </div>
+                    <div class="w-100">
+                        <v-text-field
+                            v-model="employeeInfo.phone_number"
+                            label="Telefon"
+                            required
+                            class="w40 ml-2"
+                            type="text"
+                            dark
+                        ></v-text-field>
+                    </div>
+                </div>
                 <AvatarCropper
                     :create-form-data="createFormData"
                     :set-img-data-url="setImgDataUrl"
@@ -202,6 +214,9 @@
                 }
                 const API = await AUTH_API();
                 await API.put("api/v1/employee/employee-info/", requestData)
+                .then(() => {
+                    alert("Zapisano zmiany");
+                })
             },
             async updateInfo(){
                 if(this.formData) await this.updateAvatar();

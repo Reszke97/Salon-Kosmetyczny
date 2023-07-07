@@ -17,12 +17,16 @@
                     md="8"
                     lg="6"
                 >
-                    <img
+                    <a
                         v-if="businessActivity.image"
-                        id="b-activity-img"
-                        :src="businessActivity.image"
-                        style="width:100%;height: 100%"
-                    />
+                        @click="openImg(businessActivity.image)"
+                    >
+                        <v-img
+                            id="b-activity-img"
+                            :src="businessActivity.image"
+                            style="width:100%;height: 100%"
+                        />
+                    </a>
                     <v-checkbox
                         dark
                         v-model="businessActivity.is_active"
@@ -150,12 +154,24 @@
                 >
                 <v-row>
                     <v-col>
-                        <v-text-field
-                            v-model="businessActivity.contact_phone"
-                            label="Telefon kontaktowy"
-                            placeholder="Podaj nr telefonu"
-                            dark
-                        ></v-text-field>
+                        <div class="d-flex">
+                            <div style="width:80px!important">
+                                <v-text-field
+                                    label="Kierunkowy"
+                                    dark
+                                    :value="'+48'"
+                                    readonly
+                                />
+                            </div>
+                            <div class="w-100">
+                                <v-text-field
+                                    class="ml-2"
+                                    v-model="businessActivity.contact_phone"
+                                    placeholder="Nr telefonu"
+                                    dark
+                                ></v-text-field>
+                            </div>
+                        </div>
                     </v-col>
                 </v-row>
                 </v-col>
@@ -179,6 +195,25 @@
                 </div>
                 </v-col>
             </v-row>
+            <v-dialog
+                id="showImagePreview"
+                v-model="showImagePreview"
+                style="overflow: hidden!important;"
+                v-if="showImagePreview"
+            >
+                <v-img
+                    :src="selectedImg"
+                    style="width:auto;height: auto"
+                />
+                <v-btn
+                    dark
+                    color="secondary"
+                    @click="closeImg"
+                    class="mr-2"
+                >
+                    Zamknij
+                </v-btn>
+            </v-dialog>
         </v-col>
     </v-row>
 </template>
@@ -195,12 +230,14 @@
         components: {
         },
         data: () => ({
+            showImagePreview: false,
+            selectedImg: "",
             businessActivity: {},
             uploadImg: null
         }),
         async created(){
-            new Promise((resolve) => {
-                this.getBusinessActivityData(resolve);
+            new Promise( async (resolve) => {
+                await this.getBusinessActivityData(resolve);
             })
             .then(res => {
                 const { image } = res;
@@ -212,6 +249,13 @@
             })
         },
         methods: {
+            closeImg(){
+                this.showImagePreview = false;
+            },
+            openImg(dataUrl){
+                this.selectedImg = dataUrl;
+                this.showImagePreview = true;
+            },
             async displayImages(event){
                 if(event){
                     const reader  = new FileReader();

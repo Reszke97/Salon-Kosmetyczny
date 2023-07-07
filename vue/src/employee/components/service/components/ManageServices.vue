@@ -7,23 +7,32 @@
         width: '100%', 
         backgroundColor: '#3f51b5',
         padding: '1rem',
+        color: 'white',
+        minWidth: '600px',
       }
       :
       {
         display: 'flex', 
         flexDirection: 'column',
         width: '100%', 
-        backgroundColor: '#3f51b5'
+        backgroundColor: '#3f51b5',
+        color: 'white',
+        padding: '1rem',
+        minWidth: '600px',
       }
     "
   >
-    <div class="mb-2" style="display: flex">
-      <div style="width:100px">
+    <div class="mb-2" style="display: flex;">
+      <div class="d-flex flex-column" style="min-width:250px">
+        <div v-if="services.employee_info" class="d-flex flex-column">
+          <span>{{ services.employee_info.name }} {{ services.employee_info.last_name }}</span>
+          <span><span class="font-bold">Spec.</span><span class="font-bold" style="color:orange"> {{ services.employee_info.spec_name }}</span></span>
+        </div>
         <v-avatar 
           color="#0844a4"
           size="100"
         >
-          <img
+          <v-img
             v-if="services.avatar"
             :src="services.avatar.image"
             style="width:100%;height: 100%"
@@ -37,58 +46,72 @@
           </v-icon>
         </v-avatar>
       </div>
-      <div style="display: flex; justify-content: end; width: calc(100% - 100px)">
+      <div style="display: flex; justify-content: end;">
         <slot name="header" />
       </div>
     </div>
-    <div v-if="screenSize.screenWidth >= 570" style="display: flex; flex-direction: column">
+    <div style="display: flex; flex-direction: column">
       <div
         style="display: flex; flex-direction: row"
         v-for="(group, idx) of servicesGroupedByScreenSize.lteMedium"
         :key="idx"
       >
          <div
-          style="display: flex; flex-direction: column; width: 100%;"
+          style="display: flex; flex-direction: column; width: 100%;min-width:250px"
           v-for="(category, idx) of group"
           :key="idx"
         >
           <h3>{{ category.name }}</h3>
-          <div 
+          <div
+            class="mx-2"
             v-for="(service, jdx) of category.services"
             :key="jdx + 'i'"
           >
-            <div>
-              <h3> Usługa - {{ service.service.name }} </h3>
-              <p> Cena - {{ service.service.price }} PLN</p>
-              <p> Czas trwania - {{ service.service.duration }} </p>
-              <div style="display: flex; width:50%">
+            <div class="pb-3">
+              <h4> Usługa - {{ service.service.name }} </h4>
+              <div class="d-flex flex-column ">
+                <span style="color:orange"> Cena - {{ service.service.price }} PLN</span>
+                <span style="color:orange"> Czas trwania - {{ service.service.duration }} </span>
+              </div>
+              <div style="display: flex; width:50%;" class="mb-2">
                 <div
                   style="width:100%"
-                  class="mx-2"
+                  class="mx-1"
                   v-for="(image, jdx) of service.employee_image"
                   :key="jdx + 'i'"
                 >
-                  <img
-                    :src="image.image"
-                    :style="{
-                      height: 'auto',
-                      maxHeight: screenSize.screenWidth <= 680 ? '80px' : '100px',
-                      maxWidth: screenSize.screenWidth <= 680 ? '80px' : '100px',
-                    }"
-                  />
+                  <a
+                    @click="openImg(image.image)"
+                  >
+                    <v-img
+                      :src="image.image"
+                      :style="{
+                        height: 'auto',
+                        maxHeight: '80px',
+                        maxWidth: '80px',
+                      }"
+                      
+                    />
+                  </a>
                 </div>
               </div>
               <div 
-                v-if="editMode" 
-                style="display: flex; flex-direction: column"
-                class="my-2"
+                style="display: flex; flex-direction: column; border: solid 1px; border-radius: 10px; border-color:rgb(70, 139, 255);"
+                class="px-2 py-2"
               >
+                <div>
+                  <h4>
+                    Komentarze do usługi:
+                  </h4>
+                </div>
                 <template 
                   v-for="comment of service.employee_comment"
                 >
                   <div style="display:flex" class="pb-2" :key="`c-${comment.id}`">
-                    <h4 class="comment">
-                      {{ comment.text }}
+                    <span class="comment">
+                      - {{ comment.text }}
+                    </span>
+                    <template v-if="editMode">
                       <v-tooltip top color="success">
                         <template v-slot:activator="{ on, attrs }">
                           <v-icon
@@ -117,10 +140,10 @@
                         </template>
                         <span>Usuń</span>
                       </v-tooltip>
-                    </h4>
+                    </template>
                   </div>
                 </template>
-                <div>
+                <div v-if="editMode">
                   <v-btn
                     class="m-0"
                     rounded
@@ -139,98 +162,6 @@
         </div>
       </div> 
     </div>
-    <div v-else style="display: flex; flex-direction: column">
-      <div
-        style="display:flex; flex-direction: column; width: 100%"
-        v-for="(category, idx) of services.categories"
-        :key="idx"
-      >
-        <h3>{{ category.name }}</h3>
-        <div 
-          v-for="(service, jdx) of category.services"
-          :key="jdx + 'i'"
-        >
-          <div>
-            <h3> Usługa - {{ service.service.name }} </h3>
-            <p> Cena - {{ service.service.price }} PLN</p>
-            <p> Czas trwania - {{ service.service.duration }} </p>
-            <div style="display: flex; flex-direction: row">
-              <div
-                style="width:100%;"
-                class="mx-2"
-                v-for="(image, jdx) of service.employee_image"
-                :key="jdx + 'i'"
-              >
-                <img
-                  :src="image.image"
-                  style="height: auto; max-height:80px; max-width:80px"
-                />
-              </div>
-            </div>
-          </div>
-          <div 
-            v-if="editMode" 
-            style="display: flex;"
-            class="my-2"
-          >
-            <div 
-              v-for="comment of service.employee_comment"
-              :key="`c-${comment.id}`"
-            >
-              <template 
-                v-for="comment of service.employee_comment"
-              >
-                <div style="display:flex" class="pb-2" :key="`c-${comment.id}`">
-                  <h4 class="comment">
-                    {{ comment.text }}
-                    <v-tooltip top color="success">
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-icon
-                          dark
-                          right
-                          v-bind="attrs"
-                          v-on="on"
-                          @click="dialogAction(service.service.service_id, comment)"
-                        >
-                          mdi-pencil
-                        </v-icon>
-                      </template>
-                      <span>Edytuj</span>
-                    </v-tooltip>
-                    <v-tooltip top color="success">
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-icon
-                          color="red"
-                          right
-                          v-bind="attrs"
-                          v-on="on"
-                          @click="deleteComment(service.service.service_id, comment.id)"
-                        >
-                          mdi-delete 
-                        </v-icon>
-                      </template>
-                      <span>Usuń</span>
-                    </v-tooltip>
-                  </h4>
-                </div>
-              </template>
-            </div>
-            <v-btn
-              class="m-0"
-              rounded
-              color="success"
-              small
-              @click="dialogAction(service.service.service_id)"
-            >
-              <v-icon left>
-                mdi-plus-circle-outline
-              </v-icon>
-              Dodaj Komentarz
-            </v-btn>
-          </div>
-        </div>
-      </div>
-    </div>
     <v-row>
       <v-col>
         <comment
@@ -243,9 +174,27 @@
         />
       </v-col>
     </v-row>
+    <v-dialog
+      id="showImagePreview"
+      v-model="showImagePreview"
+      style="overflow: hidden!important;"
+      v-if="showImagePreview"
+    >
+      <v-img
+        :src="selectedImg"
+        style="width:auto;height: auto"
+      />
+      <v-btn
+        dark
+        color="secondary"
+        @click="closeImg"
+        class="mr-2"
+      >
+        Zamknij
+      </v-btn>
+    </v-dialog>
   </div>
 </template>
-
 <script>
   import { AUTH_API } from "../../../authorization/AuthAPI";
   import draggable from "vuedraggable";
@@ -262,6 +211,8 @@
       isInDialog: { type: Boolean, default: false },
     },
     data: () => ({
+      showImagePreview: false,
+      selectedImg: "",
       draggingEnabled: true,
       draggingInProgress: false,
       dialog: false,
@@ -296,10 +247,18 @@
     },
 
     methods: {
+      closeImg(){
+        this.showImagePreview = false;
+      },
+      openImg(dataUrl){
+        this.selectedImg = dataUrl;
+        this.showImagePreview = true;
+      },
       async deleteComment(service_id, comment_id){
         const API = await AUTH_API();
         await API.delete(`/api/v1/employee/comment/?service_id=${service_id}&comment_id=${comment_id}`)
         .then( async () => {
+          alert("Usunięto komentarz");
           await this.closeComment()
         })
       },

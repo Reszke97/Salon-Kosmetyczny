@@ -28,17 +28,6 @@
                     lazy-validation
                 >
                     <div>
-                        <h3>Minimalny czas do zapisu na wizytę</h3>
-                        <v-text-field
-                            v-model="availabilityConfig.min_time_for_registration"
-                            dark
-                            label="Ilość godzin"
-                            persistent-hint
-                            type="number"
-                            :rules="numberRules"
-                        />
-                    </div>
-                    <div>
                         <h3>Najpóźniejszy dostępny termin wizyty <br> od dnia dzisiejszego</h3>
                         <v-text-field
                             v-model="availabilityConfig.max_weeks_for_registration"
@@ -116,7 +105,7 @@
                         min_time_for_registration: this.availabilityConfig.min_time_for_registration + 'h'
                     })
                         .then(() => {
-                            alert("all good")
+                            alert("Zapisano zmiany")
                         })
                         .catch(err => {
                             alert(err)

@@ -183,6 +183,7 @@ class CreateEmployeeServiceConfigSerializer(serializers.ModelSerializer):
         fields = (
             'image_set',
             'service',
+            'comment_set',
             'employee'
         )
 

@@ -11,6 +11,7 @@ from ..serializers import *
 from rest_framework.parsers import MultiPartParser, FormParser
 from .utils.image_actions import map_images, append_images, prepare_and_create_images
 from ..models import Service, ServiceComment
+from ..employee.utils.cursor_to_array_of_dicts import cursor_to_array_of_dicts
 
 def append_comments(employee_config):
 
@@ -180,9 +181,21 @@ class ServiceApi(APIView):
             avatar_encoded = None
         append_images(employee_service_configs_serialized.data)
         append_comments(employee_service_configs_serialized.data)
+        cursor = connection.cursor()
+        cursor.execute(""" select
+                su.first_name, su.last_name, se.id as 'employee_id', ses.name as 'spec_name'
+                from salon_employee se
+                join salon_user su on su.id = se.user_id
+                join salon_employeespecialization ses on ses.id = se.spec_id
+                where se.id = %s
+
+            """, [employee.pk]
+        )
+        employee_info = cursor_to_array_of_dicts(cursor)[0]
         response = {
             "avatar": avatar_encoded if preview_selected else "",
-            "service_info": employee_service_configs_serialized.data
+            "service_info": employee_service_configs_serialized.data,
+            "employee_info": employee_info,
         }
         return Response(response, status=status.HTTP_200_OK)
 

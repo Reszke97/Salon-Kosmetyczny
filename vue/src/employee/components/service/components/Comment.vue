@@ -85,6 +85,7 @@
                 const API = await AUTH_API();
                 await API[action]("/api/v1/employee/comment/", object)
                 .then(() => {
+                    alert("Zapisano zmiany");
                     self.$emit("commentActionSuccess");
                 })
             }

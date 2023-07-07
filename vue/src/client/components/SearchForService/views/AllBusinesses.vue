@@ -160,6 +160,7 @@
             :set-input-variable="setInputVariable"
             :set-started="setStarted"
             :get-business-activities="getBusinessActivities"
+            :started="started"
         />
         <BusinessActivityPreview
             :business-activity-preview="businessActivityPreview"
