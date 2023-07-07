@@ -67,6 +67,7 @@
           tab: null,
           loaded: false,
           menuItems: [
+            { title: "home", path: "/", icon: "mdi-home" },
             { title: "login", path: "login", icon: "mdi-login" },
           ],
         }
@@ -91,6 +92,7 @@
         auth(){
           return this.isAuthenticated
           ? [
+              { title: "home", path: "/", icon: "mdi-home" },
               {
                 title: 'wyloguj', path: '/logout', icon: 'mdi-logout'
               },
@@ -98,7 +100,7 @@
                 title: 'wizyty', path: '/visits', icon: 'mdi-calendar-blank-multiple'
               },
             ]
-          : [{ title: 'login', path: '/login', icon: 'mdi-login' }]
+          : [{ title: "home", path: "/", icon: "mdi-home" }, { title: 'login', path: '/login', icon: 'mdi-login' }]
         },
       },
     }

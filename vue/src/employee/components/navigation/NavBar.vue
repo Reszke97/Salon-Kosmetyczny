@@ -36,7 +36,7 @@
         <v-list-item-group
         >
           <v-list-item 
-            v-for="item in menuItems"
+            v-for="item in menuItemsLoaded"
             :key="item.title"
             :to="item.path"
           >
