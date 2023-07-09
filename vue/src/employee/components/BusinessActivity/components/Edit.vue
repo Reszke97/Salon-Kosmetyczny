@@ -303,10 +303,10 @@
                     }
                 )
                 .then(() => {
-                    console.log("hurra!")
+                    alert("Zapisano zmiany")
                 })
                 .catch((err) => {
-                    console.log(err)
+                    alert(err)
                 })
             }
         }
