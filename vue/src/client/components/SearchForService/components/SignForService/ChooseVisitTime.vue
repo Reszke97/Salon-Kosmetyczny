@@ -169,7 +169,8 @@
             ...this.selectedTime,
           }
         }
-        await AUTH_API.post("/api/v1/client/visit/", { ...this.summary })
+        const API = await AUTH_API();
+        await API.post("/api/v1/client/visit/", { ...this.summary })
         .then(res => {
           resolve(res)
         })

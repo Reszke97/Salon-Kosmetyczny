@@ -112,11 +112,19 @@
                     <div class="d-flex flex-column ma-3">
                         <span class="font-bold">Firma: <span>{{ visit.business_name }}</span></span>
                         <v-avatar
+                            v-if="visit.business_img.image"
                             size="150"
                             tile
                         >
                             <v-img :src="visit.business_img.image"></v-img>
                         </v-avatar>
+                        <v-icon
+                            v-else
+                            style="font-size:150px"
+                            dark
+                        >
+                            mdi-office-building
+                        </v-icon>
                         <div class="d-flex flex-column">
                             <span>{{`${visit.business_city} ${visit.business_post_code}`}}</span>
                             <span>{{`ul. ${visit.business_street} ${visit.business_house_number}${visit.business_apartment_number ? "/" + visit.business_apartment_number: ""}`}}</span>
@@ -238,7 +246,16 @@
                 await API.get(`/api/v1/client/my-visits/?visitType=${this.selectedVisitType}`)
                 .then(res => {
                     this.visits = res.data.map(el =>{
-                        const business_img = appendMimeType(el.business_img)
+                        let business_img = el.business_img;
+                        if(!business_img) {
+                            business_img = {
+                                file_type: null,
+                                image: null,
+                                image_id: null
+                            }
+                        } else {
+                            business_img = appendMimeType(el.business_img);
+                        }
                         return {
                             ...el,
                             business_img: { ...business_img }

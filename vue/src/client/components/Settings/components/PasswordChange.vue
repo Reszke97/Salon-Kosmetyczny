@@ -84,14 +84,14 @@
             this.route = this.$route.params.activated
         },
         methods: {
-            submit () {
+            async submit () {
                 const IS_VALID = this.$refs.form.validate()
                 if(IS_VALID){
-                    this.passwordChange()
+                    await this.passwordChange()
                 }
             },
-            passwordChange(){
-                const API = AUTH_API();
+            async passwordChange(){
+                const API = await AUTH_API();
                 API.put('api/v1/user/passwordchange/', {
                     old_password: this.oldPassword,
                     new_password: this.newPassword

@@ -387,7 +387,7 @@ class ClientVisitApi(APIView):
                 join salon_employee se on se.id = ss.employee_id
                 join salon_user su on su.id = se.user_id
                 join salon_businessactivity sba on sba.id = se.business_activity_id 
-                join salon_businessactivityimage sbai on sbai.business_activity_id = sba.id
+                left join salon_businessactivityimage sbai on sbai.business_activity_id = sba.id
             """ + where_query + " order by sa.date, sa.time_start"
         , [user.pk, date + ' ' + time])
 

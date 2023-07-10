@@ -71,6 +71,8 @@ const AUTH_API = async () => {
 				) {
 					if(error.response.data.detail === 'Twoje Hasło zostało przed chwilą zmienione, proszę zalogować się ponownie.'){
 						alert('Twoje hasło niedawno zostało zmienione, zaloguj się ponownie.')
+						localStorage.removeItem("employeeToken");
+						localStorage.removeItem("employeeRefreshToken");
 						store.commit('setIsAuthenticated', false)
 						return Promise.reject(error);
 					}
@@ -85,6 +87,8 @@ const AUTH_API = async () => {
 					error.response.status === 403
 				) {
 					alert('Twoje hasło niedawno zostało zmienione, zaloguj się ponownie.')
+					localStorage.removeItem("employeeToken");
+					localStorage.removeItem("employeeRefreshToken");
 					store.commit('setIsAuthenticated', false)
 					return Promise.reject(error);
 				}

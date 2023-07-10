@@ -36,14 +36,26 @@
                     type="text"
                     dark
                 ></v-text-field>
-                <v-text-field
-                    v-model="userInfo.phone_number"
-                    label="Telefon"
-                    required
-                    class="w40"
-                    type="text"
-                    dark
-                ></v-text-field>
+                <div class="d-flex">
+                    <div style="width:80px!important">
+                        <v-text-field
+                            label="Kierunkowy"
+                            dark
+                            :value="'+48'"
+                            readonly
+                        />
+                    </div>
+                    <div class="w-100">
+                        <v-text-field
+                            v-model="userInfo.phone_number"
+                            label="Telefon"
+                            required
+                            class="w40 ml-2"
+                            type="text"
+                            dark
+                        ></v-text-field>
+                    </div>
+                </div>
                 <v-btn
                     color="secondary"
                     @click="setDialog(true)"
