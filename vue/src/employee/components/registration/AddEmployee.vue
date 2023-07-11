@@ -209,6 +209,7 @@
                 const API = await AUTH_API();
                 await API.post('api/v1/employee/create-employee/', this.employeeInfo)
                 .then(response => {
+                    alert("Dodano pracownika. Powiadomienie zostało przesłane na wskazany e-mail.")
                 })
                 .catch(error => {
                     alert(error)

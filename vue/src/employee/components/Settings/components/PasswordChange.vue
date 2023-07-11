@@ -95,7 +95,7 @@
                     new_password: this.newPassword
                 })
                 .then(response => {
-                    alert('twoje hasło zostało zmienione')
+                    alert('Twoje hasło zostało zmienione. Zaloguj się ponownie')
                     this.$emit('passchanged')
                 })
                 .catch(error =>{

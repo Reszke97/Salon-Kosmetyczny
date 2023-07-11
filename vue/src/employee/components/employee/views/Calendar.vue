@@ -74,11 +74,12 @@
                             </v-btn>
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ on, attrs }">
-                                    <v-btn 
+                                    <v-btn
                                         icon
                                         class="mr-1"
                                         color="primary"
                                         @click="openAppointmentConfigDialog"
+                                        :disabled="!canEdit"
                                     >
                                         <v-icon
                                             v-on="on"
@@ -93,6 +94,7 @@
                                         icon
                                         color="primary"
                                         @click="openAvailabilityDialog"
+                                        :disabled="!canEdit"
                                     >
                                         <v-icon
                                             v-on="on"
@@ -187,7 +189,7 @@
                                 class="flex-centered"
                             >
                                 {{ getWorkTimeForGivenDate(date)}}
-                                <v-tooltip bottom v-if="!isHolidayOrFree(date)">
+                                <v-tooltip bottom v-if="!isHolidayOrFree(date) && canEdit">
                                     <template v-slot:activator="{ on, attrs }">
                                         <v-icon
                                             v-on="on"
@@ -224,7 +226,7 @@
                                 class="flex-centered"
                             >
                                 {{ getWorkTimeForGivenDate(date)}}
-                                <v-tooltip bottom v-if="!isHolidayOrFree(date)">
+                                <v-tooltip bottom v-if="!isHolidayOrFree(date) && canEdit">
                                     <template v-slot:activator="{ on, attrs }">
                                         <v-icon
                                             v-on="on"
@@ -300,7 +302,7 @@
                             </div>
                         </v-card-text>
                         <v-card-actions class="bg-color">
-                            <v-tooltip bottom v-if="selectedEvent.is_appointment">
+                            <v-tooltip bottom v-if="selectedEvent.is_appointment && canEdit">
                                 <template v-slot:activator="{ on, attrs }">
                                     <v-btn 
                                         dark
@@ -314,7 +316,7 @@
                                 </template>
                                 <span>Przenieś wizytę</span>
                             </v-tooltip>
-                            <v-tooltip bottom v-if="selectedEvent.is_appointment">
+                            <v-tooltip bottom v-if="selectedEvent.is_appointment && canEdit">
                                 <template v-slot:activator="{ on, attrs }">
                                     <v-btn 
                                         dark
@@ -476,6 +478,9 @@
             }
         },
         computed: {
+            canEdit(){
+                return this.$store.state.role !== "owner" || (this.$store.state.role === "owner" && this.$store.state.employee_id === this.selectedEmployee.employee_id);
+            },
         },
         methods: {
             async deleteVisit(){

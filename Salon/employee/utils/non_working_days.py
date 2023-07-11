@@ -49,13 +49,14 @@ class NonWorkingDays:
     
     def getMovableHolidays(self, year):
         self.year = year
+        self.month = None
         self.getEaster()
         self.getCorpusChristiDay()
 
     def getEaster(self):
         for easter in self.easter_dates:
             split_easter_date = easter.split('-')
-            if(split_easter_date[0] == self.year):
+            if(str(split_easter_date[0]) == str(self.year)):
                 _easter = split_easter_date[1] + '-' + split_easter_date[2]
                 self.month = int(split_easter_date[1]) if split_easter_date[1][0] != "0" else int(split_easter_date[1][1])
                 month_of_easter = self.month
