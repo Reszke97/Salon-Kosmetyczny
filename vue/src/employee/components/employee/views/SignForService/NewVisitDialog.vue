@@ -28,9 +28,9 @@
                             @change="val => $emit('updateNewVisitData', { key: 'service_id', val: val })"
                         />
                     </div>
-                    <div class="d-flex">
+                    <div class="d-flex flex-column">
                         <div 
-                            style="width: 100px!important;"
+                            style="width: 300px!important;"
                             v-if="newVisitData.user_does_not_exists"
                         >
                             <v-text-field
@@ -54,6 +54,8 @@
                                 :rules="!newVisitData.user_does_not_exists ? required : []"
                                 @change="val => $emit('updateNewVisitData', { key: 'client_id', val: val })"
                             />
+                        </div>
+                        <div style="width: 300px!important;">
                             <v-checkbox
                                 label="Brak użytkownika w liście"
                                 :input-value="newVisitData.user_does_not_exists"
@@ -190,7 +192,6 @@
             },
             async checkValidityAndChooseHour(){
                 const valid = this.$refs.form.validate();
-                console.log(this.$refs.form.validate())
                 if(valid){
                     await this.getWorkHoursForGivenDate();
                     this.openHourDialog();

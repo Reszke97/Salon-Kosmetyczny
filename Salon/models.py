@@ -135,6 +135,7 @@ class EmployeeAvatar(models.Model):
 
 class ServiceCategory(models.Model):
     name = models.CharField(blank=False, max_length=100)
+    is_active = models.BooleanField(default=True)
     styles = models.TextField(blank=True, null=True)
     display_order = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -147,7 +148,7 @@ class Service(models.Model):
     duration = models.CharField(max_length=100)
     name = models.CharField(max_length=255)
     price = models.FloatField()
-    # display_order -> nr kolejności w jakiej usługa będzie wyświetlona
+    is_active = models.BooleanField(default=True)
     display_order = models.IntegerField(blank=True, null=True)
     service_category = models.ForeignKey(ServiceCategory, on_delete=models.CASCADE, null=True)
     styles = models.TextField(blank=True, null=True)

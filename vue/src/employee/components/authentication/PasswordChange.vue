@@ -79,7 +79,6 @@
         
         created(){
             this.route = this.$route.params.activated
-            console.log(this.route = this.$route.params.activated)
         },
         methods: {
             submit () {

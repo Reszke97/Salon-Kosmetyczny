@@ -20,6 +20,7 @@ class ServiceCategoryApi(APIView):
         cursor = connection.cursor()
         cursor.execute("""SELECT 
                 ssc.name, ssc.id from salon_servicecategory ssc 
+                       where ssc.is_active = 1
             """
         )
         res = cursor_to_array_of_dicts(cursor)

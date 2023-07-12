@@ -200,6 +200,7 @@
                         name: category.name,
                         category_id: category.category_id,
                         id: category.category_display_order,
+                        is_active: category.is_active,
                         services: [...items]
                     });
                     categoryIdx += 1;

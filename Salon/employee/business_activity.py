@@ -165,7 +165,8 @@ class BusinessActivityServices(APIView):
         cursor = connection.cursor()
         cursor.execute("""SELECT 
                 ss.id as 'service_id', ssc.id as 'category_id', se.id as 'employee_id', su.first_name, su.last_name, su.phone_number, su.email, 
-                ses.name as 'spec_name', ss.name as 'service_name', ss.duration, ss.price, ssc.name as 'category_name'
+                ses.name as 'spec_name', ss.name as 'service_name', ss.duration, ss.price, ssc.name as 'category_name', ss.is_active as 'service_active',
+                ssc.is_active as 'service_category_active'
                 from salon_user su
                 join salon_employee se on se.user_id = su.id
                 join salon_employeeserviceconfiguration sesc on sesc.employee_id = se.id
@@ -209,7 +210,7 @@ class BusinessActivities(APIView):
             ss.id as 'service_id', ssc.id as 'category_id', se.id as 'employee_id', se.is_owner, su.first_name, su.last_name, su.phone_number, su.email, 
             ses.name as 'spec_name', ses.id as 'spec_id', ss.name as 'service_name', ss.duration, ss.price, ssc.name as 'category_name',
             sba.id as 'b_activity_id', sba.name as 'b_activity_name', sba.post_code, sba.street, sba.apartment_number, sba.house_number,
-            sba.contact_phone, sba.city, sba.about
+            sba.contact_phone, sba.city, sba.about, ss.is_active as 'service_active', ssc.is_active as 'service_category_active'
             from salon_user su
             join salon_employee se on se.user_id = su.id
             join salon_businessactivity sba on sba.id = se.business_activity_id
@@ -296,6 +297,7 @@ class BusinessActivities(APIView):
                 return_list[business_name]["categories"][services[0]["category_name"]] = [{
                     "category_id": services[0]["category_id"],
                     "category_name": services[0]["category_name"],
+                    "service_category_active": services[0]["service_category_active"],
                 }]
                 for unique_service in unique_services:
                     service = list(filter(lambda x: (x["service_id"] == unique_service),services))
@@ -314,6 +316,7 @@ class BusinessActivities(APIView):
                         return_list[business_name]["categories"][category_name][i]["service_name"] = service[0]["service_name"]
                         return_list[business_name]["categories"][category_name][i]["duration"] = service[0]["duration"]
                         return_list[business_name]["categories"][category_name][i]["price"] = service[0]["price"]
+                        return_list[business_name]["categories"][category_name][i]["service_active"] = service[0]["service_active"]
                         return_list[business_name]["categories"][category_name][i]["employees"] = [{
                             "avatar": employee_avatar[0]["avatar"],
                             "business_activity_id": return_list[business_name]["id"],
@@ -326,6 +329,8 @@ class BusinessActivities(APIView):
                                 "price": service[0]["price"],
                                 "service_id": service[0]["service_id"],
                                 "service_name": service[0]["service_name"],
+                                "service_active": service[0]["service_active"],
+                                "service_category_active": service[0]["service_category_active"],
                             },
                             "spec": {
                                 "id": service[0]["spec_id"],
@@ -364,6 +369,8 @@ class BusinessActivities(APIView):
                                         "price": service[0]["price"],
                                         "service_id": service[0]["service_id"],
                                         "service_name": service[0]["service_name"],
+                                        "service_active": service[0]["service_active"],
+                                        "service_category_active": service[0]["service_category_active"],
                                     },
                                     "spec": {
                                         "id": service[0]["spec_id"],
@@ -394,6 +401,8 @@ class BusinessActivities(APIView):
                                 "service_name": service[0]["service_name"],
                                 "duration": service[0]["duration"],
                                 "price": service[0]["price"],
+                                "service_active": service[0]["service_active"],
+                                "service_category_active": service[0]["service_category_active"],
                                 "employees": [{
                                     "avatar": employee_avatar[0]["avatar"],
                                     "business_activity_id": return_list[business_name]["id"],
@@ -406,6 +415,8 @@ class BusinessActivities(APIView):
                                         "price": service[0]["price"],
                                         "service_id": service[0]["service_id"],
                                         "service_name": service[0]["service_name"],
+                                        "service_active": service[0]["service_active"],
+                                        "service_category_active": service[0]["service_category_active"],
                                     },
                                     "spec": {
                                         "id": service[0]["spec_id"],

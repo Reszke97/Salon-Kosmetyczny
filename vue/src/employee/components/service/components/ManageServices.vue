@@ -65,13 +65,14 @@
           <div
             class="mx-2"
             v-for="(service, jdx) of category.services"
+            v-if="service.service.is_active"
             :key="jdx + 'i'"
           >
             <div class="pb-3">
               <h4> Usługa - {{ service.service.name }} </h4>
               <div class="d-flex flex-column ">
                 <span style="color:orange"> Cena - {{ service.service.price }} PLN</span>
-                <span style="color:orange"> Czas trwania - {{ service.service.duration }} </span>
+                <span style="color:orange"> Czas trwania - {{ service.service.duration }} min</span>
               </div>
               <div style="display: flex; width:50%;" class="mb-2">
                 <div
@@ -230,10 +231,10 @@
           let rowCount = 1;
           let groupNo = -1;
           groupedServices.lteMedium = this.services.categories.reduce((prev, current) => {
-            if(rowCount == 2){
+            if(rowCount == 2 && current.is_active){
               prev[groupNo].push(current)
               rowCount += 1;
-            } else {
+            } else if(rowCount != 2 && current.is_active) {
               prev.push(new Array(current))
               if(rowCount > 2) rowCount = 1;
               groupNo += 1;

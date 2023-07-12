@@ -104,7 +104,7 @@ class ServiceCategorySerializer(serializers.ModelSerializer):
     category_display_order = serializers.IntegerField(source="display_order")
     class Meta:
         model = ServiceCategory
-        fields = ('category_id', 'name', 'styles', 'category_display_order')
+        fields = ('category_id', 'name', 'styles', 'category_display_order', 'is_active')
 
 class ModifyCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -116,7 +116,7 @@ class ExistingServiceSerializer(serializers.ModelSerializer):
     service_category = ServiceCategorySerializer()
     class Meta:
         model = Service
-        fields = ('duration', 'name', 'price', 'service_id', 'service_category')
+        fields = ('duration', 'name', 'price', 'service_id', 'service_category', 'is_active')
 
 class ServiceCommentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -353,4 +353,17 @@ class OwnerEmployeesSerializer(serializers.ModelSerializer):
             "user",
             "pk",
             "business_activity_id",
+        )
+
+class DisableServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Service
+        fields = (
+            "is_active",
+        )
+class DisableCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceCategory
+        fields = (
+            "is_active",
         )

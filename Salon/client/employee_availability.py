@@ -377,6 +377,7 @@ class EmployeeServicesAndClients(APIView):
         cursor.execute("""SELECT ss.name as 'service_name', ss.id as 'service_id'
                 from salon_service ss
                 where ss.employee_id = %s
+                    and ss.is_active = 1
             """
         , [employee_id])
         services = cursor_to_array_of_dicts(cursor)

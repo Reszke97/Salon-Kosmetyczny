@@ -133,6 +133,7 @@
                         prepend-icon="mdi-paperclip"
                         dark
                         @change="(event) => displayImages(event)"
+                        @click:clear="(event) => clearImgs()"
                     >
                         <template #selection="{ text }">
                             <v-chip
@@ -178,8 +179,17 @@
                     <slot name="closeDialog" />
                     <v-btn
                         color="success"
-                        @click="prepareAndPostRequest"
+                        @click="prepareAndPostRequest(false)"
                     >{{ preview ? "Zapisz zmiany" : "Dodaj usługę" }}</v-btn>
+                    <v-btn
+                        dark
+                        class="ml-2"
+                        v-if="preview"
+                        color="red"
+                        @click="prepareAndPostRequest(true)"
+                    >
+                        Usuń
+                    </v-btn>
                 </div>
                 </v-col>
             </v-row>
@@ -211,6 +221,10 @@
             getServices: {
                 type: Function,
                 default: () => {}
+            },
+            closeDialog: {
+                type: Function,
+                default: () => {}
             }
         },
         data: () => ({
@@ -239,6 +253,9 @@
             await this.getCategories();
         },
         methods: {
+            clearImgs(){
+                this.serviceInfo.employee_image = this.serviceInfo.employee_image.filter(el => el.isFromDB === true);
+            },
             async getCategories(){
                 const API = await AUTH_API();
                 const res = await API.get("/api/v1/employee/employee-category/")
@@ -293,7 +310,7 @@
             },
             async handleChange (e){
                 await new Promise((resolve) => {
-                    this.serviceInfo.employee_image.push({image:(e.target.result)})
+                    this.serviceInfo.employee_image.push({image:(e.target.result), isFromDB: false})
                     resolve()
                 })
             },
@@ -342,15 +359,34 @@
                     console.log(err);
                 })
             },
-            async prepareAndPostRequest(){
+            async prepareAndPostRequest(isDelete = false){
                 let actionType = "post";
                 if(this.preview){
-                    actionType = "put"
+                    if(isDelete) {
+                        actionType = "delete";
+                        const API = await AUTH_API();
+                        await API.delete("/api/v1/employee/service/", {
+                            data: {
+                                category: this.serviceInfo.category,
+                                service: this.serviceInfo.service
+                            }
+                        })
+                        .then(() => {
+                            alert("Usunięto usługę")
+                        })
+                    }
+                    else actionType = "put";
                 }
-                await this.postData(actionType);
+                if(!isDelete){
+                    await this.postData(actionType);
+                }
                 if(actionType === "post"){
                     this.resetForm();
+                } if(actionType === "post" || actionType === "delete"){
                     await this.getCategories();
+                }
+                if(actionType === "put" || actionType === "delete"){
+                    this.closeDialog();
                 }
             }
         }

@@ -7,6 +7,7 @@
                 >
                     <v-expansion-panel
                         v-for="(service, panelIdx) of services"
+                        v-if="service.service.is_active"
                         :key="service.service.id"
                     >
                         <v-expansion-panel-header>
@@ -41,9 +42,11 @@
                                             :preview="true"
                                             :service-to-edit="service"
                                             :get-services="getServices"
+                                            :closeDialog="closeDialog"
                                         >
                                             <template #closeDialog>
                                                 <v-btn
+                                                    color="success"
                                                     dark
                                                     @click="closeDialog"
                                                     class="mr-2"

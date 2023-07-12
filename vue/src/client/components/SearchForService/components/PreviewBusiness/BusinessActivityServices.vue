@@ -27,6 +27,7 @@
                     v-for="(businessActivityCategory, key) in businessActivityCategories"
                     :key="key"
                     style="margin-top:0.25rem"
+                    v-if="!!businessActivityCategory[0].service_category_active"
                 >
                     <v-expansion-panel-header>
                        <h2>{{key}}</h2>
@@ -35,6 +36,7 @@
                         <v-divider dark></v-divider>
                         <div
                             v-for="(businessActivityService) of businessActivityCategory"
+                            v-if="businessActivityService.service_active"
                             :key="businessActivityService.service_name"
                             style="display:flex; flex-direction: row; margin: 0.75rem 0 0.75rem 0"
                         >

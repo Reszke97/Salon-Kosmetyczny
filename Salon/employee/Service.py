@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from ..serializers import *
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .utils.image_actions import map_images, append_images, prepare_and_create_images
 from ..models import Service, ServiceComment
 from ..employee.utils.cursor_to_array_of_dicts import cursor_to_array_of_dicts
@@ -21,7 +21,7 @@ def append_comments(employee_config):
         config["employee_comments"] = comments_serialized.data
 class ServiceApi(APIView):
     permission_classes = [IsAuthenticated, CheckIfPasswordWasChanged]
-    parser_classes = (MultiPartParser, FormParser)
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
 
     def __init__(self):
         self.employee_id = None
@@ -198,6 +198,36 @@ class ServiceApi(APIView):
             "employee_info": employee_info,
         }
         return Response(response, status=status.HTTP_200_OK)
+    
+    def delete(self, request):
+        data = request.data
+
+        serivce = Service.objects.get(pk=data["service"]["service_id"])
+        srv_serializer = DisableServiceSerializer(serivce, data={
+            "is_active": False
+        })
+
+        if srv_serializer.is_valid():
+            srv_serializer.save()
+        
+        cursor = connection.cursor()
+        cursor.execute(""" select *
+                    from salon_service
+                       where service_category_id = %s
+                        and is_active = 1
+
+            """, [data["category"]["category_id"]]
+        )
+        found_services = cursor_to_array_of_dicts(cursor)
+        if len(found_services) < 1:
+            category = ServiceCategory.objects.get(pk=data["category"]["category_id"])
+            ctg_serializer = DisableCategorySerializer(category, data={
+                "is_active": False
+            })
+            if ctg_serializer.is_valid():
+                ctg_serializer.save()
+        return Response(status=status.HTTP_200_OK)
+
 
 
 class ServiceCommentApi(APIView):

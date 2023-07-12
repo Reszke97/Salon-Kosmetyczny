@@ -76,15 +76,17 @@
                         v-for="(category, idx) of business.categories"
                         :key="idx"
                         style="background-color:#3f51b5;"
+                        v-if="checkIfActive({categoryName:idx, businessName: key})"
                     >
                         <v-expansion-panel-header>
-                            <h3>{{idx}}</h3>
+                            <h3>{{ idx }}</h3>
                         </v-expansion-panel-header>
                         <v-expansion-panel-content>
                             <div
                                 v-for="(item, jdx) of category"
                                 :key="jdx"
                                 style="display: flex; flex-direction: column"
+                                v-if="item.service_active"
                             >
                                 <h4>{{ item.service_name }}</h4>
                                 <span>{{ `Czas trwania: ${item.duration} min` }}</span>
@@ -182,6 +184,10 @@
                 this.selectedImg = dataUrl;
                 this.showImagePreview = true;
             },
+            checkIfActive({categoryName, businessName}){
+               const isActive = this.items[businessName].categories[categoryName][0].service_category_active
+               return !!isActive
+            }
         }
     }
 </script>

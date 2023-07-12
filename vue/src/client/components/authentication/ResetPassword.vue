@@ -90,7 +90,6 @@
         
         created(){
             this.route = this.$route.params.activated
-            console.log(this.route = this.$route.params.activated)
         },
         methods: {
             submit () {
@@ -106,7 +105,6 @@
                 window.location.assign("/client/login");
             },
             passwordChange(){
-                console.log(this.newPassword)
                 axios.patch('http://127.0.0.1:8000/api/v1/user/passwordresetcomplete/', {
                     password: this.newPassword, 
                     token: this.token, 

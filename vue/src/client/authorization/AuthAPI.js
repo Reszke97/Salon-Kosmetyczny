@@ -40,7 +40,6 @@ const AUTH_API = async () => {
 				)
 				|| error.response.status === 400
 			){
-				console.log('a')
 				alert('Niepoprawny token')
 				store.commit('setIsAuthenticated', false)
 				return Promise.reject(error);
@@ -91,7 +90,6 @@ const AUTH_API = async () => {
 							return await axiosInstance
 								.post('/api/v1/token/refresh/', { refresh: localStorage.getItem('clientRefreshToken') })
 								.then((response) => {
-									console.log(response)
 									store.commit('setToken', {
 										access: response.data.access,
 										refresh: response.data.refresh
