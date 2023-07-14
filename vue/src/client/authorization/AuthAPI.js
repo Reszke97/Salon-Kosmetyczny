@@ -6,7 +6,7 @@ const baseURL = 'http://127.0.0.1:8000'
 const AUTH_API = async () => {
 	let originalRequest = null;
 	const axiosInstance = axios.create({
-		baseURL: baseURL,// Adres do serwera Django
+		baseURL: baseURL,
 		timeout: 5000,
 		headers: {
 			Authorization: localStorage.getItem('clientToken')

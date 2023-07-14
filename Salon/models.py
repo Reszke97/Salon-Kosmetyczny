@@ -52,7 +52,6 @@ class CustomAccountManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-
     is_superuser = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
@@ -65,9 +64,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_password_update = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    objects = CustomAccountManager()# Istotne - ustawia Manager'owie atrybut 'get_by_natural_key'
-
+    objects = CustomAccountManager()
     USERNAME_FIELD = 'user_name'
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
 
@@ -75,13 +72,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.user_name
 
     def has_perm(self, perm, obj=None):
-        "Does the user have a specific permission?"
-        # Simplest possible answer: Yes, always
         return True
     
     def has_module_perms(self, app_label):
-        "Does the user have permissions to view the app `app_label`?"
-        # Simplest possible answer: Yes, always
         return True
 
 def upload_path(instance, filename):
@@ -100,7 +93,7 @@ class BusinessActivity(models.Model):
     name = models.CharField(blank=False, max_length=100)
     post_code = models.CharField(blank=False, max_length=45)
     street = models.CharField(blank=False, max_length=45)
-    apartment_number = models.CharField(blank=False, max_length=45)
+    apartment_number = models.CharField(default="", max_length=45, null=True, blank=True)
     house_number = models.CharField(blank=False, max_length=45)
     contact_phone = models.CharField(blank=True, max_length=45)
     city = models.CharField(blank=False, max_length=200)

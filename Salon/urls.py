@@ -20,7 +20,6 @@ from .client.visit import *
 urlpatterns = [
     path('api/v1/token/refresh/', CustomTokenRefreshView.as_view(), name = 'token_refresh'),
     path('api/v1/token/verify/', CustomTokenVerifyView.as_view(), name = 'token_verify'),
-
     path('api/v1/client/token/', CustomTokenObtainPairViewClient.as_view(), name = 'token_obtain_pair_client'),
     path('api/v1/client/info/', ClientApi.as_view(), name = 'client_api'),
     path('api/v1/client/business-activities/', BusinessActivities.as_view(), name = 'business_activities'),
@@ -29,7 +28,6 @@ urlpatterns = [
     path('api/v1/client/visit/', VisitApi.as_view(), name = 'client_register_visit_api'),
     path('api/v1/client/my-visits/', ClientVisitApi.as_view(), name = 'client_my_visit_api'),
     path('api/v1/client/message/', MessageToEmployee.as_view(), name = 'message_to_employee'),
-
 
     path('api/v1/user/register/', CustomUserCreate.as_view(), name = "register"),
     path('api/v1/user/check-for-unique-names/', CheckForUniqueNames.as_view(), name = "check_for_unique_names"),

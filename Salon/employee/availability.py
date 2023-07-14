@@ -193,7 +193,6 @@ class AvailabilityConfigApi(APIView):
             "min_time_for_registration": data["min_time_for_registration"]
         })
         
-
     def put(self, request):
         data = request.data
         data["min_time_for_registration"] = "24h"

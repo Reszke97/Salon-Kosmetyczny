@@ -259,7 +259,8 @@
             async getCategories(){
                 const API = await AUTH_API();
                 const res = await API.get("/api/v1/employee/employee-category/")
-                this.availableCategories = res.data
+                const key = "name";
+                this.availableCategories = [...new Map(res.data.map(item =>[item[key], item])).values()];
             },
             resetForm(){
                 this.serviceInfo = {

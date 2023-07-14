@@ -23,7 +23,7 @@
                 <v-text-field
                     dark
                     v-model="user_name"
-                    label="E-mail"
+                    label="Login"
                 ></v-text-field>
 
                 <v-text-field

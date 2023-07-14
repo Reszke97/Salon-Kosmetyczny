@@ -179,7 +179,7 @@
                                     height="40px"
                                     width="40px"
                                     :color="getDayColor(date)"
-                                    @click="viewDay(date)"
+                                    @click="viewDay({date: date})"
                                 >
                                     {{ getDayName(day, month) }}
                                 </v-btn>
@@ -216,7 +216,7 @@
                                     height="40px"
                                     width="40px"
                                     :color="getDayColor(date)"
-                                    @click="viewDay(date)"
+                                    @click="viewDay({date: date})"
                                 >
                                     {{ getDayName(day, month) }}
                                 </v-btn>
@@ -727,6 +727,7 @@
                 this.availabilityDialog = false;
             },
             viewDay ({ date }) {
+                console.log(date)
                 this.focus = date
                 this.type = "day"
             },

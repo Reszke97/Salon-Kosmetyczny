@@ -259,6 +259,9 @@ class BusinessActivitySerializer(serializers.ModelSerializer):
             "about",
             "is_active",
         )
+        extra_kwargs = {
+            'apartment_number': {'required': False},
+        }
 
 class EmployeeSpecializationSerializer(serializers.ModelSerializer):
     class Meta:

@@ -402,6 +402,7 @@ class CustomUserCreate(APIView):
         if user_res.status_code == status.HTTP_201_CREATED:
             if request.data["userForm"]["is_employee"]:
                 business_res = self.create_business(request.data["businessForm"])
+                print(business_res)
                 if business_res.status_code == status.HTTP_201_CREATED:
                     if user_res.data["is_new_spec"] == True:
                         new_spec_res = self.create_new_spec(user_res.data["selected_spec"])
