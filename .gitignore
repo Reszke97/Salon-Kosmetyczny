@@ -3,6 +3,8 @@
 /dist
 /backend/config/config.json
 vue/package-lock.json
+node_modules
+node_modules/
 
 # Django
 *.log
@@ -48,3 +50,27 @@ pnpm-debug.log*
 !.vscode/launch.json 
 !.vscode/extensions.json 
 .history
+
+/node_modules
+/public/hot
+/public/storage
+/public/js
+/public/css
+/public/fonts
+/public/mix-manifest.json
+/storage/*.key
+/vendor
+.env
+.env.backup
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/.idea
+/.vscode
+package-lock.json
+composer.lock
+public/images/terminale
+public/build
+/docs/
