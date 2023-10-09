@@ -79,6 +79,7 @@
                                                         v-if="!employee.avatar.image"
                                                         @click="() => previewEmployee(employee.id, false)"
                                                         dark
+                                                        v-on="on"
                                                     >
                                                         mdi-account-circle
                                                     </v-icon>

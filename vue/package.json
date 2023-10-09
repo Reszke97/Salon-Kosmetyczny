@@ -13,6 +13,7 @@
     "babel-polyfill": "^6.26.0",
     "core-js": "^3.6.5",
     "cross-env": "^7.0.3",
+    "lines-and-columns": "^2.0.3",
     "vue": "^2.6.11",
     "vue-advanced-cropper": "^1.11.5",
     "vue-browser-geolocation": "^1.8.0",

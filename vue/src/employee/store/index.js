@@ -12,6 +12,8 @@ export default new Vuex.Store({
     accessToken: localStorage.getItem("employeeToken"),
     refreshToken: localStorage.getItem("employeeRefreshToken"),
     isAuthenticated: false,
+    originalRequest: "",
+    prevToken: "",
     countries: [
       {
         label: 'Polska',
@@ -80,6 +82,9 @@ export default new Vuex.Store({
     },
   },
   mutations: {
+    setOriginalRequest(state, request){
+      state.originalRequest = request;
+    },
     setRole(state, data){
       state.role = data.role;
       state.name = data.name;
@@ -89,8 +94,10 @@ export default new Vuex.Store({
     setToken (state, { access, refresh }) {
       localStorage.setItem( 'employeeToken', access );
       localStorage.setItem( 'employeeRefreshToken', refresh );
+      state.prevToken = state.refreshToken
       state.accessToken = access
       state.refreshToken = refresh
+
     },
 
     setRefreshToken (state){

@@ -460,21 +460,23 @@
         },
         async created(){
             if(this.$store.state.role === "owner"){
-                this.selectedEmployee = { 
-                    name: `${this.$store.state.name} ${this.$store.state.last_name}`, 
-                    employee_id: this.$store.state.employee_id 
-                };
-                const API = await AUTH_API();
-                await API.get("/api/v1/employee/owner-employees/")
-                .then(res => {
-                    this.employees = res.data.map(el => {
-                        return {
-                            employee_id: el.pk,
-                            user_id: el.user.id,
-                            name: `${el.user.first_name} ${el.user.last_name}`,
-                        }
+                setTimeout( async () => {
+                    this.selectedEmployee = { 
+                        name: `${this.$store.state.name} ${this.$store.state.last_name}`, 
+                        employee_id: this.$store.state.employee_id 
+                    };
+                    const API = await AUTH_API();
+                    await API.get("/api/v1/employee/owner-employees/")
+                    .then(res => {
+                        this.employees = res.data.map(el => {
+                            return {
+                                employee_id: el.pk,
+                                user_id: el.user.id,
+                                name: `${el.user.first_name} ${el.user.last_name}`,
+                            }
+                        })
                     })
-                })
+                }, 0);
             }
         },
         computed: {
@@ -484,19 +486,21 @@
         },
         methods: {
             async deleteVisit(){
-                const API = await AUTH_API();
-                if(this.reason){
-                    API.delete(`/api/v1/client/visit/?appointment_id=${this.deleteData.appointment_id}`, { data: { reason: this.reason } })
-                    .then( async () => {
-                        this.reason = "";
-                        this.deleteData = {};
-                        this.closeReasonDialog();
-                        alert("Usunięto wizytę")
-                        await this.getAppointments();
-                    })
-                } else {
-                    alert("Podaj powód")
-                }
+                setTimeout( async () => {
+                    const API = await AUTH_API();
+                    if(this.reason){
+                        API.delete(`/api/v1/client/visit/?appointment_id=${this.deleteData.appointment_id}`, { data: { reason: this.reason } })
+                        .then( async () => {
+                            this.reason = "";
+                            this.deleteData = {};
+                            this.closeReasonDialog();
+                            alert("Usunięto wizytę")
+                            await this.getAppointments();
+                        })
+                    } else {
+                        alert("Podaj powód")
+                    }
+                }, 1000);
             },
             openReasonDialog(data){
                 this.deleteData.appointment_id = data.appointment_id;
@@ -525,26 +529,28 @@
                 this.newVisitDialog = false;
             },
             async getCompleteServiceInfo(appointmentInfo){
-                const API = await AUTH_API();
-                await API.post(`/api/v1/employee/change-visit/?operation=get&employee=${this.selectedEmployee.employee_id}`, {...appointmentInfo})
-                .then(res => {
-                    this.selectedAppointment = {
-                        ...res.data,
-                        date: appointmentInfo.date,
-                        time: appointmentInfo.time,
-                        service_name: appointmentInfo.name,
-                        client_name: appointmentInfo.client_name,
-                        client_last_name: appointmentInfo.client_last_name,
-                        appointment_id: appointmentInfo.appointment_id,
-                    }
-                    this.selectedAppointment.employees.forEach((el, idx) =>{
-                        let img = this.selectedAppointment.employees[idx].avatar;
-                        if(Object.hasOwn(this.selectedAppointment.employees[idx].avatar, "image")){
-                            img = appendMimeType(el.avatar)
+                setTimeout( async () => {
+                    const API = await AUTH_API();
+                    await API.post(`/api/v1/employee/change-visit/?operation=get&employee=${this.selectedEmployee.employee_id}`, {...appointmentInfo})
+                    .then(res => {
+                        this.selectedAppointment = {
+                            ...res.data,
+                            date: appointmentInfo.date,
+                            time: appointmentInfo.time,
+                            service_name: appointmentInfo.name,
+                            client_name: appointmentInfo.client_name,
+                            client_last_name: appointmentInfo.client_last_name,
+                            appointment_id: appointmentInfo.appointment_id,
                         }
-                        this.selectedAppointment.employees[idx].avatar = {...img};
+                        this.selectedAppointment.employees.forEach((el, idx) =>{
+                            let img = this.selectedAppointment.employees[idx].avatar;
+                            if(Object.hasOwn(this.selectedAppointment.employees[idx].avatar, "image")){
+                                img = appendMimeType(el.avatar)
+                            }
+                            this.selectedAppointment.employees[idx].avatar = {...img};
+                        })
                     })
-                })
+                }, 1000);
             },
             setComponentDims(){
                 const minW = 600;
@@ -622,95 +628,98 @@
             },
             async getAppointments(){
                 this.$nextTick( async () => {
-                    const days = this.$refs.calendar.$children[0].days;
-                    const API = await AUTH_API();
-                    await API.post(`/api/v1/employee/appointments/?operation=get&employee=${this.selectedEmployee.employee_id}`, { ...days })
-                    .then(res => {
-                        this.categorizedEvents = res.data.events
-                        this.events = res.data.events.reduce((prev, el) => {
-                            if(el.is_free && !el.is_holiday){
-                                prev.push({
-                                    name: "Wolne",
-                                    start: el.date,
-                                    end: el.date,
-                                    color: "grey",
-                                    is_appointment: false,
-                                    is_free: true,
-                                    is_holiday: false,
-                                })
-                            } else if(el.is_free && el.is_holiday){
-                                prev.push({
-                                    name: "Święto",
-                                    start: el.date,
-                                    end: el.date,
-                                    color: "red",
-                                    is_appointment: false,
-                                    is_free: false,
-                                    is_holiday: true,
-                                })
-                            } else if(!el.is_free && el.is_default){
-                                el.breaks.forEach(el2 => {
+                    setTimeout( async () => {
+                        const days = this.$refs.calendar.$children[0].days;
+                        const API = await AUTH_API();
+                        await API.post(`/api/v1/employee/appointments/?operation=get&employee=${this.selectedEmployee.employee_id}`, { ...days })
+                        .then(res => {
+                            this.categorizedEvents = res.data.events
+                            this.events = res.data.events.reduce((prev, el) => {
+                                if(el.is_free && !el.is_holiday){
                                     prev.push({
-                                        name: "Przerwa",
-                                        start: el.date + ' ' + el2.start_time,
-                                        end: el.date + ' ' + el2.end_time,
-                                        color: "green",
+                                        name: "Wolne",
+                                        start: el.date,
+                                        end: el.date,
+                                        color: "grey",
+                                        is_appointment: false,
+                                        is_free: true,
+                                        is_holiday: false,
+                                    })
+                                } else if(el.is_free && el.is_holiday){
+                                    prev.push({
+                                        name: "Święto",
+                                        start: el.date,
+                                        end: el.date,
+                                        color: "red",
                                         is_appointment: false,
                                         is_free: false,
-                                        is_holiday: false,
-                                        time: `${el2.start_time} - ${el2.end_time}`,
-                                        date: el.date,
+                                        is_holiday: true,
                                     })
-                                })
-                            } else if(el.is_appointment){
-                                el.day_appointments.forEach(el2 => {
-                                    prev.push({
-                                        appointment_id: el2.appointment_id,
-                                        name: el2.service_name,
-                                        start: el.date + ' ' + el2.time_start,
-                                        end: el.date + ' ' + el2.end_time,
-                                        color: "blue",
-                                        client_name: el2.client_name,
-                                        client_last_name: el2.client_last_name,
-                                        client_mail: el2.client_mail,
-                                        non_user_client: el2.non_user_client,
-                                        time: `${el2.time_start} - ${el2.end_time}`,
-                                        date: el.date,
-                                        is_appointment: true,
-                                        is_free: false,
-                                        is_holiday: false,
+                                } else if(!el.is_free && el.is_default){
+                                    el.breaks.forEach(el2 => {
+                                        prev.push({
+                                            name: "Przerwa",
+                                            start: el.date + ' ' + el2.start_time,
+                                            end: el.date + ' ' + el2.end_time,
+                                            color: "green",
+                                            is_appointment: false,
+                                            is_free: false,
+                                            is_holiday: false,
+                                            time: `${el2.start_time} - ${el2.end_time}`,
+                                            date: el.date,
+                                        })
                                     })
-                                })
-                            } else if(!el.is_default && el.is_free && !el.is_holiday && !el.is_appointment){
-                                prev.push({
-                                    name: "Wolne",
-                                    start: el.date,
-                                    end: el.date,
-                                    is_appointment: false,
-                                    is_free: true,
-                                    is_holiday: false,
-                                })
-                            } else {
-                                el.breaks.forEach(el2 => {
+                                } else if(el.is_appointment){
+                                    el.day_appointments.forEach(el2 => {
+                                        prev.push({
+                                            appointment_id: el2.appointment_id,
+                                            name: el2.service_name,
+                                            start: el.date + ' ' + el2.time_start,
+                                            end: el.date + ' ' + el2.end_time,
+                                            color: "blue",
+                                            client_name: el2.client_name,
+                                            client_last_name: el2.client_last_name,
+                                            client_mail: el2.client_mail,
+                                            non_user_client: el2.non_user_client,
+                                            time: `${el2.time_start} - ${el2.end_time}`,
+                                            date: el.date,
+                                            is_appointment: true,
+                                            is_free: false,
+                                            is_holiday: false,
+                                        })
+                                    })
+                                } else if(!el.is_default && el.is_free && !el.is_holiday && !el.is_appointment){
                                     prev.push({
-                                        name: "Przerwa",
-                                        start: el.date + ' ' + el2.start_time,
-                                        end: el.date + ' ' + el2.end_time,
-                                        color: "green",
+                                        name: "Wolne",
+                                        start: el.date,
+                                        end: el.date,
                                         is_appointment: false,
-                                        is_free: false,
+                                        is_free: true,
                                         is_holiday: false,
-                                        time: `${el2.start_time} - ${el2.end_time}`,
-                                        date: el.date,
                                     })
-                                })
-                            }
-                            return prev
-                        }, [])
-                    })
-                    .catch(err => {
-                        console.log(err)
-                    })
+                                } else {
+                                    el.breaks.forEach(el2 => {
+                                        prev.push({
+                                            name: "Przerwa",
+                                            start: el.date + ' ' + el2.start_time,
+                                            end: el.date + ' ' + el2.end_time,
+                                            color: "green",
+                                            is_appointment: false,
+                                            is_free: false,
+                                            is_holiday: false,
+                                            time: `${el2.start_time} - ${el2.end_time}`,
+                                            date: el.date,
+                                        })
+                                    })
+                                }
+                                return prev
+                            }, [])
+                        })
+                        .catch(err => {
+                            console.log(err)
+                        })
+                        
+                    }, 1000);
                 })
             },
 

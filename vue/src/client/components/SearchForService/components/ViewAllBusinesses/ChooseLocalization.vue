@@ -2,6 +2,7 @@
     <v-dialog
         :value="chooseLocalizationDialogOpen"
         dark
+        :width="containerWidth + 'px'"
     >
         <div
             :style="{

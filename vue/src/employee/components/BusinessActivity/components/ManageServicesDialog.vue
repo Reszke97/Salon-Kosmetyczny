@@ -3,6 +3,7 @@
         class="serviceDialog"
         id="serviceDialog"
         v-model="employeeViewDialog"
+        width="auto"
     >
         <manage-services
             :get-services="getServices"

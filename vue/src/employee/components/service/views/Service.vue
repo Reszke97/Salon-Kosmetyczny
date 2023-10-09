@@ -95,6 +95,7 @@
                     
                     <v-dialog
                         :value="tabs === 'tab-3'"
+                        width="auto"
                     >
                         <manage-services
                             v-if="tabs === 'tab-3'"
