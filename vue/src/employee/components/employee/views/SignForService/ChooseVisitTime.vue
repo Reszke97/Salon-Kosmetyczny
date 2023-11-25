@@ -3,6 +3,7 @@
     :value="visitTimeDialog"
     dark
     persistent
+    width="auto"
   >
     <v-row 
       class="bg-color white-text"
@@ -19,7 +20,7 @@
           </span>
           <span>
             <span class="font-bold">
-              {{ `Cena: ${selectedDate.service.price} zł` }}
+              {{ `Cena: ${selectedDate.service.price} zł, Czas: ${selectedDate.service.duration}min` }}
             </span>
           </span>
           <span 

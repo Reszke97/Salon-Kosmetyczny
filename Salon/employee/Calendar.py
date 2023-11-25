@@ -251,9 +251,9 @@ class EmployeeApointmentsApi(APIView):
         return self.combine_appointments_and_availability(dates, appointments, default_availability, non_default_availability)
 
     def post(self, request):
-        user = request.user
+        self.user = request.user
         chosen_employee = request.query_params.get("employee")
-        employee = Employee.objects.get(user_id=user)
+        employee = Employee.objects.get(user_id=self.user)
         if employee.is_owner:
             chosen_employee = Employee.objects.get(pk=chosen_employee)
             self.user = User.objects.get(pk=chosen_employee.user_id)

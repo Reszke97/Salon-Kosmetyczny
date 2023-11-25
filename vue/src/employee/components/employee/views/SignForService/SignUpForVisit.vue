@@ -147,10 +147,12 @@
             
         },
         async created(){
-          this.$nextTick( async () => {
-            this.setEmployees();
-            await this.getAvailableDateTime();
-          })
+          setTimeout(() => {
+            this.$nextTick( async () => {
+              this.setEmployees();
+              await this.getAvailableDateTime();
+            })
+          }, 1000);
         },
         methods: {
           setEmployees(){

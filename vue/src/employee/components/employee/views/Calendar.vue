@@ -55,12 +55,12 @@
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-menu
-                        v-if="$store.state.role === 'owner'"
                         bottom
                         right
                     >
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn
+                                v-if="$store.state.role === 'owner'"
                                 outlined
                                 color="white"
                                 v-bind="attrs"
@@ -104,7 +104,9 @@
                                 <span>Dyspozycyjność</span>
                             </v-tooltip>
                         </template>
-                        <v-list>
+                        <v-list
+                            v-if="$store.state.role === 'owner'"
+                        >
                             <v-list-item
                                 v-for="employee of employees"
                                 @click="setEmployeeAndGetNewData(employee)"
@@ -459,12 +461,12 @@
             this.setComponentDims();
         },
         async created(){
+            this.selectedEmployee = { 
+                name: `${this.$store.state.name} ${this.$store.state.last_name}`, 
+                employee_id: this.$store.state.employee_id 
+            };
             if(this.$store.state.role === "owner"){
                 setTimeout( async () => {
-                    this.selectedEmployee = { 
-                        name: `${this.$store.state.name} ${this.$store.state.last_name}`, 
-                        employee_id: this.$store.state.employee_id 
-                    };
                     const API = await AUTH_API();
                     await API.get("/api/v1/employee/owner-employees/")
                     .then(res => {
@@ -732,7 +734,8 @@
             openAvailabilityDialog(){
                 this.availabilityDialog = true;
             },
-            closeAvailabilityDialog(){
+            async closeAvailabilityDialog(){
+                await this.getAppointments();
                 this.availabilityDialog = false;
             },
             viewDay ({ date }) {

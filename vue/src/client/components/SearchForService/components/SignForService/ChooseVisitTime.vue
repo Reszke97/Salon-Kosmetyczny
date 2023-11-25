@@ -3,6 +3,7 @@
     :value="visitTimeDialog"
     dark
     persistent
+    width="auto"
   >
     <v-row 
       class="bg-color white-text"

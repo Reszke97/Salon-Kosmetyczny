@@ -3,6 +3,7 @@
     :value="dialog"
     dark
     persistent
+    width="auto"
   >
   <v-card class="indigo">
     <v-card-title class="text-h5 blue darken-4">

@@ -94,24 +94,24 @@ const stepperPositionArray = [
 ]
 
 const userInfo = {
-  email: "marcinreszke2@gmail.com",
-  userName: "Recha2",
-  password1: "Marik1234",
-  password2: "Marik1234",
-  name: "Marcin",
-  lastName: "Reszke",
-  selectedSpec: "Tester",
-  isNewSpec: true,
+  email: "",
+  userName: "",
+  password1: "",
+  password2: "",
+  name: "",
+  lastName: "",
+  selectedSpec: "",
+  isNewSpec: false,
 }
 
 const businessInfo = {
-  name: "Rechas2",
-  post_code_part1: "84",
-  post_code_part2: "200",
-  city: "Wejherowo",
-  street: "asd",
-  apartment_number: "1",
-  house_number: "2",
+  name: "",
+  post_code_part1: "",
+  post_code_part2: "",
+  city: "",
+  street: "",
+  apartment_number: "",
+  house_number: "",
   contact_phone: "",
 }
 
